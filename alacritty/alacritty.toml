@@ -1,0 +1,21 @@
+[env]
+TERM = "xterm-256color"
+
+[font]
+size = 13.0
+
+[font.normal]
+family = "JetBrainsMono Nerd Font"
+style = "Regular"
+
+[window]
+decorations = "Buttonless" 
+opacity = 0.92
+blur = true
+
+[window.padding]
+x = 0
+y = 0
+
+[selection]
+save_to_clipboard = true

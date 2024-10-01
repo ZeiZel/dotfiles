@@ -1,0 +1,18 @@
+*
+
+## what i need to save
+!.gitignore
+!nvim/
+!nvim/**/*
+
+!nv/
+!nv/*
+
+!astronvim/
+!astronvim/**/*
+!lazygit/
+!lazygit/**/*
+!yazi/
+!yazi/**/*
+!alacritty/
+!alacritty/**/*
