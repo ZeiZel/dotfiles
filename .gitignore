@@ -2,6 +2,9 @@
 
 ## what i need to save
 !.gitignore
+
+!README.md
+
 !nvim/
 !nvim/**/*
 
@@ -10,9 +13,14 @@
 
 !astronvim/
 !astronvim/**/*
+
 !lazygit/
 !lazygit/**/*
+
 !yazi/
 !yazi/**/*
+
 !alacritty/
 !alacritty/**/*
+
+!.zshrc
