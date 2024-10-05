@@ -8,8 +8,11 @@
 !nvim/
 !nvim/**/*
 
-!nv/
-!nv/**/*
+!nvc/
+!nvc/**/*
+
+!nvcd/
+!nvcd/**/*
 
 !astronvim/
 !astronvim/**/*
