@@ -30,11 +30,10 @@ function yy() {
 	rm -f -- "$tmp"
 }
 
-alias nvc="NVIM_APPNAME=nvc nvim"
-alias nvcd="NVIM_APPNAME=nvcd nvim"
+alias nv="NVIM_APPNAME=nv nvim"
 
 function nvims() {
-  items=("default" "nvc" "nvcd")
+  items=("default" "nv") 
   config=$(printf "%s\n" "${items[@]}" | fzf --prompt=" Neovim Config  " --height=~50% --layout=reverse --border --exit-0)
   if [[ -z $config ]]; then
     echo "Nothing selected"

@@ -8,14 +8,8 @@
 !nvim/
 !nvim/**/*
 
-!nvc/
-!nvc/**/*
-
-!nvcd/
-!nvcd/**/*
-
-!astronvim/
-!astronvim/**/*
+!nv/
+!nv/**/*
 
 !lazygit/
 !lazygit/**/*
