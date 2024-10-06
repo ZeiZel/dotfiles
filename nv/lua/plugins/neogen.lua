@@ -2,7 +2,7 @@ return {
 	{
 		"danymat/neogen",
 		config = function()
-			require("headlines").setup()
+			require("neogen").setup({})
 		end,
 	},
 }

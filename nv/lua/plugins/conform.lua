@@ -24,7 +24,7 @@ return {
 				format_on_save = {
 					lsp_fallback = true,
 					async = false,
-					timeout_ms = 50,
+					timeout_ms = 1000,
 				},
 			})
 			vim.api.nvim_create_autocmd("BufWritePre", {

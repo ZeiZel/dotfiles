@@ -52,3 +52,11 @@ function htt() {
 
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" 
+
+# pnpm
+export PNPM_HOME="/home/zeizel/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
