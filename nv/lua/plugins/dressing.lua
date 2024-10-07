@@ -1,14 +1,14 @@
 return {
 	{
-		'stevearc/dressing.nvim',
+		"stevearc/dressing.nvim",
 		config = function()
-			require('dressing').setup({
+			require("dressing").setup({
 				input = {
 					win_options = {
-						winhighlight = 'Normal:CmpPmenu,FloatBorder:CmpPmenuBorder,CursorLine:PmenuSel,Search:None',
+						winhighlight = "Normal:CmpPmenu,FloatBorder:CmpPmenuBorder,CursorLine:PmenuSel,Search:None",
 					},
-				}
+				},
 			})
-		end
-	}
+		end,
+	},
 }
