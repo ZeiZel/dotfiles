@@ -15,11 +15,19 @@ return {
 					numbers = "none",
 					color_icons = false,
 					indicator = {
-						style = "none",
+						style = 'none',
 					},
 					modified_icon = "●",
 					left_trunc_marker = "",
 					right_trunc_marker = "",
+					offsets = {
+						{
+							filetype = "neo-tree",
+							text = "File Explorer",
+							text_align = "left",
+							separator = true
+						}
+					},
 					diagnostics = "nvim_lsp",
 					diagnostics_indicator = function(count, level, diagnostics_dict, context)
 						local s = " "
