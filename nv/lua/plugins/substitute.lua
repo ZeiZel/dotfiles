@@ -1,3 +1,4 @@
+-- improve text navigation like leap
 return {
 	"gbprod/substitute.nvim",
 	event = { "BufReadPre", "BufNewFile" },
