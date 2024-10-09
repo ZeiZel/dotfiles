@@ -44,4 +44,8 @@ return {
 			map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "Gitsigns select hunk")
 		end,
 	},
+	config = function()
+		require('gitsigns').setup()
+		require("scrollbar.handlers.gitsigns").setup()
+	end
 }
