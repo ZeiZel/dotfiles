@@ -2,7 +2,12 @@ return {
 	{
 		"rcarriga/nvim-notify",
 		config = function()
-			vim.notify = require("notify")
+			local notifier = require("notify")
+			notifier.setup({
+				render = "compact",
+				animation = "fade"
+			})
+			vim.notify = notifier
 		end,
 	},
 }
