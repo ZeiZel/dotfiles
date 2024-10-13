@@ -2,6 +2,7 @@
 return {
 	{
 		"kevinhwang91/nvim-hlslens",
+		lazy = true,
 		config = function()
 			require("hlslens").setup({
 				build_position_cb = function(plist, _, _, _)
@@ -16,5 +17,5 @@ return {
         augroup END
     ]])
 		end,
-	}
+	},
 }
