@@ -5,7 +5,8 @@ return {
 			local notifier = require("notify")
 			notifier.setup({
 				render = "compact",
-				animation = "fade"
+				animation = "fade",
+				fps = 15,
 			})
 			vim.notify = notifier
 		end,

@@ -1,9 +1,4 @@
-return {
-	{
-		"stevearc/conform.nvim",
-		opts = {},
-		config = function()
-			require("conform").setup {
+local options = {
 				formatters_by_ft = {
 					lua = { "stylua" },
 					css = { "prettier" },
@@ -23,14 +18,8 @@ return {
 				},
 				format_on_save = {
 					lsp_fallback = true,
-					async = false,
-					timeout_ms = 1000,
+					timeout_ms = 500,
 				},
-			}
-			vim.api.nvim_create_autocmd("BufWritePre", {
-				pattern = "*",
-				callback = function(args) require("conform").format { bufnr = args.buf } end,
-			})
-		end,
-	},
 }
+
+return options
