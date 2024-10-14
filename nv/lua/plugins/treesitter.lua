@@ -45,6 +45,8 @@ return {
 					"query",
 				},
 			})
+
+			require("nvim-treesitter.install").prefer_git = true
 		end,
 	},
 }
