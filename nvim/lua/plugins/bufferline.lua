@@ -15,7 +15,7 @@ return {
 					numbers = "none",
 					color_icons = false,
 					indicator = {
-						style = 'none',
+						style = "none",
 					},
 					modified_icon = "●",
 					left_trunc_marker = "",
@@ -25,8 +25,8 @@ return {
 							filetype = "neo-tree",
 							text = "File Explorer",
 							text_align = "left",
-							separator = true
-						}
+							separator = true,
+						},
 					},
 					diagnostics = "nvim_lsp",
 					diagnostics_indicator = function(count, level, diagnostics_dict, context)
@@ -49,10 +49,7 @@ return {
 					buffer_visible = {
 						fg = gray,
 					},
-					separator = {
-						bg = "#1e1e2e",
-						fg = "#1e1e2e",
-					},
+					separator = {},
 					diagnostic = {},
 				},
 			})
