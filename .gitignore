@@ -5,11 +5,11 @@
 
 !README.md
 
-!nvim/
-!nvim/**/*
-
 !nv/
 !nv/**/*
+
+!nvim/
+!nvim/**/*
 
 !lazygit/
 !lazygit/**/*
@@ -19,5 +19,8 @@
 
 !alacritty/
 !alacritty/**/*
+
+!kitty/
+!kitty/**/*
 
 !.zshrc

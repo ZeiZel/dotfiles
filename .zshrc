@@ -30,7 +30,8 @@ function yy() {
 	rm -f -- "$tmp"
 }
 
-alias nv="NVIM_APPNAME=nv nvim"
+# alias nvc="NVIM_APPNAME=nvchad nvim"
+alias nv="nvim"
 
 function nvims() {
   items=("default" "nv") 
