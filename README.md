@@ -1,14 +1,31 @@
 # Dotfiles
 
+## TODO
+
+- [x] add nvim config
+- [  ] configured kitty
+- [ ] 
+
 ## For working zsh
 
 Create a hard symlink:
 
 ```shell
  ln .zshrc ~/.zshrc
+ ln .tmux ~/.tmuc.conf
 ```
 
-## For working vim
+## Installing Tmux
 
-Run `:MasonInstall` and `:Lazy install`
+Enter the Tmux
+
+```bash
+tmux
+```
+
+Install plugins with `ctrl + a` + `shift + i`
+
+## For working nvim
+
+Run `:MasonInstall` and `:Lazy install` (all packages is ensured)
 

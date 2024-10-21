@@ -78,3 +78,6 @@ map("n", "<leader>fp", ":Telescope projects<CR>")
 
 -- Tagbar
 map("n", "<leader>fs", ":Tagbar<CR>")
+
+-- MD Preview
+map("n", "<leader>mp", ":MarkdownPreview<CR>")
