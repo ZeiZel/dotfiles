@@ -3,13 +3,14 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 export ZSH="$HOME/.oh-my-zsh"
-export KUBECONFIG=/Users/alaricode/.kube/purple-cluster_kubeconfig.yaml
-export NVM_DIR="$HOME/.nvm"
-  [ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh" 
-  [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"
-ZSH_THEME="powerlevel10k/powerlevel10k"
 
-plugins=(git z docker fzf zsh-autosuggestions history)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+ZSH_THEME="powerlevel10k/powerlevel10k"
+source ~/powerlevel10k/powerlevel10k.zsh-theme
+
+plugins=(git z docker fzf fzf-zsh-plugin zsh-autosuggestions history)
 
 source $ZSH/oh-my-zsh.sh
 
