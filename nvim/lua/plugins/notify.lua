@@ -5,6 +5,7 @@ return {
 			local notifier = require("notify")
 			notifier.setup({
 				render = "default",
+				top_down = false,
 				animation = "slide",
 				fps = 60,
 			})
