@@ -19,13 +19,20 @@ return {
 				},
 			},
 		})
+
+		local events = require("neo-tree.events")
+		-- See ":help neo-tree-highlights" for a list of available highlight groups
+		vim.cmd([[
+			hi NeoTreeCursorLine gui=bold guibg=#333333
+		]])
+
 		require("neo-tree").setup({
 			close_if_last_window = false,
 			default_component_configs = {
 				git_status = {
 					-- Change type
 					added = "", -- or "✚", but this is redundant info if you use git_status_colors on the name
-					modified = "", -- or "", but this is redundant info if you use git_status_colors on the name
+					modified = "M",
 					deleted = "✖", -- this can only be used in the git_status source
 					renamed = "󰁕", -- this can only be used in the git_status source
 					-- Status type
@@ -36,15 +43,46 @@ return {
 					conflict = "",
 				},
 			},
+			window = {
+				auto_expand_width = false,
+				width = 40,
+				mapping_options = {
+					noremap = true,
+					nowait = true,
+				},
+			},
 			filesystem = {
+				bind_to_cwd = false, -- true creates a 2-way binding between vim's cwd and neo-tree's root
+				cwd_target = {
+					sidebar = "tab", -- sidebar is when position = left or right
+					current = "window", -- current is when position = current
+				},
+				scan_mode = "deep",
+				use_libuv_file_watcher = true,
 				filtered_items = {
-					visible = false, -- when true, they will just be displayed differently than normal items
+					visible = true, -- when true, they will just be displayed differently than normal items
 					hide_dotfiles = false,
 					hide_gitignored = false,
 					hide_hidden = false,
 				},
 			},
+			event_handlers = {
+				{
+					event = events.NEO_TREE_BUFFER_ENTER,
+					handler = function()
+						vim.cmd("highlight! Cursor blend=100")
+					end,
+				},
+				{
+					event = events.NEO_TREE_BUFFER_LEAVE,
+					handler = function()
+						vim.cmd("highlight! Cursor guibg=#5f87af blend=0")
+					end,
+				},
+			},
+			nesting_rules = {
+				ts = { ".d.ts", "js", "css", "html", "scss" },
+			},
 		})
 	end,
 }
-
