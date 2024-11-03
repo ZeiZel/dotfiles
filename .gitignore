@@ -4,6 +4,7 @@
 !.gitignore
 
 !README.md
+!Brewfile
 
 !nv/
 !nv/**/*
@@ -25,6 +26,9 @@
 
 !kitty/
 !kitty/**/*
+
+!git/
+!git/**/*
 
 !.zshrc
 !.tmux.conf
