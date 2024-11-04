@@ -1,3 +1,4 @@
+-- (Unicode chars)[https://en.wikibooks.org/wiki/Unicode/Character_reference/F0000-F0FFF]
 return {
 	"nvim-neo-tree/neo-tree.nvim",
 	branch = "v3.x",
@@ -30,17 +31,19 @@ return {
 			close_if_last_window = false,
 			default_component_configs = {
 				git_status = {
-					-- Change type
-					added = "", -- or "✚", but this is redundant info if you use git_status_colors on the name
-					modified = "M",
-					deleted = "✖", -- this can only be used in the git_status source
-					renamed = "󰁕", -- this can only be used in the git_status source
-					-- Status type
-					untracked = "",
-					ignored = "",
-					unstaged = "󰄱",
-					staged = "",
-					conflict = "",
+					symbols = {
+						-- Change type
+						added = "",
+						modified = "󰏬",
+						deleted = "󰍵",
+						renamed = "󰧚", -- 󰏫
+						-- Status type
+						untracked = "󰀧",
+						ignored = "󰎃", -- 
+						unstaged = "󰄱",
+						staged = "",
+						conflict = "",
+					},
 				},
 			},
 			window = {
