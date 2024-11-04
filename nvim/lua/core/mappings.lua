@@ -39,6 +39,7 @@ map("n", "<Tab>", ":BufferLineCycleNext<CR>")
 map("n", "<s-Tab>", ":BufferLineCyclePrev<CR>")
 map("n", "<leader>x", ":BufferLinePickClose<CR>")
 map("n", "<c-x>", ":BufferLineCloseOthers<CR>")
+map("n", "<c-c>", ":bp | bd #<CR>")
 
 -- Terminal
 map("n", "<leader>t", ":ToggleTerm<CR>")

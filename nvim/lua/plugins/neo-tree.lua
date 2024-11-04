@@ -22,7 +22,7 @@ return {
 		})
 
 		local events = require("neo-tree.events")
-		-- See ":help neo-tree-highlights" for a list of available highlight groups
+
 		vim.cmd([[
 			hi NeoTreeCursorLine gui=bold guibg=#333333
 		]])
@@ -55,15 +55,15 @@ return {
 				},
 			},
 			filesystem = {
-				bind_to_cwd = false, -- true creates a 2-way binding between vim's cwd and neo-tree's root
+				bind_to_cwd = false,
 				cwd_target = {
-					sidebar = "tab", -- sidebar is when position = left or right
-					current = "window", -- current is when position = current
+					sidebar = "tab",
+					current = "window",
 				},
 				scan_mode = "deep",
 				use_libuv_file_watcher = true,
 				filtered_items = {
-					visible = true, -- when true, they will just be displayed differently than normal items
+					visible = true,
 					hide_dotfiles = false,
 					hide_gitignored = false,
 					hide_hidden = false,
