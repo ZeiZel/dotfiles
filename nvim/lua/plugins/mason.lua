@@ -49,6 +49,8 @@ return {
 					"stylua", -- lua formatter
 					"stylelint",
 					"eslint_d",
+					"fixjson",
+					"yamlfix",
 				},
 			})
 		end,
