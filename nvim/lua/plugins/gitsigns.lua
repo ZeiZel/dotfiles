@@ -45,6 +45,6 @@ return {
 		end,
 	},
 	config = function()
-		require("gitsigns").setup()
+		require("gitsigns").setup({})
 	end,
 }
