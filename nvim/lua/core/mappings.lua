@@ -21,9 +21,6 @@ map("n", "<S-l>", '<cmd>lua MiniMove.move_line("right")<cr>', { desc = "Move - l
 -- Buffers
 map("n", "<leader>w", ":w<CR>")
 
--- Neo-tree
-map("n", "<leader>e", ":Neotree left toggle reveal<CR>")
-
 -- Navigation
 map("n", "<c-k>", ":wincmd k<CR>")
 map("n", "<c-j>", ":wincmd j<CR>")
@@ -67,6 +64,12 @@ map("v", "<S-h>", '<cmd>lua MiniMove.move_selection("left")<cr>', { desc = "Move
 map("v", "<S-l>", '<cmd>lua MiniMove.move_selection("right")<cr>', { desc = "Move - selection right" })
 
 -- PLUGINS --
+
+-- DBEE
+map("n", "<leader>db", ":Dbee open<CR>")
+
+-- Neo-tree
+map("n", "<leader>e", ":Neotree left toggle reveal<CR>")
 
 -- lsp
 map({ "n", "v" }, "<leader>la", "<cmd>Lspsaga code_action<CR>", { desc = "Lsp Code action" })
