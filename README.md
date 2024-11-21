@@ -29,7 +29,7 @@ Create a hard symlink:
 
 ```shell
  ln .zshrc ~/.zshrc
- ln .tmux ~/.tmuc.conf
+ ln .tmux ~/.tmux.conf
 ```
 
 ## Installing Tmux
