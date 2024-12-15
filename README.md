@@ -31,7 +31,7 @@ git remote add origin https://github.com/ZeiZel/dotfiles
 git pull origin master --allow-unrelated-histories
 ```
 
-Then delete trash-commit 
+Then delete trash-commit
 
 ### Setup zsh?
 
@@ -91,10 +91,17 @@ ln .tmux.conf ~/.tmux.conf
 
 ### Installing Tmux
 
+Installing TPM (package manager for tmux)
+
+```bash
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+```
+
 Enter the Tmux
 
 ```bash
 tmux
+tmux source ~/.tmux.conf
 ```
 
 Install plugins with `ctrl + a` (aka leader) + `shift + i`
