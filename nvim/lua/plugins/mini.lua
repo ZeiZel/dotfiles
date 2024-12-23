@@ -1,4 +1,8 @@
 return {
+	{ "echasnovski/mini.nvim", version = false },
+
+	{ "echasnovski/mini.icons", version = false },
+
 	{
 		"echasnovski/mini.surround",
 		version = "*",

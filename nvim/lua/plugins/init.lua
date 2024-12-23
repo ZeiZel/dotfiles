@@ -1,4 +1,5 @@
 return {
+	{ "folke/neoconf.nvim" },
 	"christoomey/vim-tmux-navigator", -- tmux & split window navigation
 	"majutsushi/tagbar",
 	"nvim-lua/plenary.nvim", -- lua functions that many plugins use
@@ -20,21 +21,11 @@ return {
 		},
 	},
 	{
-		"OXY2DEV/foldtext.nvim",
-		lazy = false,
-	},
-	{
 		"JoosepAlviste/nvim-ts-context-commentstring",
 		lazy = true,
 		opts = {
 			enable_autocmd = false,
 		},
-	},
-	{
-		"jay-babu/project.nvim",
-		main = "project_nvim",
-		event = "VeryLazy",
-		opts = { ignore_lsp = { "lua_ls" } },
 	},
 	{
 		"nvimdev/lspsaga.nvim",

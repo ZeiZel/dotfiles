@@ -34,23 +34,6 @@ map("n", "\\", ":split<CR>")
 -- Tabs
 map("n", "<Tab>", ":BufferLineCycleNext<CR>")
 map("n", "<s-Tab>", ":BufferLineCyclePrev<CR>")
-map("n", "<leader>x", ":BufferLinePickClose<CR>")
-map("n", "<c-x>", ":BufferLineCloseOthers<CR>")
-map("n", "<c-c>", ":bp | bd #<CR>")
-
--- Terminal
-map("n", "<leader>t", ":ToggleTerm<CR>")
-vim.api.nvim_create_autocmd("TermEnter", {
-	callback = function()
-		-- If the terminal window is lazygit, we do not make changes to avoid clashes
-		if string.find(vim.api.nvim_buf_get_name(0), "lazygit") then
-			return
-		end
-		map("t", "<ESC>", function()
-			vim.cmd("stopinsert")
-		end, { buffer = true })
-	end,
-})
 
 -- VISUAL --
 
