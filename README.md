@@ -20,7 +20,7 @@ That might works fine in MacOS too
 
 ### Clone repo
 
-Clonning into `,config` with existing files
+Clonning into `.config` with existing files
 
 ```bash
 cd ~/.config
@@ -84,7 +84,6 @@ brew bundle
 Create a hard symlink:
 
 ```shell
-cp -r .oh-my-zsh/ ~/.oh-my-zsh
 ln .zshrc ~/.zshrc
 ln .tmux.conf ~/.tmux.conf
 ```
@@ -109,3 +108,7 @@ Install plugins with `ctrl + a` (aka leader) + `shift + i`
 ### For working nvim
 
 Run `:MasonInstall` and `:Lazy install` (all packages is ensured)
+
+### Hyprland?
+
+IDK how to install hyprland and just use prepared script of [JaKooLit](https://github.com/JaKooLit/Hyprland-Dots) for any distro (Fedora, Arch and etc).
