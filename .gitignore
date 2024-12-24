@@ -3,11 +3,19 @@
 ## what i need to save
 !.gitignore
 
+!install.sh
+
+!LICENSE
+
 !README.md
 !Brewfile
 
 !nv/
 !nv/**/*
+
+!chezmoi.json.tmpl
+!chezmoi/
+!chezmoi/**/*
 
 !nvim/
 !nvim/**/*
