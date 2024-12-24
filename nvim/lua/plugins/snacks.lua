@@ -68,14 +68,14 @@ local snackKeyMaps = {
 	{
 		"<leader>bx",
 		function()
-			Snacks.bufdelete()
+			Snacks.bufdelete.other()
 		end,
 		desc = "Delete Buffer except thisd",
 	},
 	{
 		"<leader>ba",
 		function()
-			Snacks.bufdelete()
+			Snacks.bufdelete.all()
 		end,
 		desc = "Delete All Buffer",
 	},
