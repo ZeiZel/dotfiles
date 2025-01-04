@@ -36,8 +36,6 @@ plugins=(
 	history
 )
 
-pokemon-colorscripts --no-title -s -r
-
 # ALIASES
 
 alias ls="eza -a --tree --level=1 --icons=always"

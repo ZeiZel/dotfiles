@@ -1,0 +1,4 @@
+:root {
+  --accent-color: var(--accent-bg-color);
+  --accent-bg-color: var(--accent-maia);
+}
