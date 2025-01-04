@@ -1,6 +1,5 @@
 tap "homebrew/bundle"
 tap "jesseduffield/lazygit"
-brew "bash"
 brew "bc"
 brew "coreutils"
 brew "eza"
