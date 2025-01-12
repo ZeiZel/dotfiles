@@ -213,6 +213,12 @@ if command -v zsh >/dev/null; then
 	else
     	echo "Directory zsh-syntax-highlighting already exists. Skipping cloning." 2>&1 | tee -a "$LOG"
 	fi
+
+	if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/fzf-zsh-plugin" ]; then
+    	git clone --depth 1 https://github.com/unixorn/fzf-zsh-plugin.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/fzf-zsh-plugin || true
+	else
+    	echo "Directory zsh-syntax-highlighting already exists. Skipping cloning." 2>&1 | tee -a "$LOG"
+	fi
 	
 	# Check if ~/.zshrc and .zprofile exists, create a backup, and copy the new configuration
 	if [ -f "$HOME/.zshrc" ]; then

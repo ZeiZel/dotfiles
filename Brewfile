@@ -1,5 +1,7 @@
 tap "homebrew/bundle"
+tap "hashicorp/tap"
 tap "jesseduffield/lazygit"
+brew "hashicorp/tap/vagrant"
 brew "bc"
 brew "coreutils"
 brew "eza"
