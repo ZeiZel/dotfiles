@@ -20,7 +20,6 @@ ZSH_THEME="xiong-chiamiov-plus"
 # UPDATE SOURCES
 
 source $ZSH/oh-my-zsh.sh
-source <(fzf --zsh)
 
 # PLUGINS
 
@@ -88,3 +87,5 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" 
 [ -s "/home/zeizel/.bun/_bun" ] && source "/home/zeizel/.bun/_bun"
 if [ "$TMUX" = "" ]; then tmux; fi 
+
+source <(fzf --zsh)

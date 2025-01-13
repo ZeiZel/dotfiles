@@ -12,7 +12,7 @@
 - [ ] Ubuntu
 - [ ] Debian
 - [ ] Deepin
-- [ ] Manjaro
+- [x] Manjaro
 - [ ] NixOS
 - [ ] OpenSUSE
 - [x] Fedora
