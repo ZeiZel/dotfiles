@@ -21,4 +21,26 @@
       </monitor>
     </logicalmonitor>
   </configuration>
+  <configuration>
+    <layoutmode>logical</layoutmode>
+    <logicalmonitor>
+      <x>0</x>
+      <y>0</y>
+      <scale>1</scale>
+      <primary>yes</primary>
+      <monitor>
+        <monitorspec>
+          <connector>DP-1</connector>
+          <vendor>XMI</vendor>
+          <product>Redmi 30 HFCW</product>
+          <serial>3393300063649</serial>
+        </monitorspec>
+        <mode>
+          <width>2560</width>
+          <height>1080</height>
+          <rate>200.000</rate>
+        </mode>
+      </monitor>
+    </logicalmonitor>
+  </configuration>
 </monitors>
