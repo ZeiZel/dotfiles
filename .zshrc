@@ -66,11 +66,12 @@ function htt() {
 }
 
 # Neovim config aliases for multilaunching
-# alias nvc="NVIM_APPNAME=nvchad nvim"
-alias nv="nvim"
+alias nvc="NVIM_APPNAME=nvchad nvim"
+alias nv="NVIM_APPNAME=nv nvim"
+alias lvim="NVIM_APPNAME=nviml nvim"
 
 function nvims() {
-  items=("default" "nv") 
+  items=("default" "nv" "nvc" "nviml") 
   config=$(printf "%s\n" "${items[@]}" | fzf --prompt=" Neovim Config  " --height=~50% --layout=reverse --border --exit-0)
   if [[ -z $config ]]; then
     echo "Nothing selected"

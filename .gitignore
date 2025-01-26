@@ -13,12 +13,18 @@
 !nv/
 !nv/**/*
 
-!chezmoi.json.tmpl
-!chezmoi/
-!chezmoi/**/*
+!nvchad/
+!nvchad/**/*
 
 !nvim/
 !nvim/**/*
+
+!nviml/
+!nviml/**/*
+
+!chezmoi.json.tmpl
+!chezmoi/
+!chezmoi/**/*
 
 !lazygit/
 !lazygit/**/*
