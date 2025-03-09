@@ -12,6 +12,7 @@ return {
 		"cuducos/yaml.nvim",
 		ft = { "yaml" },
 	},
+	-- breadcrumbs
 	{
 		{
 			"Bekaboo/dropbar.nvim",
@@ -27,12 +28,16 @@ return {
 			enable_autocmd = false,
 		},
 	},
-	{
+	--[[ {
 		"nvimdev/lspsaga.nvim",
 		config = function()
-			require("lspsaga").setup({})
+			require("lspsaga").setup({
+				symbol_in_winbar = {
+					enable = true,
+				},
+			})
 		end,
-	},
+	}, ]]
 	{
 		"ggandor/leap.nvim",
 		lazy = false,
