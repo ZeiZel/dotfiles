@@ -1,8 +1,0 @@
-2025/05/24-19:42:58.905 ea5 Creating DB /home/zeizel/.config/obsidian/IndexedDB/app_obsidian.md_0.indexeddb.leveldb since it was missing.
-2025/05/24-19:42:59.066 ea5 Reusing MANIFEST /home/zeizel/.config/obsidian/IndexedDB/app_obsidian.md_0.indexeddb.leveldb/MANIFEST-000001
-2025/05/24-19:42:59.554 ea5 Level-0 table #5: started
-2025/05/24-19:42:59.726 ea5 Level-0 table #5: 961996 bytes OK
-2025/05/24-19:42:59.732 ea5 Delete type=0 #3
-2025/05/24-19:43:42.986 ea5 Level-0 table #7: started
-2025/05/24-19:43:43.007 ea5 Level-0 table #7: 1216979 bytes OK
-2025/05/24-19:43:43.012 ea5 Delete type=0 #4
