@@ -46,3 +46,6 @@
 
 !.zshrc
 !.tmux.conf
+
+!scripts/
+!scripts/**/*
