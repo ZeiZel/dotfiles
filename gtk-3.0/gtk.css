@@ -1,0 +1,11 @@
+@define-color accent_blue #3584e4;
+@define-color accent_teal #2190a4;
+@define-color accent_green #3a944a;
+@define-color accent_yellow #c88800;
+@define-color accent_orange #ed5b00;
+@define-color accent_red #e62d42;
+@define-color accent_pink #d56199;
+@define-color accent_purple #9141ac;
+@define-color accent_slate #6f8396;
+@define-color accent_maia #16a085;
+@define-color accent_bg_color @accent_maia;
