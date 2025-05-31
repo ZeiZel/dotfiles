@@ -22,6 +22,9 @@
 !nviml/
 !nviml/**/*
 
+!wsl/
+!wsl/**/*
+
 !chezmoi.json.tmpl
 !chezmoi/
 !chezmoi/**/*
