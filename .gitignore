@@ -10,6 +10,21 @@
 !README.md
 !Brewfile
 
+!aerospace/
+!aerospace/**/*
+
+!starship/
+!starship/**/*
+
+!wezterm/
+!wezterm/**/*
+
+!zshrc/
+!zshrc/**/*
+
+!tmux/
+!tmux/**/*
+
 !nv/
 !nv/**/*
 

@@ -20,6 +20,7 @@ ZSH_THEME="spaceship"
 
 # UPDATE SOURCES
 
+source $(brew --prefix)/opt/spaceship/spaceship.zsh
 source $ZSH/oh-my-zsh.sh
 
 # PLUGINS
