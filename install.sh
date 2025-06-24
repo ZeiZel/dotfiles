@@ -55,13 +55,24 @@ chsh -s "$(which zsh)"
 # Install Oh My Zsh, plugins, and set zsh as default shell
 if command -v zsh >/dev/null; then
 	printf "${NOTE} Installing Oh My Zsh and plugins...\n"
-	sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended || true
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
    	git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions || true
    	git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting || true
    	git clone --depth 1 https://github.com/unixorn/fzf-zsh-plugin.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/fzf-zsh-plugin || true
+	git clone https://github.com/spaceship-prompt/spaceship-prompt.git "$ZSH_CUSTOM/themes/spaceship-prompt" --depth=1
    	cp -b "$HOME/.zshrc" "$HOME/.zshrc-backup" || true
    	cp -b "$HOME/.zprofile" "$HOME/.zprofile-backup" || true
 fi
+
+# copy configs
+cd ~/ && rm -rf .tmux.conf .zshrc && cd ~/.config && ln .tmux.conf ~/.tmux.conf && ln zshrc/.zshrc ~/.zshrc
+
+defaults write -g InitialKeyRepeat -float 10.0 # normal minimum is 15 (225 ms)
+defaults write -g KeyRepeat -float 1.0 # normal minimum is 2 (30 ms)
+defaults write com.apple.finder CreateDesktop false
+
+# installing nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 
 # Configure TMUX (tmux installed in previous steps, at next we need to: enter `tmux`, run `source ~/.tmux.conf` and `prefix+I` to install deps)
 if [ ! -d ~/.tmux ]; then
