@@ -13,6 +13,9 @@
 !aerospace/
 !aerospace/**/*
 
+!nushell/
+!nushell/**/*
+
 !starship/
 !starship/**/*
 

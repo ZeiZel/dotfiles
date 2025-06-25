@@ -86,7 +86,6 @@ function nvims() {
 
 # START SCRIPTS
 
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" 
 [ -s "/home/zeizel/.bun/_bun" ] && source "/home/zeizel/.bun/_bun"
 if [ "$TMUX" = "" ]; then tmux; fi 
