@@ -26,20 +26,14 @@ sudo tee -a "/etc/zshenv" >/dev/null << EOF
 eval "\$(/opt/homebrew/bin/brew shellenv)"
 EOF
 
-brew install git
+brew install git stow
+
+stow .
 
 # CLONNING CONFIGS 
-if [ ! -d ~/.config ]; then
-    mkdir ~/.config
-fi
-cd ~/.config || exit 1
-git init
-git add .
-git commit -m "initial commit"
-git remote add origin https://github.com/ZeiZel/dotfiles
-git pull origin master --allow-unrelated-histories
+git clone https://github.com/ZeiZel/dotfiles .dotfiles
 
-cd ./config && brew bundle && cd ..
+cd ./.dotfiles && brew bundle && cd ..
 
 # PYTHON (configure after installing by brew bundle)
 pyenv install 3.7.5
