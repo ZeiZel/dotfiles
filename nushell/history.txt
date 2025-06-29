@@ -1,0 +1,6 @@
+nvim
+npm
+npm i -g bun
+bun
+brew install orbstack
+brew install --cask flameshot
