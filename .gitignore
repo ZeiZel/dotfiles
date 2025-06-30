@@ -4,6 +4,12 @@
 !.gitignore
 
 !install.sh
+!symlinks.sh
+
+!.stowrc
+
+!autin/
+!autin/**/*
 
 !LICENSE
 
