@@ -1,5 +1,6 @@
 tap "jesseduffield/lazygit"
 tap "homebrew/cask-fonts"
+brew "atuin"
 brew "kubectl"
 brew "minikube"
 brew "qemu"
