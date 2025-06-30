@@ -92,3 +92,4 @@ function nvims() {
 if [ "$TMUX" = "" ]; then tmux; fi 
 
 source <(fzf --zsh)
+eval "$(atuin init zsh)"

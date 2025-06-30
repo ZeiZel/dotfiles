@@ -59,7 +59,7 @@ if command -v zsh >/dev/null; then
 fi
 
 # copy configs
-cd ~/ && rm -rf .tmux.conf .zshrc && cd ~/.config && ln .tmux.conf ~/.tmux.conf && ln zshrc/.zshrc ~/.zshrc
+./symlinks.sh
 
 defaults write -g InitialKeyRepeat -float 10.0 # normal minimum is 15 (225 ms)
 defaults write -g KeyRepeat -float 1.0 # normal minimum is 2 (30 ms)
