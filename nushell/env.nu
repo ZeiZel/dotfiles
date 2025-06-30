@@ -99,7 +99,7 @@ use std "path add"
 # $env.PATH = ($env.PATH | uniq)
 path add /opt/homebrew/bin
 path add /run/current-system/sw/bin
-path add /Users/omerxx/.local/bin
+path add /Users/zeizel/.local/bin
 
 # To load from a custom file you can use:
 # source ($nu.default-config-dir | path join 'custom.nu')
@@ -108,8 +108,45 @@ mkdir ~/.cache/starship
 starship init nu | save -f ~/.cache/starship/init.nu
 zoxide init nushell | save -f ~/.zoxide.nu
 
-$env.STARSHIP_CONFIG = /Users/omerxx/.config/starship/starship.toml
-$env.NIX_CONF_DIR = /Users/omerxx/.config/nix
+$env.STARSHIP_CONFIG = /Users/zeizel/.config/starship/starship.toml
+$env.NIX_CONF_DIR = /Users/zeizel/.config/nix
 $env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense' # optional
 mkdir ~/.cache/carapace
 carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
+
+# --- ENV VARIABLES ---
+let-env PATH = [
+    "/usr/local/opt/openjdk/bin"
+    "/bin"
+    "/usr/bin"
+    "/usr/local/bin"
+    "/sbin"
+    ($env.PATH | split row (char esep))  # Keep existing PATH entries
+]
+
+let-env BUN_INSTALL = ($env.HOME | path join ".bun")
+let-env PATH = ($env.PATH | prepend ($env.BUN_INSTALL | path join "bin"))
+
+# pnpm
+let-env PNPM_HOME = ($env.HOME | path join ".local/share/pnpm")
+let-env PATH = ($env.PATH | prepend $env.PNPM_HOME)
+
+# NVM (runtime loading not supported yet in nu)
+let-env NVM_DIR = ($env.HOME | path join ".nvm")
+
+# spaceship-prompt and oh-my-zsh can't be ported, but PATH logic left here
+let-env ZSH = ($env.HOME | path join ".oh-my-zsh")
+
+# --- HISTORY SETTINGS ---
+let-env NU_HISTORY_FILE = ($env.HOME | path join ".nu-history.txt")
+let-env NU_HISTORY_SIZE = 10000
+
+# --- AUTO SOURCING (optional tools) ---
+if ("/home/zeizel/.bun/_bun" | path exists) {
+    source /home/zeizel/.bun/_bun
+}
+
+# Start tmux if not already inside
+if ($env.TMUX? == null) and (which tmux | is-empty | not) {
+    tmux
+}
