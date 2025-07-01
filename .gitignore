@@ -33,6 +33,7 @@
 
 !tmux/
 !tmux/**/*
+tmux/plugins/
 
 !nv/
 !nv/**/*
@@ -45,6 +46,9 @@
 
 !nviml/
 !nviml/**/*
+
+!ghostty/
+!ghostty/**/*
 
 !wsl/
 !wsl/**/*
