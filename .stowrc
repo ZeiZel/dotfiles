@@ -1,4 +1,3 @@
---target="~/Library/Application Support"
 --target=~/.config
 --ignore=.stowrc
 --ignore=DS_Store
