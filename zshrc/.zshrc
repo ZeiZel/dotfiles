@@ -93,3 +93,4 @@ if [ "$TMUX" = "" ]; then tmux; fi
 
 source <(fzf --zsh)
 eval "$(atuin init zsh)"
+eval "$(starship init zsh)"
