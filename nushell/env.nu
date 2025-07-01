@@ -1,17 +1,24 @@
-
 # Nushell Environment Config File
 #
 # version = "0.95.0"
 
 def create_left_prompt [] {
-    let dir = match (do --ignore-shell-errors { $env.PWD | path relative-to $nu.home-path }) {
-        null => $env.PWD
-        '' => '~'
-        $relative_pwd => ([~ $relative_pwd] | path join)
+    let dir = try {
+        $env.PWD | path relative-to $nu.home-path
+    } catch {
+        $env.PWD
     }
 
-    let path_color = (if (is-admin) { ansi red_bold } else { ansi green_bold })
-    let separator_color = (if (is-admin) { ansi light_red_bold } else { ansi light_green_bold })
+    let dir = if $dir == "" {
+        "~"
+    } else if $dir == null {
+        $env.PWD
+    } else {
+        [~ $dir] | path join
+    }
+
+    let path_color = if (is-admin) { ansi red_bold } else { ansi green_bold }
+    let separator_color = if (is-admin) { ansi light_red_bold } else { ansi light_green_bold }
     let path_segment = $"($path_color)($dir)"
 
     $path_segment | str replace --all (char path_sep) $"($separator_color)(char path_sep)($path_color)"
@@ -108,45 +115,8 @@ mkdir ~/.cache/starship
 starship init nu | save -f ~/.cache/starship/init.nu
 zoxide init nushell | save -f ~/.zoxide.nu
 
-$env.STARSHIP_CONFIG = /Users/zeizel/.config/starship/starship.toml
-$env.NIX_CONF_DIR = /Users/zeizel/.config/nix
+$env.STARSHIP_CONFIG = "/Users/zeizel/.config/starship/starship.toml"
+$env.NIX_CONF_DIR = "/Users/zeizel/.config/nix"
 $env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense' # optional
 mkdir ~/.cache/carapace
 carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
-
-# --- ENV VARIABLES ---
-let-env PATH = [
-    "/usr/local/opt/openjdk/bin"
-    "/bin"
-    "/usr/bin"
-    "/usr/local/bin"
-    "/sbin"
-    ($env.PATH | split row (char esep))  # Keep existing PATH entries
-]
-
-let-env BUN_INSTALL = ($env.HOME | path join ".bun")
-let-env PATH = ($env.PATH | prepend ($env.BUN_INSTALL | path join "bin"))
-
-# pnpm
-let-env PNPM_HOME = ($env.HOME | path join ".local/share/pnpm")
-let-env PATH = ($env.PATH | prepend $env.PNPM_HOME)
-
-# NVM (runtime loading not supported yet in nu)
-let-env NVM_DIR = ($env.HOME | path join ".nvm")
-
-# spaceship-prompt and oh-my-zsh can't be ported, but PATH logic left here
-let-env ZSH = ($env.HOME | path join ".oh-my-zsh")
-
-# --- HISTORY SETTINGS ---
-let-env NU_HISTORY_FILE = ($env.HOME | path join ".nu-history.txt")
-let-env NU_HISTORY_SIZE = 10000
-
-# --- AUTO SOURCING (optional tools) ---
-if ("/home/zeizel/.bun/_bun" | path exists) {
-    source /home/zeizel/.bun/_bun
-}
-
-# Start tmux if not already inside
-if ($env.TMUX? == null) and (which tmux | is-empty | not) {
-    tmux
-}

@@ -27,15 +27,15 @@ source $ZSH/oh-my-zsh.sh
 # PLUGINS
 
 plugins=(
-git
-z
-dnf
-docker
-fzf
-fzf-zsh-plugin
-zsh-autosuggestions
-zsh-syntax-highlighting
-history
+	git
+	z
+	dnf
+	docker
+	fzf
+	fzf-zsh-plugin
+	zsh-autosuggestions
+	zsh-syntax-highlighting
+	history
 )
 
 # ALIASES
@@ -93,4 +93,4 @@ if [ "$TMUX" = "" ]; then tmux; fi
 
 source <(fzf --zsh)
 eval "$(atuin init zsh)"
-eval "$(starship init zsh)"
+eval "$(atuin init zsh)"

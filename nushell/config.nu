@@ -891,14 +891,10 @@ $env.config = {
     ]
 }
 
-# --- ALIASES ---
-alias ls = eza -a --tree --level=1 --icons=always
-alias ll = eza -al --icons
-alias lt = eza -a --tree --level=1 --icons
-
-alias nvc = NVIM_APPNAME=nvchad nvim
-alias nv = NVIM_APPNAME=nv nvim
-alias lvim = NVIM_APPNAME=nviml nvim
+def --env cx [arg] {
+    cd $arg
+    ls -l
+}
 
 alias l = ls --all
 alias c = clear
@@ -907,6 +903,10 @@ alias lt = eza --tree --level=2 --long --icons --git
 alias v = nvim
 alias hms = /nix/store/6kc5srg83nkyg21am089xx7pvq44kn2c-home-manager/bin/home-manager switch
 alias as = aerospace
+
+def ff [] {
+    aerospace list-windows --all | fzf --bind 'enter:execute(bash -c "aerospace focus --window-id {1}")+abort'
+}
 
 # Git
 alias gc = git commit -m
@@ -939,61 +939,5 @@ alias kns = kubens
 alias kl = kubectl logs -f
 alias ke = kubectl exec -it
 
-# --- FUNCTIONS ---
-
-def --env cx [arg] {
-    cd $arg
-    ls -l
-}
-
-def ff [] {
-    aerospace list-windows --all | fzf --bind 'enter:execute(bash -c "aerospace focus --window-id {1}")+abort'
-}
-
-# yazi wrapper
-def yy [...args] {
-    let tmp = (mktemp -t "yazi-cwd.XXXXXX")
-    yazi ...$args --cwd-file=$tmp
-    let cwd = (open $tmp | str trim)
-    if ($cwd != "" and $cwd != $env.PWD) {
-        cd $cwd
-    }
-    rm -f $tmp
-}
-
-# wrapper for httpyac
-def htt [file: string] {
-    httpyac $file --json -a
-    | from json
-    | get requests.0.response.body
-    | from json
-    | to json
-    | bat --language=json
-}
-
-# NVIM config switcher
-def nvims [] {
-    let items = ["default", "nv", "nvc", "nviml"]
-    let config = (
-        $items
-        | to nuon
-        | fzf --prompt=" Neovim Config  " --height=~50% --layout=reverse --border --exit-0
-    )
-    if ($config == null or $config == "") {
-        print "Nothing selected"
-        return
-    }
-    if $config == "default" {
-        nvim
-    } else {
-        NVIM_APPNAME=$config nvim
-    }
-}
-
-# SOURCES
-
 source ~/.config/nushell/env.nu
-source ~/.zoxide.nu
-source ~/.cache/carapace/init.nu
-source ~/.local/share/atuin/init.nu
 use ~/.cache/starship/init.nu
