@@ -1,4 +1,6 @@
-require "nvchad.mappings"
+-- Keymaps are automatically loaded on the VeryLazy event
+-- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
+-- Add any additional keymaps here
 
 local map = vim.keymap.set
 
@@ -52,9 +54,6 @@ map("v", "<S-l>", '<cmd>lua MiniMove.move_selection("right")<cr>', { desc = "Mov
 
 -- DBEE
 map("n", "<leader>db", ":Dbee open<CR>")
-
--- Neo-tree
--- map("n", "<leader>e", ":Neotree left toggle reveal<CR>")
 
 -- lsp
 map({ "n", "v" }, "<leader>la", "<cmd>Lspsaga code_action<CR>", { desc = "Lsp Code action" })

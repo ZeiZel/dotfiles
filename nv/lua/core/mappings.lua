@@ -51,9 +51,6 @@ map("v", "<S-l>", '<cmd>lua MiniMove.move_selection("right")<cr>', { desc = "Mov
 -- DBEE
 map("n", "<leader>db", ":Dbee open<CR>")
 
--- Neo-tree
-map("n", "<leader>e", ":Neotree left toggle reveal<CR>")
-
 -- lsp
 map({ "n", "v" }, "<leader>la", "<cmd>Lspsaga code_action<CR>", { desc = "Lsp Code action" })
 map({ "n", "v" }, "<leader>lh", "<cmd>Lspsaga hover_doc<CR>", { desc = "Lsp Documentation" })
