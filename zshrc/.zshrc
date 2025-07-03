@@ -21,6 +21,8 @@ ZSH_THEME="spaceship"
 
 # run scripts
 
+source <(fzf --zsh)
+source <(kubectl completion zsh)
 source $(brew --prefix)/opt/spaceship/spaceship.zsh
 source $ZSH/oh-my-zsh.sh
 source $HOME/.config/antigen.zsh
@@ -78,9 +80,11 @@ plugins=(
 
 # ALIASES
 
+# Eza
+alias l="eza -l --icons --git -a"
+alias lt="eza --tree --level=2 --long --icons --git"
 alias ls="eza -a --tree --level=1 --icons=always"
 alias ll='eza -al --icons'
-alias lt='eza -a --tree --level=1 --icons'
 
 alias lg='lazygit'
 alias bt='btop'
@@ -90,6 +94,57 @@ alias post='posting'
 alias hq='harlequin'
 alias tr='trip' # https://github.com/fujiapple852/trippy
 alias ya='yazi'
+
+# Git
+alias gc="git commit -m"
+alias gca="git commit -a -m"
+alias gp="git push origin HEAD"
+alias gpu="git pull origin"
+alias gst="git status"
+alias glog="git log --graph --topo-order --pretty='%w(100,0,6)%C(yellow)%h%C(bold)%C(black)%d %C(cyan)%ar %C(green)%an%n%C(bold)%C(white)%s %N' --abbrev-commit"
+alias gdiff="git diff"
+alias gco="git checkout"
+alias gb='git branch'
+alias gba='git branch -a'
+alias gadd='git add'
+alias ga='git add -p'
+alias gcoall='git checkout -- .'
+alias gr='git remote'
+alias gre='git reset'
+
+# Docker
+alias dco="docker compose"
+alias dps="docker ps"
+alias dpa="docker ps -a"
+alias dl="docker ps -l -q"
+alias dx="docker exec -it"
+alias dka="docker kill $(docker ps -a -q)"
+
+# K8S
+export KUBECONFIG=~/.kube/config
+alias k="kubectl"
+alias ka="kubectl apply -f"
+alias kg="kubectl get"
+alias kd="kubectl describe"
+alias kdel="kubectl delete"
+alias kl="kubectl logs"
+alias kgpo="kubectl get pod"
+alias kgd="kubectl get deployments"
+alias kc="kubectx"
+alias kns="kubens"
+alias kl="kubectl logs -f"
+alias ke="kubectl exec -it"
+alias kcns='kubectl config set-context --current --namespace'
+alias podname=''
+
+# Dirs
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias .....="cd ../../../.."
+alias ......="cd ../../../../.."
+
+bindkey jj vi-cmd-mode
 
 # SETTINGS
 
@@ -136,8 +191,7 @@ function nvims() {
 [ -s "/home/zeizel/.bun/_bun" ] && source "/home/zeizel/.bun/_bun"
 if [ "$TMUX" = "" ]; then tmux; fi 
 
-source <(fzf --zsh)
-eval "$(atuin init zsh)"
+eval "$(zoxide init zsh)"
 eval "$(atuin init zsh)"
 
 . "$HOME/.local/bin/env"
