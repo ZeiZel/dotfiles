@@ -44,6 +44,15 @@ alias ls="eza -a --tree --level=1 --icons=always"
 alias ll='eza -al --icons'
 alias lt='eza -a --tree --level=1 --icons'
 
+alias lg='lazygit'
+alias bt='btop'
+alias ld='lazydocker'
+alias div='dive'
+alias post='posting'
+alias hq='harlequin'
+alias tr='trip' # https://github.com/fujiapple852/trippy
+alias ya='yazi'
+
 # SETTINGS
 
 HISTFILE=~/.zsh_history
@@ -69,12 +78,10 @@ function htt() {
 }
 
 # Neovim config aliases for multilaunching
-alias nvc="NVIM_APPNAME=nvchad nvim"
 alias nv="NVIM_APPNAME=nv nvim"
-alias lvim="NVIM_APPNAME=nviml nvim"
 
 function nvims() {
-	items=("default" "nv" "nvc" "nviml")
+	items=("default" "nv" )
 	config=$(printf "%s\n" "${items[@]}" | fzf --prompt=" Neovim Config  " --height=~50% --layout=reverse --border --exit-0)
 	if [[ -z $config ]]; then
 		echo "Nothing selected"
@@ -94,3 +101,5 @@ if [ "$TMUX" = "" ]; then tmux; fi
 source <(fzf --zsh)
 eval "$(atuin init zsh)"
 eval "$(atuin init zsh)"
+
+. "$HOME/.local/bin/env"
