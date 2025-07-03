@@ -19,12 +19,50 @@ export NVM_DIR="$HOME/.nvm"
 
 ZSH_THEME="spaceship"
 
-# UPDATE SOURCES
+# run scripts
 
 source $(brew --prefix)/opt/spaceship/spaceship.zsh
 source $ZSH/oh-my-zsh.sh
+source $HOME/.config/antigen.zsh
 
 # PLUGINS
+
+antigen use oh-my-zsh
+
+antigen bundle agkozak/zsh-z
+antigen bundle zsh-users/zsh-autosuggestions
+antigen bundle zsh-users/zsh-syntax-highlighting
+antigen bundle unixorn/fzf-zsh-plugin
+antigen bundle atuinsh/atuin@main
+
+antigen bundle git
+antigen bundle vscode
+antigen bundle vi-mode
+antigen bundle nvim
+antigen bundle nvm
+antigen bundle oc
+antigen bundle ansible
+antigen bundle vagrant
+antigen bundle vagrant-prompt
+antigen bundle docker
+antigen bundle docker-compose
+antigen bundle virtualenv
+antigen bundle web-search
+antigen bundle extract
+antigen bundle z
+antigen bundle npm
+antigen bundle kubectl
+antigen bundle kubectx
+antigen bundle minikube
+antigen bundle terraform
+antigen bundle colored-man-pages
+antigen bundle junegunn/fzf
+antigen bundle unixorn/fzf-zsh-plugin
+antigen bundle ohmyzsh/ohmyzsh path:plugins/thefuck
+
+antigen theme spaceship-prompt/spaceship-prompt spaceship
+
+antigen apply
 
 plugins=(
 	git
