@@ -2,8 +2,8 @@
 
 # CHECKING ROOT
 if [[ $EUID -eq 0 ]]; then
-    echo "Please run this script not from superuser-do"
-    exit 1
+	echo "Please run this script not from superuser-do"
+	exit 1
 fi
 
 # LOGO
@@ -22,7 +22,7 @@ sudo xcode-select --install
 
 # INSTALLING BREW
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-sudo tee -a "/etc/zshenv" >/dev/null << EOF
+sudo tee -a "/etc/zshenv" >/dev/null <<EOF
 eval "\$(/opt/homebrew/bin/brew shellenv)"
 EOF
 
@@ -30,16 +30,15 @@ brew install git stow
 
 stow .
 
-# CLONNING CONFIGS 
+# CLONNING CONFIGS
 git clone https://github.com/ZeiZel/dotfiles .dotfiles
 
 cd ./.dotfiles && brew bundle && cd ..
 
-# PYTHON (configure after installing by brew bundle)
-pyenv install 3.7.5
-pyenv global system
-# GitHub - ranger/ranger: A VIM-inspired filemanager for the console https://github.com/ranger/ranger
-pip3 install ranger-fm
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+uv tool install --python 3.12 posting
+uv pip install --system ranger-fm
 ranger --copy-config=rifle
 
 # Check and install ZSH
@@ -50,19 +49,19 @@ chsh -s "$(which zsh)"
 if command -v zsh >/dev/null; then
 	printf "${NOTE} Installing Oh My Zsh and plugins...\n"
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-   	git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions || true
-   	git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting || true
-   	git clone --depth 1 https://github.com/unixorn/fzf-zsh-plugin.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/fzf-zsh-plugin || true
+	git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions || true
+	git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting || true
+	git clone --depth 1 https://github.com/unixorn/fzf-zsh-plugin.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/fzf-zsh-plugin || true
 	git clone https://github.com/spaceship-prompt/spaceship-prompt.git "$ZSH_CUSTOM/themes/spaceship-prompt" --depth=1
-   	cp -b "$HOME/.zshrc" "$HOME/.zshrc-backup" || true
-   	cp -b "$HOME/.zprofile" "$HOME/.zprofile-backup" || true
+	cp -b "$HOME/.zshrc" "$HOME/.zshrc-backup" || true
+	cp -b "$HOME/.zprofile" "$HOME/.zprofile-backup" || true
 fi
 
 # copy configs
 ./symlinks.sh
 
 defaults write -g InitialKeyRepeat -float 10.0 # normal minimum is 15 (225 ms)
-defaults write -g KeyRepeat -float 1.0 # normal minimum is 2 (30 ms)
+defaults write -g KeyRepeat -float 1.0         # normal minimum is 2 (30 ms)
 defaults write com.apple.finder CreateDesktop false
 
 # installing nvm
@@ -70,7 +69,7 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 
 # Configure TMUX (tmux installed in previous steps, at next we need to: enter `tmux`, run `source ~/.tmux.conf` and `prefix+I` to install deps)
 if [ ! -d ~/.tmux ]; then
-    mkdir -p ~/.tmux
+	mkdir -p ~/.tmux
 fi
 cd ~/.tmux || exit 1
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
