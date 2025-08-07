@@ -195,3 +195,15 @@ eval "$(zoxide init zsh)"
 eval "$(atuin init zsh)"
 
 . "$HOME/.local/bin/env"
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/zeizel/.docker/completions $fpath)
+autoload -Uz compinit
+compinit
+# End of Docker CLI completions
+
+
+. "$HOME/.atuin/bin/env"
+
+
+# Load Angular CLI autocompletion.
+source <(ng completion script)
