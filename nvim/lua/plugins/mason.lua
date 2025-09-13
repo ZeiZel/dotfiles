@@ -2,7 +2,27 @@ return {
 	{
 		"mason-org/mason.nvim",
 		opts = {
-			ensure_installed = {},
+			ensure_installed = {
+				-- formattier
+				"prettier",
+				"hadolint",
+
+				-- devops
+				"ansible-lint",
+				"cmakelang",
+				"cmakelint",
+				"tflint",
+
+				-- files
+				"markdownlint-cli2",
+				"markdown-toc",
+
+				-- go
+				"goimports",
+				"gofumpt",
+				"gomodifytags",
+				"impl",
+			},
 		},
 	},
 	{
