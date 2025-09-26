@@ -25,7 +25,7 @@ source <(fzf --zsh)
 source <(kubectl completion zsh)
 source $(brew --prefix)/opt/spaceship/spaceship.zsh
 source $ZSH/oh-my-zsh.sh
-source $HOME/.config/antigen.zsh
+source $HOME/antigen/antigen.zsh
 
 # PLUGINS
 
