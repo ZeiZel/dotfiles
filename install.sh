@@ -30,6 +30,8 @@ brew install git stow
 
 stow .
 
+# save antigen locally
+git clone https://github.com/zsh-users/antigen.git ~/antigen
 # CLONNING CONFIGS
 git clone https://github.com/ZeiZel/dotfiles .dotfiles
 
