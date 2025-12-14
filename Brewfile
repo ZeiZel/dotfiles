@@ -1,5 +1,5 @@
 tap "jesseduffield/lazygit"
-brew "harlequin"
+# brew "harlequin"
 brew "lazydocker"
 brew "btop"
 brew "jesseduffield/lazygit/lazygit"

@@ -1,0 +1,13 @@
+# ============================================
+# LOCAL CONFIGURATION
+# Machine-specific settings not tracked by git
+# ============================================
+
+# Example: Different paths for work machine
+export WORK_PROJECT_DIR="/Users/projects"
+
+# Example: Work-specific aliases
+alias vpn-connect="sudo openconnect vpn.company.com"
+
+# Example: Override some settings
+SPACESHIP_TIME_SHOW=false
