@@ -1,9 +1,29 @@
+# IDE
 .idea
 .vscode
 
+# macOS
+.DS_Store
+
+# Logs
 *.log
+
+# Local overrides
 *.local
 
+# Environment files
 *.env*
-
 !**/.env.example
+
+# Ansible
+*.retry
+/tmp/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
