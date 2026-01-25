@@ -1,0 +1,30 @@
+---
+# Linux specific variables
+
+homebrew_prefix: /home/linuxbrew/.linuxbrew
+homebrew_bin: "{{ homebrew_prefix }}/bin"
+
+# Keyboard settings
+linux_key_repeat_delay: 200
+linux_key_repeat_rate: 50
+
+# System packages to install before Homebrew
+linux_system_packages_debian:
+  - build-essential
+  - curl
+  - file
+  - git
+  - procps
+  - zsh
+  - stow
+  - unzip
+
+linux_system_packages_redhat:
+  - "@Development Tools"
+  - curl
+  - file
+  - git
+  - procps-ng
+  - zsh
+  - stow
+  - unzip

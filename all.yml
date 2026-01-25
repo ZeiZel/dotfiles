@@ -1,0 +1,24 @@
+---
+- name: Install dotfiles
+  hosts: local
+  gather_facts: true
+
+  pre_tasks:
+    - name: Load Darwin variables
+      ansible.builtin.include_vars:
+        file: group_vars/darwin.yml
+      when: ansible_facts['os_family'] == "Darwin"
+      tags: always
+
+    - name: Load Linux variables
+      ansible.builtin.include_vars:
+        file: group_vars/linux.yml
+      when: ansible_facts['os_family'] != "Darwin"
+      tags: always
+
+  roles:
+    - role: configs
+      tags: configs
+
+    - role: settings
+      tags: settings

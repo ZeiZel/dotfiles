@@ -1,9 +1,16 @@
 #!/bin/bash
 
+# ============================================
+# Dotfiles Bootstrap Script
+# Only installs Ansible, then runs playbook
+# ============================================
+
+set -e
+
 # CHECKING ROOT
 if [[ $EUID -eq 0 ]]; then
-	echo "Please run this script not from superuser-do"
-	exit 1
+    echo "Please run this script not from superuser-do"
+    exit 1
 fi
 
 # LOGO
@@ -15,74 +22,107 @@ echo " / /|  __/ |/ /|  __/ |"
 echo "/____\___|_/____\___|_|"
 printf "\n%.0s" {1..2}
 
-# =========================
-# XCode command line tools
-# =========================
-sudo xcode-select --install
+# Detect OS
+detect_os() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "darwin"
+    elif [[ -f /etc/os-release ]]; then
+        . /etc/os-release
+        case "$ID" in
+            ubuntu|debian|linuxmint|pop)
+                echo "debian"
+                ;;
+            fedora|rhel|centos|rocky|alma)
+                echo "redhat"
+                ;;
+            arch|manjaro|endeavouros)
+                echo "arch"
+                ;;
+            *)
+                case "$ID_LIKE" in
+                    *debian*|*ubuntu*)
+                        echo "debian"
+                        ;;
+                    *rhel*|*fedora*)
+                        echo "redhat"
+                        ;;
+                    *arch*)
+                        echo "arch"
+                        ;;
+                    *)
+                        echo "unknown"
+                        ;;
+                esac
+                ;;
+        esac
+    else
+        echo "unknown"
+    fi
+}
 
-# INSTALLING BREW
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-sudo tee -a "/etc/zshenv" >/dev/null <<EOF
-eval "\$(/opt/homebrew/bin/brew shellenv)"
-EOF
+OS_TYPE=$(detect_os)
+echo "Detected OS family: $OS_TYPE"
 
-brew install git stow
+# Install Ansible based on OS
+install_ansible() {
+    case "$OS_TYPE" in
+        darwin)
+            echo "Installing Ansible via Homebrew..."
+            if ! command -v brew &> /dev/null; then
+                echo "Installing Homebrew first..."
+                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-stow .
+                if [[ -f /opt/homebrew/bin/brew ]]; then
+                    eval "$(/opt/homebrew/bin/brew shellenv)"
+                elif [[ -f /usr/local/bin/brew ]]; then
+                    eval "$(/usr/local/bin/brew shellenv)"
+                fi
+            fi
+            brew install ansible
+            ;;
+        debian)
+            echo "Installing Ansible via apt..."
+            sudo apt-get update
+            sudo apt-get install -y software-properties-common
+            sudo apt-add-repository --yes --update ppa:ansible/ansible 2>/dev/null || true
+            sudo apt-get install -y ansible
+            ;;
+        redhat)
+            echo "Installing Ansible via dnf..."
+            sudo dnf install -y epel-release 2>/dev/null || true
+            sudo dnf install -y ansible
+            ;;
+        arch)
+            echo "Installing Ansible via pacman..."
+            sudo pacman -Sy --noconfirm ansible
+            ;;
+        *)
+            echo "Unsupported OS. Please install Ansible manually."
+            exit 1
+            ;;
+    esac
+}
 
-# CLONNING CONFIGS
-git clone https://github.com/ZeiZel/dotfiles .dotfiles
-
-cd ./.dotfiles && brew bundle && cd ..
-
-curl -LsSf https://astral.sh/uv/install.sh | sh
-source $HOME/.local/bin/env
-uv tool install --python 3.12 posting
-uv pip install --system ranger-fm
-ranger --copy-config=rifle
-
-# Check and install ZSH
-echo "$(which zsh)" | sudo tee -a /etc/shells
-chsh -s "$(which zsh)"
-
-# Install Oh My Zsh, plugins, and set zsh as default shell
-if command -v zsh >/dev/null; then
-	printf "${NOTE} Installing Oh My Zsh and plugins...\n"
-	# sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-	curl -L git.io/antigen >~/.dotfiles/antigen.zsh
-	cp -b "$HOME/.zshrc" "$HOME/.zshrc-backup" || true
-	cp -b "$HOME/.zprofile" "$HOME/.zprofile-backup" || true
+# Check if Ansible is already installed
+if ! command -v ansible &> /dev/null; then
+    install_ansible
+else
+    echo "Ansible is already installed: $(ansible --version | head -1)"
 fi
 
-# copy configs
-./symlinks.sh
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-defaults write -g InitialKeyRepeat -float 10.0 # normal minimum is 15 (225 ms)
-defaults write -g KeyRepeat -float 1.0 # normal minimum is 2 (30 ms)
-defaults write com.apple.finder CreateDesktop false
+# Run Ansible playbook
+echo ""
+echo "Running Ansible playbook..."
+echo ""
 
-# installing nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+cd "$SCRIPT_DIR"
 
-# Configure TMUX (tmux installed in previous steps, at next we need to: enter `tmux`, run `source ~/.tmux.conf` and `prefix+I` to install deps)
-if [ ! -d ~/.tmux ]; then
-	mkdir -p ~/.tmux
-fi
-cd ~/.tmux || exit 1
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-tmux start-server
-tmux new-session -d -s tpm_install_session
-tmux send-keys -t tpm_install_session 'source ~/.tmux.conf' C-m
-tmux send-keys -t tpm_install_session 'prefix + I' C-m
-tmux wait-for -S prefix + I
-tmux kill-session -t tpm_install_session
-tmux kill-server
+# Run with ask-become-pass for sudo operations
+ansible-playbook -i inventory/hosts.ini all.yml --ask-become-pass "$@"
 
-# sharkdp/vivid: A themeable LS_COLORS generator with a rich filetype datebase https://github.com/sharkdp/vivid
-# brew formula contains outdated version, installing it manually from GH releases
-wget --quiet https://github.com/sharkdp/vivid/releases/download/v0.9.0/vivid-v0.9.0-x86_64-apple-darwin.tar.gz -O /tmp/vivid.tar.gz
-tar xzf /tmp/vivid.tar.gz -C /tmp
-cp /tmp/vivid-v0.9.0-x86_64-apple-darwin/vivid /usr/local/bin/
-rm -rf /tmp/vivid /tmp/vivid.tar.gz
-
-echo "Install ended!"
+echo ""
+echo "Installation complete!"
+echo "Please restart your terminal or run: source ~/.zshrc"

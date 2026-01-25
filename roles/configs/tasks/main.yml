@@ -1,0 +1,125 @@
+---
+# Role: configs
+# Installs Homebrew, packages via brew bundle, and creates symlinks via stow
+
+# Homebrew Installation
+
+- name: Check if Homebrew is installed (macOS ARM)
+  ansible.builtin.stat:
+    path: /opt/homebrew/bin/brew
+  register: homebrew_arm
+  when: ansible_facts['os_family'] == "Darwin"
+
+- name: Check if Homebrew is installed (macOS Intel)
+  ansible.builtin.stat:
+    path: /usr/local/bin/brew
+  register: homebrew_intel
+  when: ansible_facts['os_family'] == "Darwin"
+
+- name: Check if Homebrew is installed (Linux)
+  ansible.builtin.stat:
+    path: /home/linuxbrew/.linuxbrew/bin/brew
+  register: homebrew_linux
+  when: ansible_facts['os_family'] != "Darwin"
+
+- name: Install system dependencies (Debian/Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name: "{{ linux_system_packages_debian }}"
+    state: present
+    update_cache: true
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Install system dependencies (RedHat/Fedora)
+  become: true
+  ansible.builtin.dnf:
+    name: "{{ linux_system_packages_redhat }}"
+    state: present
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: Install Homebrew (macOS)
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    executable: /bin/bash
+  changed_when: true
+  when:
+    - ansible_facts['os_family'] == "Darwin"
+    - not (homebrew_arm.stat.exists | default(false))
+    - not (homebrew_intel.stat.exists | default(false))
+
+- name: Install Homebrew (Linux)
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    executable: /bin/bash
+  changed_when: true
+  when:
+    - ansible_facts['os_family'] != "Darwin"
+    - not (homebrew_linux.stat.exists | default(false))
+
+# Install packages via brew bundle
+
+- name: Run brew bundle
+  ansible.builtin.command:
+    cmd: "brew bundle --file={{ brewfile_path }}"
+  environment:
+    PATH: "{{ homebrew_bin }}:{{ ansible_env.PATH }}"
+  register: brew_bundle_result
+  changed_when: "'Installing' in brew_bundle_result.stdout"
+
+# Ensure stow is installed
+
+- name: Install stow via Homebrew
+  community.general.homebrew:
+    name: stow
+    state: present
+  environment:
+    PATH: "{{ homebrew_bin }}:{{ ansible_env.PATH }}"
+
+# Create symlinks via stow
+
+- name: Ensure ~/.config directory exists
+  ansible.builtin.file:
+    path: "{{ config_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Run stow to create symlinks
+  ansible.builtin.command:
+    cmd: "stow --target={{ config_dir }} --dir={{ configs_path }} --restow ."
+    chdir: "{{ configs_path }}"
+  register: stow_result
+  changed_when: false
+
+# Additional symlinks (home directory)
+
+- name: Create .zshrc symlink in home
+  ansible.builtin.file:
+    src: "{{ config_dir }}/zsh/.zshrc"
+    dest: "{{ dotfiles_home }}/.zshrc"
+    state: link
+    force: true
+
+- name: Create .tmux.conf symlink in home
+  ansible.builtin.file:
+    src: "{{ config_dir }}/tmux/tmux.conf"
+    dest: "{{ dotfiles_home }}/.tmux.conf"
+    state: link
+    force: true
+
+- name: Create .gitconfig symlink in home
+  ansible.builtin.file:
+    src: "{{ config_dir }}/git/.gitconfig"
+    dest: "{{ dotfiles_home }}/.gitconfig"
+    state: link
+    force: true
+
+- name: Create .gitignore_global symlink in home
+  ansible.builtin.file:
+    src: "{{ config_dir }}/git/.gitignore_global"
+    dest: "{{ dotfiles_home }}/.gitignore_global"
+    state: link
+    force: true

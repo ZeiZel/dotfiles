@@ -1,0 +1,13 @@
+---
+# Common variables for all systems
+
+dotfiles_user: "{{ ansible_user_id }}"
+dotfiles_home: "{{ ansible_env.HOME }}"
+dotfiles_dir: "{{ playbook_dir }}"
+config_dir: "{{ dotfiles_home }}/.config"
+
+# Path to Brewfile
+brewfile_path: "{{ dotfiles_dir }}/Brewfile"
+
+# Path to configs for stow
+configs_path: "{{ dotfiles_dir }}/roles/configs/files"
