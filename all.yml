@@ -16,9 +16,302 @@
       when: ansible_facts['os_family'] != "Darwin"
       tags: always
 
-  roles:
-    - role: configs
-      tags: configs
+  tasks:
+    - name: configs
+      block:
+        - name: Check if Homebrew is installed (macOS ARM)
+          ansible.builtin.stat:
+            path: /opt/homebrew/bin/brew
+          register: homebrew_arm
+          when: ansible_facts['os_family'] == "Darwin"
 
-    - role: settings
-      tags: settings
+        - name: Check if Homebrew is installed (macOS Intel)
+          ansible.builtin.stat:
+            path: /usr/local/bin/brew
+          register: homebrew_intel
+          when: ansible_facts['os_family'] == "Darwin"
+
+        - name: Check if Homebrew is installed (Linux)
+          ansible.builtin.stat:
+            path: /home/linuxbrew/.linuxbrew/bin/brew
+          register: homebrew_linux
+          when: ansible_facts['os_family'] != "Darwin"
+
+        - name: Install system dependencies (Debian/Ubuntu)
+          become: true
+          ansible.builtin.apt:
+            name: "{{ linux_system_packages_debian }}"
+            state: present
+            update_cache: true
+          when: ansible_facts['os_family'] == "Debian"
+
+        - name: Install system dependencies (RedHat/Fedora)
+          become: true
+          ansible.builtin.dnf:
+            name: "{{ linux_system_packages_redhat }}"
+            state: present
+          when: ansible_facts['os_family'] == "RedHat"
+
+        - name: Install Homebrew (macOS)
+          ansible.builtin.shell:
+            cmd: |
+              set -o pipefail
+              NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            executable: /bin/bash
+          changed_when: true
+          when:
+            - ansible_facts['os_family'] == "Darwin"
+            - not (homebrew_arm.stat.exists | default(false))
+            - not (homebrew_intel.stat.exists | default(false))
+
+        - name: Install Homebrew (Linux)
+          ansible.builtin.shell:
+            cmd: |
+              set -o pipefail
+              NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            executable: /bin/bash
+          changed_when: true
+          when:
+            - ansible_facts['os_family'] != "Darwin"
+            - not (homebrew_linux.stat.exists | default(false))
+
+        # Install packages via brew bundle
+
+        - name: Run brew bundle
+          ansible.builtin.command:
+            cmd: "brew bundle --file={{ brewfile_path }}"
+          environment:
+            PATH: "{{ homebrew_bin }}:{{ ansible_env.PATH }}"
+          register: brew_bundle_result
+          changed_when: "'Installing' in brew_bundle_result.stdout"
+
+        # Ensure stow is installed
+
+        - name: Install stow via Homebrew
+          community.general.homebrew:
+            name: stow
+            state: present
+          environment:
+            PATH: "{{ homebrew_bin }}:{{ ansible_env.PATH }}"
+
+        # Create symlinks via stow
+
+        - name: Ensure ~/.config directory exists
+          ansible.builtin.file:
+            path: "{{ config_dir }}"
+            state: directory
+            mode: "0755"
+
+        - name: Run stow to create symlinks
+          ansible.builtin.command:
+            cmd: "stow --target={{ config_dir }} --dir={{ configs_path }} --restow ."
+            chdir: "{{ configs_path }}"
+          register: stow_result
+          changed_when: false
+
+        # Additional symlinks (home directory)
+
+        - name: Create .zshrc symlink in home
+          ansible.builtin.file:
+            src: "{{ config_dir }}/zsh/.zshrc"
+            dest: "{{ dotfiles_home }}/.zshrc"
+            state: link
+            force: true
+
+        - name: Create .tmux.conf symlink in home
+          ansible.builtin.file:
+            src: "{{ config_dir }}/tmux/tmux.conf"
+            dest: "{{ dotfiles_home }}/.tmux.conf"
+            state: link
+            force: true
+
+        - name: Create .gitconfig symlink in home
+          ansible.builtin.file:
+            src: "{{ config_dir }}/git/.gitconfig"
+            dest: "{{ dotfiles_home }}/.gitconfig"
+            state: link
+            force: true
+
+        - name: Create .gitignore_global symlink in home
+          ansible.builtin.file:
+            src: "{{ config_dir }}/git/.gitignore_global"
+            dest: "{{ dotfiles_home }}/.gitignore_global"
+            state: link
+            force: true
+    - name: settings
+      block:
+        - name: Configure macOS settings
+          when: ansible_facts['os_family'] == "Darwin"
+          block:
+            - name: Set keyboard initial key repeat
+              community.general.osx_defaults:
+                domain: NSGlobalDomain
+                key: InitialKeyRepeat
+                type: float
+                value: "{{ macos_initial_key_repeat }}"
+
+            - name: Set keyboard key repeat rate
+              community.general.osx_defaults:
+                domain: NSGlobalDomain
+                key: KeyRepeat
+                type: float
+                value: "{{ macos_key_repeat }}"
+
+            - name: Disable desktop icons
+              community.general.osx_defaults:
+                domain: com.apple.finder
+                key: CreateDesktop
+                type: bool
+                value: false
+              when: macos_disable_desktop_icons
+
+            - name: Show hidden files in Finder
+              community.general.osx_defaults:
+                domain: com.apple.finder
+                key: AppleShowAllFiles
+                type: bool
+                value: true
+
+            - name: Show file extensions
+              community.general.osx_defaults:
+                domain: NSGlobalDomain
+                key: AppleShowAllExtensions
+                type: bool
+                value: true
+
+            - name: Auto-hide Dock
+              community.general.osx_defaults:
+                domain: com.apple.dock
+                key: autohide
+                type: bool
+                value: true
+
+            - name: Set Dock autohide delay to 0
+              community.general.osx_defaults:
+                domain: com.apple.dock
+                key: autohide-delay
+                type: float
+                value: 0
+
+            - name: Enable tap to click
+              community.general.osx_defaults:
+                domain: com.apple.driver.AppleBluetoothMultitouch.trackpad
+                key: Clicking
+                type: int
+                value: 1
+
+            - name: Add Homebrew to /etc/zshenv
+              become: true
+              ansible.builtin.lineinfile:
+                path: /etc/zshenv
+                line: 'eval "$(/opt/homebrew/bin/brew shellenv)"'
+                create: true
+                mode: "0644"
+
+        # Linux Settings
+
+        - name: Configure Linux settings
+          when: ansible_facts['os_family'] != "Darwin"
+          block:
+            - name: Add Homebrew to .bashrc
+              ansible.builtin.blockinfile:
+                path: "{{ dotfiles_home }}/.bashrc"
+                create: true
+                mode: "0644"
+                marker: "# {mark} ANSIBLE - Homebrew"
+                block: |
+                  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+            - name: Add Homebrew to .zprofile
+              ansible.builtin.blockinfile:
+                path: "{{ dotfiles_home }}/.zprofile"
+                create: true
+                mode: "0644"
+                marker: "# {mark} ANSIBLE - Homebrew"
+                block: |
+                  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+            - name: Create Xorg config directory
+              become: true
+              ansible.builtin.file:
+                path: /etc/X11/xorg.conf.d
+                state: directory
+                mode: "0755"
+              failed_when: false
+
+            - name: Create keyboard configuration for X11
+              become: true
+              ansible.builtin.copy:
+                dest: /etc/X11/xorg.conf.d/00-keyboard.conf
+                mode: "0644"
+                content: |
+                  Section "InputClass"
+                      Identifier "system-keyboard"
+                      MatchIsKeyboard "on"
+                      Option "AutoRepeat" "{{ linux_key_repeat_delay }} {{ linux_key_repeat_rate }}"
+                  EndSection
+              failed_when: false
+
+            - name: Check if gsettings is available
+              ansible.builtin.command:
+                cmd: which gsettings
+              register: gsettings_check
+              failed_when: false
+              changed_when: false
+
+            - name: Set keyboard repeat delay (GNOME)
+              ansible.builtin.command:
+                cmd: "gsettings set org.gnome.desktop.peripherals.keyboard delay {{ linux_key_repeat_delay }}"
+              when: gsettings_check.rc == 0
+              failed_when: false
+              changed_when: false
+
+            - name: Set keyboard repeat interval (GNOME)
+              ansible.builtin.command:
+                cmd: "gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval {{ (1000 / linux_key_repeat_rate) | int }}"
+              when: gsettings_check.rc == 0
+              failed_when: false
+              changed_when: false
+
+            - name: Check if kwriteconfig5 is available
+              ansible.builtin.command:
+                cmd: which kwriteconfig5
+              register: kwriteconfig_check
+              failed_when: false
+              changed_when: false
+
+            - name: Set keyboard repeat delay (KDE)
+              ansible.builtin.command:
+                cmd: "kwriteconfig5 --file kcminputrc --group Keyboard --key RepeatDelay {{ linux_key_repeat_delay }}"
+              when: kwriteconfig_check.rc == 0
+              failed_when: false
+              changed_when: false
+
+            - name: Set keyboard repeat rate (KDE)
+              ansible.builtin.command:
+                cmd: "kwriteconfig5 --file kcminputrc --group Keyboard --key RepeatRate {{ linux_key_repeat_rate }}"
+              when: kwriteconfig_check.rc == 0
+              failed_when: false
+              changed_when: false
+
+            - name: Get zsh path
+              ansible.builtin.command:
+                cmd: which zsh
+              register: zsh_path
+              changed_when: false
+              environment:
+                PATH: "{{ homebrew_bin }}:{{ ansible_env.PATH }}"
+
+            - name: Ensure zsh is in /etc/shells
+              become: true
+              ansible.builtin.lineinfile:
+                path: /etc/shells
+                line: "{{ zsh_path.stdout }}"
+                state: present
+
+            - name: Change default shell to zsh
+              become: true
+              ansible.builtin.user:
+                name: "{{ dotfiles_user }}"
+                shell: "{{ zsh_path.stdout }}"
+
