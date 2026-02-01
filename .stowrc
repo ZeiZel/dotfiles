@@ -14,3 +14,4 @@
 --ignore=ansible\.cfg
 --ignore=all\.yml
 --ignore=requirements\.yml
+--ignore=tasks
