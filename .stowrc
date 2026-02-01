@@ -2,3 +2,15 @@
 --ignore=\.DS_Store
 --ignore=\.git
 --ignore=\.gitignore
+--ignore=\.stowrc
+--ignore=group_vars
+--ignore=inventory
+--ignore=\.idea
+--ignore=\.ansible
+--ignore=Brewfile
+--ignore=README\.md
+--ignore=LICENSE
+--ignore=install\.sh
+--ignore=ansible\.cfg
+--ignore=all\.yml
+--ignore=requirements\.yml

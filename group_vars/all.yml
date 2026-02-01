@@ -10,4 +10,4 @@ config_dir: "{{ dotfiles_home }}/.config"
 brewfile_path: "{{ dotfiles_dir }}/Brewfile"
 
 # Path to configs for stow
-configs_path: "{{ dotfiles_dir }}/roles/configs/files"
+configs_path: "{{ dotfiles_dir }}"
