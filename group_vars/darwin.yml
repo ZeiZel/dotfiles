@@ -1,7 +1,7 @@
 ---
 # macOS specific variables
 
-homebrew_prefix: "{{ '/opt/homebrew' if ansible_architecture == 'arm64' else '/usr/local' }}"
+homebrew_prefix: "{{ '/opt/homebrew' if ansible_facts['architecture'] == 'arm64' else '/usr/local' }}"
 homebrew_bin: "{{ homebrew_prefix }}/bin"
 
 # Keyboard settings

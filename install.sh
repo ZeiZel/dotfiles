@@ -182,7 +182,7 @@ echo ""
 cd "$SCRIPT_DIR"
 
 # Run with ask-become-pass for sudo operations
-ansible-playbook -i inventory/hosts.ini all.yml --ask-become-pass "$@"
+ansible-playbook -i inventory/hosts.ini all.yml -K "$@"
 
 echo ""
 echo "Installation complete!"
