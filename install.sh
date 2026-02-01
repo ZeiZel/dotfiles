@@ -63,6 +63,57 @@ detect_os() {
 OS_TYPE=$(detect_os)
 echo "Detected OS family: $OS_TYPE"
 
+# Repository configuration
+REPO_URL="https://github.com/ZeiZel/dotfiles.git"
+DOTFILES_DIR="${HOME}/.dotfiles"
+
+# Clone repository if not already present
+if [ ! -f "all.yml" ]; then
+    echo "Cloning dotfiles repository..."
+
+    # Check if git is installed
+    if ! command -v git &> /dev/null; then
+        echo "Installing git first..."
+        case "$OS_TYPE" in
+            darwin)
+                if ! command -v brew &> /dev/null; then
+                    echo "Installing Homebrew first..."
+                    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+                    if [[ -f /opt/homebrew/bin/brew ]]; then
+                        eval "$(/opt/homebrew/bin/brew shellenv)"
+                    elif [[ -f /usr/local/bin/brew ]]; then
+                        eval "$(/usr/local/bin/brew shellenv)"
+                    fi
+                fi
+                brew install git
+                ;;
+            debian)
+                sudo apt-get update
+                sudo apt-get install -y git
+                ;;
+            redhat)
+                sudo dnf install -y git
+                ;;
+            arch)
+                sudo pacman -Sy --noconfirm git
+                ;;
+        esac
+    fi
+
+    # Clone repository
+    if [ -d "$DOTFILES_DIR" ]; then
+        echo "Directory $DOTFILES_DIR already exists, using it..."
+        cd "$DOTFILES_DIR"
+        git pull origin master || true
+    else
+        git clone "$REPO_URL" "$DOTFILES_DIR"
+        cd "$DOTFILES_DIR"
+    fi
+else
+    echo "Running from existing dotfiles directory..."
+fi
+
 # Install Ansible based on OS
 install_ansible() {
     case "$OS_TYPE" in
@@ -110,8 +161,18 @@ else
     echo "Ansible is already installed: $(ansible --version | head -1)"
 fi
 
-# Get the directory where this script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the directory where playbook is located (either script dir or cloned repo)
+if [ -f "all.yml" ]; then
+    SCRIPT_DIR="$(pwd)"
+else
+    SCRIPT_DIR="$DOTFILES_DIR"
+fi
+
+# Install Ansible collections if requirements.yml exists
+if [ -f "$SCRIPT_DIR/requirements.yml" ]; then
+    echo "Installing Ansible collections..."
+    ansible-galaxy collection install -r "$SCRIPT_DIR/requirements.yml" 2>/dev/null || true
+fi
 
 # Run Ansible playbook
 echo ""
