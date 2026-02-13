@@ -152,7 +152,7 @@
   cmd = "kdiff3 \"$BASE\" \"$LOCAL\" \"$REMOTE\" -o \"$MERGED\""
 
 [user]
-  name = "Lvov Valery"
+	name = ZeiZel
   email = valera2003lvov@yandex.ru
 
 [github]
