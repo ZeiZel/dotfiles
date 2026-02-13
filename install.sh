@@ -174,6 +174,46 @@ if [ -f "$SCRIPT_DIR/requirements.yml" ]; then
     ansible-galaxy collection install -r "$SCRIPT_DIR/requirements.yml" 2>/dev/null || true
 fi
 
+# Setup temporary passwordless sudo for Linux
+SUDOERS_TEMP="/etc/sudoers.d/ansible-dotfiles-temp"
+
+setup_passwordless_sudo() {
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        echo ""
+        echo "Setting up temporary passwordless sudo for package installation..."
+        echo "This will be automatically removed after installation."
+
+        # Check if sudoers.d is included
+        if ! sudo grep -q "^#includedir /etc/sudoers.d" /etc/sudoers && ! sudo grep -q "^@includedir /etc/sudoers.d" /etc/sudoers; then
+            echo "WARNING: /etc/sudoers.d might not be included in /etc/sudoers"
+        fi
+
+        # Create simple NOPASSWD rule
+        echo "$USER ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee "$SUDOERS_TEMP" > /dev/null
+        sudo chmod 0440 "$SUDOERS_TEMP"
+
+        # Validate the sudoers file
+        if sudo visudo -c -f "$SUDOERS_TEMP" &>/dev/null; then
+            echo "Temporary sudo configuration created and validated."
+        else
+            echo "ERROR: Failed to create valid sudoers file"
+            sudo rm -f "$SUDOERS_TEMP"
+            exit 1
+        fi
+    fi
+}
+
+cleanup_passwordless_sudo() {
+    if [[ "$OSTYPE" != "darwin"* ]] && [[ -f "$SUDOERS_TEMP" ]]; then
+        echo ""
+        echo "Removing temporary sudo configuration..."
+        sudo rm -f "$SUDOERS_TEMP"
+    fi
+}
+
+# Trap to ensure cleanup happens even on error
+trap cleanup_passwordless_sudo EXIT
+
 # Run Ansible playbook
 echo ""
 echo "Running Ansible playbook..."
@@ -181,8 +221,29 @@ echo ""
 
 cd "$SCRIPT_DIR"
 
-# Run with ask-become-pass for sudo operations
-ansible-playbook -i inventory/hosts.ini all.yml -K "$@"
+# Setup passwordless sudo for Linux (macOS doesn't need this)
+setup_passwordless_sudo
+
+# Test passwordless sudo on Linux
+if [[ "$OSTYPE" != "darwin"* ]]; then
+    echo ""
+    echo "Testing passwordless sudo..."
+    if sudo -n true 2>/dev/null; then
+        echo "Passwordless sudo is working correctly."
+    else
+        echo "ERROR: Passwordless sudo is not working. Please check your configuration."
+        exit 1
+    fi
+fi
+
+# Run ansible playbook (no -K flag needed with passwordless sudo)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS: sudo works fine with -K
+    ansible-playbook -i inventory/hosts.ini all.yml -K "$@"
+else
+    # Linux: use passwordless sudo we just configured
+    ansible-playbook -i inventory/hosts.ini all.yml "$@"
+fi
 
 echo ""
 echo "Installation complete!"

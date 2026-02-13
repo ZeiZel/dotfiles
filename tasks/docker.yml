@@ -1,0 +1,95 @@
+---
+- name: Installing Docker
+  become: true
+  block:
+    - name: Add universe repo
+      ansible.builtin.apt_repository:
+        repo: "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} universe"
+        state: present
+
+    - name: Installing additional packages
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - python3-pip
+        update_cache: true
+        cache_valid_time: 86400
+
+    - name: Creating keyrings for APT
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Add Docker key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+        force: true
+
+    - name: Installing stable Docker
+      ansible.builtin.apt_repository:
+        repo: >
+          deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc]
+          https://download.docker.com/linux/ubuntu
+          {{ ansible_distribution_release }} stable
+        state: present
+        update_cache: true
+        filename: docker
+
+    - name: Installing Docker-ce and Docker Compose Plugin
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        update_cache: true
+        state: present
+
+    - name: Checking Docker started
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: true
+        daemon_reload: true
+
+- name: Setting additional packages python
+  become: true
+  block:
+    - name: Install pip packages for Ansible Docker modules
+      ansible.builtin.pip:
+        name:
+          - docker>=6.0.0
+          - requests>=2.20.0
+        state: present
+
+- name: Docker post-install
+  become: true
+  block:
+    - name: Adding user in Docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+    - name: Check needs in reboot
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required_file
+
+    - name: Reboot
+      ansible.builtin.reboot:
+        msg: "Reboot initiated by Ansible for Docker installation"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+        test_command: uptime
+      when: reboot_required_file.stat.exists | default(false)

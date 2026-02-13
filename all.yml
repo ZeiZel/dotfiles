@@ -91,3 +91,11 @@
             dest: "{{ dotfiles_home }}/.gitignore_global"
             state: link
             force: true
+
+        - name: Include Linux tasks
+          ansible.builtin.include_tasks:
+            file: tasks/node.yml
+
+        - name: docker install
+          ansible.builtin.include_tasks:
+            file: tasks/docker.yml

@@ -97,28 +97,34 @@ return {
 			---@type table<string, fun(server:string, opts:_.lspconfig.options):boolean?>
 			setup = {
 				yamlls = function()
-					LazyVim.lsp.on_attach(function(client, buffer)
-						if vim.bo[buffer].filetype == "helm" then
-							vim.schedule(function()
-								vim.cmd("LspStop ++force yamlls")
-							end)
-						end
-					end, "yamlls")
+					vim.api.nvim_create_autocmd("LspAttach", {
+						callback = function(ev)
+							local client = vim.lsp.get_client_by_id(ev.data.client_id)
+							if client and client.name == "yamlls" and vim.bo[ev.buf].filetype == "helm" then
+								vim.schedule(function()
+									vim.cmd("LspStop ++force yamlls")
+								end)
+							end
+						end,
+					})
 				end,
 				gopls = function(_, opts)
-					LazyVim.lsp.on_attach(function(client, _)
-						if not client.server_capabilities.semanticTokensProvider then
-							local semantic = client.config.capabilities.textDocument.semanticTokens
-							client.server_capabilities.semanticTokensProvider = {
-								full = true,
-								legend = {
-									tokenTypes = semantic.tokenTypes,
-									tokenModifiers = semantic.tokenModifiers,
-								},
-								range = true,
-							}
-						end
-					end, "gopls")
+					vim.api.nvim_create_autocmd("LspAttach", {
+						callback = function(ev)
+							local client = vim.lsp.get_client_by_id(ev.data.client_id)
+							if client and client.name == "gopls" and not client.server_capabilities.semanticTokensProvider then
+								local semantic = client.config.capabilities.textDocument.semanticTokens
+								client.server_capabilities.semanticTokensProvider = {
+									full = true,
+									legend = {
+										tokenTypes = semantic.tokenTypes,
+										tokenModifiers = semantic.tokenModifiers,
+									},
+									range = true,
+								}
+							end
+						end,
+					})
 				end,
 				eslint = function()
 					if not auto_format then

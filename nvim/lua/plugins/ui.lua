@@ -59,7 +59,9 @@ return {
 			{
 				"<leader>fp",
 				function()
-					require("telescope.builtin").find_files({ cwd = require("lazy.core.config").options.root })
+					require("telescope.builtin").find_files({
+						cwd = require("lazy.core.config").options.root,
+					})
 				end,
 				desc = "Find Plugin File",
 			},
@@ -77,20 +79,5 @@ return {
 	{
 		"nvim-lualine/lualine.nvim",
 		event = "VeryLazy",
-		opts = function(_, opts)
-			table.insert(opts.sections.lualine_x, {
-				function()
-					return "😄"
-				end,
-			})
-		end,
-	},
-
-	{
-		"nvim-lualine/lualine.nvim",
-		event = "VeryLazy",
-		opts = function()
-			return {}
-		end,
 	},
 }

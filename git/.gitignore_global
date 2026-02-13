@@ -25,5 +25,31 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# local environment variables
+# IDE
+.idea
+.vscode
+
+# Logs
+*.log
+
+# Local overrides
+*.local
+
+# Environment files
 .envrc
+*.env*
+!**/.env*.example
+
+# Ansible
+*.retry
+/tmp/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+**/node_modules
+
