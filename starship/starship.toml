@@ -1,42 +1,280 @@
-add_newline = false
-# A minimal left prompt
-format = """$directory$character"""
+# ============================================
+# STARSHIP - SPACESHIP-LIKE FULL FEATURED
+# ============================================
+
+"$schema" = 'https://starship.rs/config-schema.json'
 palette = "catppuccin_mocha"
-# move the rest of the prompt to the right
-right_format = """$all"""
+add_newline = true
 command_timeout = 1000
 
-[character]
-vicmd_symbol = "[N] >>>"
-success_symbol = '[➜](bold green)'
+# ============================================
+# PROMPT FORMAT (spaceship-like)
+# ============================================
+format = """
+$time\
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_commit\
+$git_state\
+$git_status\
+$docker_context\
+$kubernetes\
+$terraform\
+$aws\
+$nodejs\
+$python\
+$golang\
+$rust\
+$java\
+$lua\
+$php\
+$ruby\
+$package\
+$cmd_duration\
+$jobs\
+$line_break\
+$status\
+$character"""
 
-[directory.substitutions]
-'~/tests/starship-custom' = 'work-project'
+right_format = ""
 
-[git_branch]
-format =  '[$symbol$branch(:$remote_branch)]($style)'
-
-[aws]
-format = '[$symbol(profile: "$profile" )(\(region: $region\) )]($style)'
+# ============================================
+# TIME
+# ============================================
+[time]
 disabled = false
-style = 'bold blue'
-symbol = " "
+style = "fg:yellow"
+format = '[$time]($style) '
+time_format = "%H:%M:%S"
+
+# ============================================
+# USER & HOST
+# ============================================
+[username]
+show_always = true
+style_user = "fg:blue"
+style_root = "fg:red bold"
+format = '[$user]($style)'
+
+[hostname]
+ssh_only = false
+style = "fg:cyan"
+format = '[@$hostname]($style) '
+disabled = false
+
+# ============================================
+# DIRECTORY
+# ============================================
+[directory]
+style = "fg:yellow bold"
+format = '[$path]($style)[$read_only]($read_only_style) '
+truncation_length = 3
+truncation_symbol = ".../"
+read_only = " 󰌾"
+read_only_style = "fg:red"
+home_symbol = "~"
+
+# ============================================
+# GIT - FULL STATUS
+# ============================================
+[git_branch]
+symbol = " "
+style = "fg:mauve"
+format = '[$symbol$branch(:$remote_branch)]($style) '
+
+[git_commit]
+style = "fg:green"
+format = '[\($hash$tag\)]($style) '
+tag_symbol = "  "
+only_detached = true
+tag_disabled = false
+
+[git_state]
+style = "fg:yellow bold"
+format = '\([$state( $progress_current/$progress_total)]($style)\) '
+rebase = "REBASING"
+merge = "MERGING"
+revert = "REVERTING"
+cherry_pick = " PICKING"
+bisect = "BISECTING"
+am = "AM"
+am_or_rebase = "AM/REBASE"
+
+[git_status]
+style = "fg:red"
+format = '([$all_status$ahead_behind]($style) )'
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+conflicted = "=${count}"
+untracked = "?${count}"
+stashed = "*${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+# ============================================
+# DOCKER
+# ============================================
+[docker_context]
+symbol = " "
+style = "fg:blue"
+format = '[$symbol$context]($style) '
+only_with_files = true
+detect_files = ['docker-compose.yml', 'docker-compose.yaml', 'Dockerfile', '.docker']
+detect_folders = []
+disabled = false
+
+# ============================================
+# KUBERNETES
+# ============================================
+[kubernetes]
+symbol = "󱃾 "
+style = "fg:blue"
+format = '[$symbol$context( \($namespace\))]($style) '
+disabled = false
+detect_files = ['k8s', 'kubernetes', 'Dockerfile', 'docker-compose.yml']
+detect_folders = ['k8s', 'kubernetes', '.kube']
+detect_extensions = []
+
+[kubernetes.context_aliases]
+"dev.local.cluster.k8s" = "dev"
+".*prod.*" = "PROD"
+
+# ============================================
+# LANGUAGES & TOOLS
+# ============================================
+[nodejs]
+symbol = " "
+style = "fg:green"
+format = '[$symbol($version)]($style) '
+detect_files = ['package.json', '.node-version', '.nvmrc']
+detect_folders = ['node_modules']
+not_capable_style = "fg:red"
+disabled = false
+
+[python]
+symbol = " "
+style = "fg:yellow"
+format = '[${symbol}${pyenv_prefix}(${version})( \($virtualenv\))]($style) '
+detect_files = ['requirements.txt', 'pyproject.toml', 'Pipfile', '.python-version', 'setup.py']
+detect_folders = ['.venv', 'venv', '__pycache__']
+disabled = false
 
 [golang]
-format = '[ ](bold cyan)'
-
-[kubernetes]
-symbol = '☸ '
-disabled = false
-detect_files = ['Dockerfile']
-format = '[$symbol$context( \($namespace\))]($style) '
-contexts = [
-  # { context_pattern = "<beget>", style = "green", context_alias = "zeizel", symbol = " " },
-]
-
-[docker_context]
+symbol = " "
+style = "fg:teal"
+format = '[$symbol($version)]($style) '
+detect_files = ['go.mod', 'go.sum', 'go.work', '.go-version']
+detect_folders = []
 disabled = false
 
+[rust]
+symbol = " "
+style = "fg:peach"
+format = '[$symbol($version)]($style) '
+detect_files = ['Cargo.toml']
+disabled = false
+
+[java]
+symbol = " "
+style = "fg:red"
+format = '[$symbol($version)]($style) '
+detect_files = ['pom.xml', 'build.gradle', 'build.gradle.kts', '.java-version']
+disabled = false
+
+[lua]
+symbol = " "
+style = "fg:blue"
+format = '[$symbol($version)]($style) '
+detect_files = ['.lua-version', 'lua', '*.lua']
+disabled = false
+
+[php]
+symbol = " "
+style = "fg:lavender"
+format = '[$symbol($version)]($style) '
+detect_files = ['composer.json', '.php-version']
+disabled = false
+
+[ruby]
+symbol = " "
+style = "fg:red"
+format = '[$symbol($version)]($style) '
+detect_files = ['Gemfile', '.ruby-version']
+disabled = false
+
+[package]
+symbol = "󰏗 "
+style = "fg:peach"
+format = '[$symbol$version]($style) '
+disabled = false
+display_private = false
+
+# ============================================
+# TERRAFORM
+# ============================================
+[terraform]
+symbol = "󱁢 "
+style = "fg:lavender"
+format = '[$symbol$workspace]($style) '
+detect_files = ['*.tf', '*.tfplan', '*.tfstate']
+disabled = false
+
+# ============================================
+# AWS
+# ============================================
+[aws]
+symbol = " "
+style = "fg:yellow"
+format = '[$symbol($profile)(\[$region\])]($style) '
+disabled = false
+
+# ============================================
+# SYSTEM STATUS
+# ============================================
+[cmd_duration]
+style = "fg:overlay1"
+format = '[󱎫 $duration]($style) '
+min_time = 2000
+show_milliseconds = false
+
+[jobs]
+symbol = "󰒓 "
+style = "fg:blue"
+format = '[$symbol$number]($style) '
+number_threshold = 1
+symbol_threshold = 1
+
+[battery]
+disabled = true
+
+[status]
+disabled = false
+style = "fg:red"
+symbol = "✘ "
+success_symbol = ""
+format = '[$symbol$status]($style) '
+map_symbol = true
+pipestatus = true
+
+# ============================================
+# PROMPT CHARACTER
+# ============================================
+[character]
+success_symbol = "[❯](bold mauve)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold green)"
+vimcmd_replace_one_symbol = "[❮](bold yellow)"
+vimcmd_replace_symbol = "[❮](bold yellow)"
+vimcmd_visual_symbol = "[❮](bold blue)"
+
+# ============================================
+# CATPPUCCIN MOCHA PALETTE
+# ============================================
 [palettes.catppuccin_mocha]
 rosewater = "#f5e0dc"
 flamingo = "#f2cdcd"

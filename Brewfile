@@ -31,6 +31,20 @@ brew "tldr"
 brew "starship"
 
 # ============================================
+# MODERN CLI REPLACEMENTS
+# ============================================
+brew "dust"          # Better du - disk usage analyzer
+brew "duf"           # Better df - disk free
+brew "gping"         # Ping with graph
+brew "bottom"        # Better htop/top alternative
+brew "hyperfine"     # Benchmarking tool
+brew "sd"            # Better sed
+brew "choose"        # Better cut/awk for columns
+brew "tokei"         # Code statistics
+brew "glow"          # Markdown renderer in terminal
+brew "delta"         # Better git diff (git-delta)
+
+# ============================================
 # GNU TOOLS (macOS replacement)
 # ============================================
 brew "grep"
@@ -124,4 +138,11 @@ brew "sevenzip"
 # ============================================
 # CASKS (macOS GUI Applications)
 # ============================================
-cask "docker" if OS.mac?
+cask "docker-desktop" if OS.mac?
+
+# ============================================
+# FONTS
+# ============================================
+cask "font-jetbrains-mono-nerd-font" if OS.mac?
+cask "font-fira-code-nerd-font" if OS.mac?
+cask "font-hack-nerd-font" if OS.mac?

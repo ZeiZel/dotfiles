@@ -1,27 +1,194 @@
-# Autosuggestions
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#928374,bg=none"
-ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+# ============================================
+# ZSH THEME - CATPPUCCIN MOCHA
+# ============================================
 
-# Syntax highlighting
-typeset -A ZSH_HIGHLIGHT_STYLES
-ZSH_HIGHLIGHT_STYLES[default]='fg=#ebdbb2'
-ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#fb4934'
-ZSH_HIGHLIGHT_STYLES[reserved-word]='fg=#fb4934'
-ZSH_HIGHLIGHT_STYLES[alias]='fg=#b8bb26'
-ZSH_HIGHLIGHT_STYLES[builtin]='fg=#fabd2f'
-ZSH_HIGHLIGHT_STYLES[function]='fg=#b8bb26'
-ZSH_HIGHLIGHT_STYLES[command]='fg=#b8bb26'
-ZSH_HIGHLIGHT_STYLES[precommand]='fg=#8ec07c,italic'
-ZSH_HIGHLIGHT_STYLES[commandseparator]='fg=#fb4934'
-ZSH_HIGHLIGHT_STYLES[hashed-command]='fg=#8ec07c'
-ZSH_HIGHLIGHT_STYLES[path]='fg=#83a598,underline'
-ZSH_HIGHLIGHT_STYLES[globbing]='fg=#fabd2f'
-ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=#d3869b'
-ZSH_HIGHLIGHT_STYLES[single-hyphen-option]='fg=#fe8019'
-ZSH_HIGHLIGHT_STYLES[double-hyphen-option]='fg=#fe8019'
-ZSH_HIGHLIGHT_STYLES[back-quoted-argument]='fg=#d3869b'
-ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#b8bb26'
-ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#b8bb26'
-ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]='fg=#8ec07c'
-ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]='fg=#8ec07c'
+export LS_COLORS="\
+di=1;34:\
+ln=35:\
+so=32:\
+pi=33:\
+ex=1;32:\
+bd=34;46:\
+cd=34;43:\
+su=30;41:\
+sg=30;46:\
+tw=30;42:\
+ow=30;43:\
+*.tar=31:\
+*.tgz=31:\
+*.arc=31:\
+*.arj=31:\
+*.taz=31:\
+*.lha=31:\
+*.lz4=31:\
+*.lzh=31:\
+*.lzma=31:\
+*.tlz=31:\
+*.txz=31:\
+*.tzo=31:\
+*.t7z=31:\
+*.zip=31:\
+*.z=31:\
+*.dz=31:\
+*.gz=31:\
+*.lrz=31:\
+*.lz=31:\
+*.lzo=31:\
+*.xz=31:\
+*.zst=31:\
+*.tzst=31:\
+*.bz2=31:\
+*.bz=31:\
+*.tbz=31:\
+*.tbz2=31:\
+*.tz=31:\
+*.deb=31:\
+*.rpm=31:\
+*.jar=31:\
+*.war=31:\
+*.ear=31:\
+*.sar=31:\
+*.rar=31:\
+*.alz=31:\
+*.ace=31:\
+*.zoo=31:\
+*.cpio=31:\
+*.7z=31:\
+*.rz=31:\
+*.cab=31:\
+*.wim=31:\
+*.swm=31:\
+*.dwm=31:\
+*.esd=31:\
+*.jpg=35:\
+*.jpeg=35:\
+*.mjpg=35:\
+*.mjpeg=35:\
+*.gif=35:\
+*.bmp=35:\
+*.pbm=35:\
+*.pgm=35:\
+*.ppm=35:\
+*.tga=35:\
+*.xbm=35:\
+*.xpm=35:\
+*.tif=35:\
+*.tiff=35:\
+*.png=35:\
+*.svg=35:\
+*.svgz=35:\
+*.mng=35:\
+*.pcx=35:\
+*.mov=35:\
+*.mpg=35:\
+*.mpeg=35:\
+*.m2v=35:\
+*.mkv=35:\
+*.webm=35:\
+*.webp=35:\
+*.ogm=35:\
+*.mp4=35:\
+*.m4v=35:\
+*.mp4v=35:\
+*.vob=35:\
+*.qt=35:\
+*.nuv=35:\
+*.wmv=35:\
+*.asf=35:\
+*.rm=35:\
+*.rmvb=35:\
+*.flc=35:\
+*.avi=35:\
+*.fli=35:\
+*.flv=35:\
+*.gl=35:\
+*.dl=35:\
+*.xcf=35:\
+*.xwd=35:\
+*.yuv=35:\
+*.cgm=35:\
+*.emf=35:\
+*.ogv=35:\
+*.ogx=35:\
+*.aac=36:\
+*.au=36:\
+*.flac=36:\
+*.m4a=36:\
+*.mid=36:\
+*.midi=36:\
+*.mka=36:\
+*.mp3=36:\
+*.mpc=36:\
+*.ogg=36:\
+*.ra=36:\
+*.wav=36:\
+*.oga=36:\
+*.opus=36:\
+*.spx=36:\
+*.xspf=36:\
+*.md=33:\
+*.json=33:\
+*.yaml=33:\
+*.yml=33:\
+*.toml=33:\
+*.conf=33:\
+*.cfg=33:\
+*.ini=33:\
+*.js=33:\
+*.ts=33:\
+*.tsx=33:\
+*.jsx=33:\
+*.py=33:\
+*.go=33:\
+*.rs=33:\
+*.lua=33:\
+*.sh=32:\
+*.bash=32:\
+*.zsh=32:\
+*.fish=32:"
+
+# EZA colors - Catppuccin Mocha
+export EZA_COLORS="\
+uu=36:\
+gu=37:\
+sn=32:\
+sb=32:\
+da=34:\
+ur=34:\
+uw=35:\
+ux=36:\
+ue=36:\
+gr=34:\
+gw=35:\
+gx=36:\
+tr=34:\
+tw=35:\
+tx=36:\
+fi=0:\
+di=1;34:\
+ex=1;32:\
+ln=35:\
+or=31:\
+*.md=33:\
+*.json=33:\
+*.yaml=33:\
+*.yml=33:\
+*.toml=33"
+
+# BAT theme
+export BAT_THEME="Catppuccin Mocha"
+
+# Delta (git diff) theme
+export DELTA_FEATURES="+catppuccin-mocha"
+
+# Man pages colors - Catppuccin
+export LESS_TERMCAP_mb=$'\e[1;35m'      # begin bold - mauve
+export LESS_TERMCAP_md=$'\e[1;34m'      # begin blink - blue
+export LESS_TERMCAP_me=$'\e[0m'         # reset bold/blink
+export LESS_TERMCAP_so=$'\e[1;33m'      # begin reverse video - yellow
+export LESS_TERMCAP_se=$'\e[0m'         # reset reverse video
+export LESS_TERMCAP_us=$'\e[1;32m'      # begin underline - green
+export LESS_TERMCAP_ue=$'\e[0m'         # reset underline
+
+# GCC colors
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
