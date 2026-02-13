@@ -202,20 +202,69 @@ alias ~="cd ~"
 alias -- -="cd -"
 
 # ============================================
-# SYSTEM UTILITIES
+# SYSTEM UTILITIES - MODERN REPLACEMENTS
 # ============================================
-alias cat='bat --theme TwoDark'
+
+# bat - better cat with syntax highlighting
+alias cat='bat --theme="Catppuccin Mocha"'
+alias catn='bat --plain'  # No line numbers, no git
+
+# Better grep with colors
 alias grep='grep --color=auto'
-alias diff='diff --color=auto'
-alias ip='ip --color=auto'
-alias df='df -h'
-alias du='du -h'
-alias free='free -h'
-alias ports='netstat -tulanp'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+
+# diff with delta (git-delta)
+alias diff='delta'
+
+# ip with colors (Linux only)
+[[ "$OSTYPE" == "linux-gnu"* ]] && alias ip='ip --color=auto'
+
+# Modern disk utilities
+alias df='duf'                          # Better df
+alias du='dust'                         # Better du
+alias duh='dust -d 1'                   # Disk usage here (1 level)
+
+# Free memory (Linux only)
+[[ "$OSTYPE" == "linux-gnu"* ]] && alias free='free -h'
+
+# Process viewing
+alias ps='procs'                        # Better ps
+alias pst='procs --tree'                # Process tree
+alias psa='procs --sortd cpu'           # Sort by CPU
+
+# Network
+alias ports='netstat -tulanp 2>/dev/null || lsof -i -P -n | grep LISTEN'
+alias myip='curl -s ifconfig.me'
+alias localip="ipconfig getifaddr en0 2>/dev/null || ip route get 1 | awk '{print \$7}'"
+alias ping='gping'                      # Ping with graph
+
+# System info
 alias path='echo -e ${PATH//:/\\n}'
 alias now='date +"%Y-%m-%d %H:%M:%S"'
 alias week='date +%V'
-alias myip='curl -s ifconfig.me'
+alias weather='curl -s "wttr.in?format=3"'
+alias wttr='curl -s wttr.in'
+
+# File operations with preview
+alias preview='fzf --preview "bat --color=always --style=numbers --line-range=:500 {}"'
+
+# Quick file find
+alias ff='fd --type f'
+alias fdir='fd --type d'
+
+# JSON/YAML pretty print
+alias json='jq .'
+alias yaml='yq .'
+
+# Benchmarking
+alias bench='hyperfine'
+
+# Code stats
+alias loc='tokei'
+
+# Markdown preview
+alias mdp='glow'
 
 # ============================================
 # SAFETY NETS
