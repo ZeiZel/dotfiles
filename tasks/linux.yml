@@ -2,23 +2,20 @@
 - name: Install system dependencies (Debian/Ubuntu)
   become: true
   ansible.builtin.apt:
-    name: "{{ linux_system_packages_debian }}"
+    name: '{{ linux_system_packages_debian }}'
     state: present
     update_cache: true
   when: ansible_facts['os_family'] == "Debian"
-
 - name: Install system dependencies (RedHat/Fedora)
   become: true
   ansible.builtin.dnf:
-    name: "{{ linux_system_packages_redhat }}"
+    name: '{{ linux_system_packages_redhat }}'
     state: present
   when: ansible_facts['os_family'] == "RedHat"
-
 - name: Check if Homebrew is installed (Linux)
   ansible.builtin.stat:
     path: /home/linuxbrew/.linuxbrew/bin/brew
   register: homebrew_linux
-
 - name: Install Homebrew (Linux)
   ansible.builtin.shell:
     cmd: |
@@ -26,17 +23,14 @@
       NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     executable: /bin/bash
   changed_when: true
-  when:
-    - not (homebrew_linux.stat.exists | default(false))
-
+  when: [not (homebrew_linux.stat.exists | default(false))]
 - name: Add Homebrew to .bashrc
   ansible.builtin.blockinfile:
-    path: "{{ dotfiles_home }}/.bashrc"
+    path: '{{ dotfiles_home }}/.bashrc'
     create: true
-    mode: "0644"
-    marker: "# {mark} ANSIBLE - Homebrew"
+    mode: '0644'
+    marker: '# {mark} ANSIBLE - Homebrew'
     block: eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
 - name: Get zsh path
   ansible.builtin.command:
     cmd: which zsh
@@ -44,16 +38,14 @@
   changed_when: false
   environment:
     PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
-
 - name: Ensure zsh is in /etc/shells
   become: true
   ansible.builtin.lineinfile:
     path: /etc/shells
-    line: "{{ zsh_path.stdout }}"
+    line: '{{ zsh_path.stdout }}'
     state: present
-
 - name: Change default shell to zsh
   become: true
   ansible.builtin.user:
-    name: "{{ dotfiles_user }}"
-    shell: "{{ zsh_path.stdout }}"
+    name: '{{ dotfiles_user }}'
+    shell: '{{ zsh_path.stdout }}'

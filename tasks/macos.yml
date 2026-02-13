@@ -1,16 +1,12 @@
 ---
-# macOS-specific tasks
-
 - name: Check if Homebrew is installed (macOS ARM)
   ansible.builtin.stat:
     path: /opt/homebrew/bin/brew
   register: homebrew_arm
-
 - name: Check if Homebrew is installed (macOS Intel)
   ansible.builtin.stat:
     path: /usr/local/bin/brew
   register: homebrew_intel
-
 - name: Install Homebrew (macOS)
   ansible.builtin.shell:
     cmd: |
@@ -21,7 +17,6 @@
   when:
     - not (homebrew_arm.stat.exists | default(false))
     - not (homebrew_intel.stat.exists | default(false))
-
 - name: Configure macOS settings
   block:
     - name: Set keyboard initial key repeat
@@ -29,17 +24,15 @@
         domain: NSGlobalDomain
         key: InitialKeyRepeat
         type: float
-        value: "{{ macos_initial_key_repeat }}"
+        value: '{{ macos_initial_key_repeat }}'
         check_type: false
-
     - name: Set keyboard key repeat rate
       community.general.osx_defaults:
         domain: NSGlobalDomain
         key: KeyRepeat
         type: float
-        value: "{{ macos_key_repeat }}"
+        value: '{{ macos_key_repeat }}'
         check_type: false
-
     - name: Disable desktop icons
       community.general.osx_defaults:
         domain: com.apple.finder
@@ -48,7 +41,6 @@
         value: false
         check_type: false
       when: macos_disable_desktop_icons
-
     - name: Show hidden files in Finder
       community.general.osx_defaults:
         domain: com.apple.finder
@@ -56,7 +48,6 @@
         type: bool
         value: true
         check_type: false
-
     - name: Show file extensions
       community.general.osx_defaults:
         domain: NSGlobalDomain
@@ -64,7 +55,6 @@
         type: bool
         value: true
         check_type: false
-
     - name: Auto-hide Dock
       community.general.osx_defaults:
         domain: com.apple.dock
@@ -72,7 +62,6 @@
         type: bool
         value: true
         check_type: false
-
     - name: Set Dock autohide delay to 0
       community.general.osx_defaults:
         domain: com.apple.dock
@@ -80,7 +69,6 @@
         type: float
         value: 0
         check_type: false
-
     - name: Enable tap to click
       community.general.osx_defaults:
         domain: com.apple.driver.AppleBluetoothMultitouch.trackpad

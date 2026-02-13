@@ -120,3 +120,8 @@ brew "ffmpegthumbnailer"
 brew "imagemagick"
 brew "poppler"
 brew "sevenzip"
+
+# ============================================
+# CASKS (macOS GUI Applications)
+# ============================================
+cask "docker" if OS.mac?
