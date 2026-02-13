@@ -8,7 +8,6 @@
         file: group_vars/darwin.yml
       when: ansible_facts['os_family'] == "Darwin"
       tags: always
-
     - name: Load Linux variables
       ansible.builtin.include_vars:
         file: group_vars/linux.yml
@@ -22,24 +21,21 @@
           ansible.builtin.include_tasks:
             file: tasks/macos.yml
           when: ansible_facts['os_family'] == "Darwin"
-
         - name: Include Linux tasks
           ansible.builtin.include_tasks:
             file: tasks/linux.yml
           when: ansible_facts['os_family'] != "Darwin"
 
         # Install packages via brew bundle
-
         - name: Run brew bundle
           ansible.builtin.command:
-            cmd: "brew bundle --file={{ brewfile_path }}"
+            cmd: brew bundle --file={{ brewfile_path }}
           environment:
             PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
           register: brew_bundle_result
           changed_when: "'Installing' in brew_bundle_result.stdout"
 
         # Ensure stow is installed
-
         - name: Install stow via Homebrew
           community.general.homebrew:
             name: stow
@@ -48,54 +44,46 @@
             PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
 
         # Create symlinks via stow
-
         - name: Ensure ~/.config directory exists
           ansible.builtin.file:
             path: "{{ config_dir }}"
             state: directory
             mode: "0755"
-
         - name: Run stow to create symlinks
           ansible.builtin.command:
-            cmd: "stow --restow --adopt ."
+            cmd: stow --restow --adopt .
             chdir: "{{ configs_path }}"
           register: stow_result
           changed_when: false
 
         # Additional symlinks (home directory)
-
         - name: Create .zshrc symlink in home
           ansible.builtin.file:
             src: "{{ config_dir }}/zsh/.zshrc"
             dest: "{{ dotfiles_home }}/.zshrc"
             state: link
             force: true
-
         - name: Create .tmux.conf symlink in home
           ansible.builtin.file:
             src: "{{ config_dir }}/tmux/tmux.conf"
             dest: "{{ dotfiles_home }}/.tmux.conf"
             state: link
             force: true
-
         - name: Create .gitconfig symlink in home
           ansible.builtin.file:
             src: "{{ config_dir }}/git/.gitconfig"
             dest: "{{ dotfiles_home }}/.gitconfig"
             state: link
             force: true
-
         - name: Create .gitignore_global symlink in home
           ansible.builtin.file:
             src: "{{ config_dir }}/git/.gitignore_global"
             dest: "{{ dotfiles_home }}/.gitignore_global"
             state: link
             force: true
-
         - name: Include Linux tasks
           ansible.builtin.include_tasks:
             file: tasks/node.yml
-
         - name: docker install
           ansible.builtin.include_tasks:
             file: tasks/docker.yml
