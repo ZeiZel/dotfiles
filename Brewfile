@@ -43,6 +43,15 @@ brew "choose"        # Better cut/awk for columns
 brew "tokei"         # Code statistics
 brew "glow"          # Markdown renderer in terminal
 brew "delta"         # Better git diff (git-delta)
+brew "xh"            # Better HTTPie (Rust, faster)
+brew "viddy"         # Modern watch replacement
+brew "jless"         # JSON viewer/explorer
+brew "difftastic"    # Structural diff (AST-aware)
+brew "broot"         # Interactive tree navigator
+brew "navi"          # Interactive cheatsheet
+brew "doggo"         # Modern dig replacement (DNS)
+brew "bandwhich"     # Network bandwidth monitor
+brew "lnav"          # Log file navigator
 
 # ============================================
 # GNU TOOLS (macOS replacement)

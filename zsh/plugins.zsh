@@ -57,7 +57,8 @@ zinit wait lucid light-mode for \
 zinit wait"1" lucid light-mode for \
   hlissner/zsh-autopair \
   hcgraf/zsh-sudo \
-  MichaelAquilina/zsh-you-should-use
+  MichaelAquilina/zsh-you-should-use \
+  wfxr/forgit
 
 # ============================================
 # OMZ SNIPPETS - Deferred

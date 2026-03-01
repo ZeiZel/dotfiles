@@ -34,3 +34,21 @@ if (( $+commands[zoxide] )); then
   source "$_zoxide_cache"
   unset _zoxide_cache
 fi
+
+# Broot - interactive tree (cached init)
+if (( $+commands[broot] )); then
+  _broot_launcher="${XDG_CONFIG_HOME:-$HOME/.config}/broot/launcher/bash/br"
+  [[ -f "$_broot_launcher" ]] && source "$_broot_launcher"
+  unset _broot_launcher
+fi
+
+# Navi - cheatsheets (widget for Ctrl+G)
+if (( $+commands[navi] )); then
+  _navi_cache="${XDG_CACHE_HOME:-$HOME/.cache}/navi/init.zsh"
+  if [[ ! -f "$_navi_cache" ]] || [[ "$(whence -p navi)" -nt "$_navi_cache" ]]; then
+    mkdir -p "${_navi_cache:h}"
+    navi widget zsh > "$_navi_cache"
+  fi
+  source "$_navi_cache"
+  unset _navi_cache
+fi
