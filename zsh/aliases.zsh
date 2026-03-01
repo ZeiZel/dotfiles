@@ -294,3 +294,80 @@ alias https='https --style=monokai'
 alias cc='claude'
 alias ccc='claude --continue'
 alias ccr='claude --resume'
+
+# ============================================
+# MODERN CLI TOOLS (NEW)
+# ============================================
+
+# xh - better HTTPie (Rust, faster)
+alias xget='xh GET'
+alias xpost='xh POST'
+alias xput='xh PUT'
+alias xdel='xh DELETE'
+
+# viddy - modern watch
+alias vw='viddy'
+alias vwd='viddy -d'                    # Highlight diff
+alias vwn='viddy -n 1'                  # 1 second interval
+
+# jless - JSON explorer
+alias jl='jless'
+
+# difftastic - structural diff
+alias dft='difft'
+alias gdft='GIT_EXTERNAL_DIFF=difft git diff'
+
+# broot - interactive tree
+alias br='broot'
+alias brs='broot --sizes'               # With sizes
+alias brg='broot --git-status'          # With git status
+
+# navi - interactive cheatsheet
+alias nv='navi'
+alias nvq='navi --query'
+
+# doggo - modern dig
+alias dig='doggo'
+alias dns='doggo'
+alias dnsa='doggo A'
+alias dnsaaaa='doggo AAAA'
+alias dnsmx='doggo MX'
+alias dnstxt='doggo TXT'
+alias dnsns='doggo NS'
+
+# bandwhich - network monitor
+alias bw='sudo bandwhich'
+
+# lnav - log navigator
+alias logs='lnav'
+
+# ============================================
+# FORGIT (FZF + GIT)
+# ============================================
+# forgit auto-creates these aliases:
+# ga   -> forgit::add (interactive git add)
+# glo  -> forgit::log (interactive git log)
+# gd   -> forgit::diff (interactive git diff)
+# grh  -> forgit::reset::head (interactive reset HEAD)
+# gcf  -> forgit::checkout::file (interactive checkout file)
+# gcb  -> forgit::checkout::branch (interactive checkout branch)
+# gbd  -> forgit::branch::delete (interactive branch delete)
+# gct  -> forgit::checkout::tag (interactive checkout tag)
+# gco  -> forgit::checkout::commit (interactive checkout commit)
+# grc  -> forgit::revert::commit (interactive revert)
+# gss  -> forgit::stash::show (interactive stash show)
+# gsp  -> forgit::stash::push (interactive stash push)
+# gclean -> forgit::clean (interactive clean)
+# gcp  -> forgit::cherry::pick (interactive cherry-pick)
+# grb  -> forgit::rebase (interactive rebase)
+# gbl  -> forgit::blame (interactive blame)
+# gfu  -> forgit::fixup (interactive fixup)
+
+# Additional forgit config
+export FORGIT_FZF_DEFAULT_OPTS="
+  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
+  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
+  --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
+  --height=80%
+  --preview-window=right:60%
+"

@@ -49,6 +49,20 @@
             path: "{{ config_dir }}"
             state: directory
             mode: "0755"
+        - name: Create tmux resurrect directory
+          ansible.builtin.file:
+            path: "{{ config_dir }}/tmux/resurrect"
+            state: directory
+            mode: "0755"
+        - name: Create cache directories for zsh tools
+          ansible.builtin.file:
+            path: "{{ item }}"
+            state: directory
+            mode: "0755"
+          loop:
+            - "{{ dotfiles_home }}/.cache/atuin"
+            - "{{ dotfiles_home }}/.cache/zoxide"
+            - "{{ dotfiles_home }}/.cache/navi"
         - name: Run stow to create symlinks
           ansible.builtin.command:
             cmd: stow --restow --adopt .
