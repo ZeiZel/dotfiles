@@ -3,22 +3,22 @@
   ansible.builtin.shell:
     cmd: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh
       | bash
-    creates: '{{ ansible_env.HOME }}/.nvm/nvm.sh'
+    creates: '{{ ansible_facts.env.HOME }}/.nvm/nvm.sh'
   register: nvm_status
 - name: install node lts
   ansible.builtin.shell:
     cmd: |
-      export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
+      export NVM_DIR="{{ ansible_facts.env.HOME }}/.nvm"
       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
       nvm install --lts
       nvm alias default node
     executable: /bin/bash
   args:
-    creates: '{{ ansible_env.HOME }}/.nvm/versions/node'
+    creates: '{{ ansible_facts.env.HOME }}/.nvm/versions/node'
 - name: install global npm packages
   ansible.builtin.shell:
     cmd: |
-      export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
+      export NVM_DIR="{{ ansible_facts.env.HOME }}/.nvm"
       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
       npm install -g nx@latest @nestjs/cli@latest @angular/cli@latest @anthropic-ai/claude-code@latest
     executable: /bin/bash
