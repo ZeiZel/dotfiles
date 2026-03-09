@@ -43,6 +43,7 @@ copy-on-select = clipboard
 macos-option-as-alt = left
 macos-titlebar-style = tabs
 macos-window-shadow = true
+confirm-close-surface = false
 
 # Scrollback
 scrollback-limit = 100000

@@ -27,3 +27,9 @@ venv/
 
 # Node
 node_modules/
+
+/tmux/plugins
+/tmux/resurrect
+
+.claude/settings.local.json
+
