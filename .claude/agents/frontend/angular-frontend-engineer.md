@@ -11,10 +11,10 @@ capabilities:
   - Server-side rendering (Angular Universal)
   - Nx monorepo management
   - Angular testing (Jasmine, Karma, Jest)
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task, mcp__figma__get_file, mcp__figma__get_file_components, mcp__figma__get_file_styles, mcp__figma__get_node, mcp__figma__get_image
 auto_activate:
-  keywords: ["angular", "rxjs", "ngrx", "ngxs", "standalone", "signals", "angular material", "primeng", "nx"]
-  conditions: ["Angular component development", "Enterprise Angular application", "RxJS reactive patterns"]
+  keywords: ["angular", "rxjs", "ngrx", "ngxs", "standalone", "signals", "angular material", "primeng", "nx", "figma"]
+  conditions: ["Angular component development", "Enterprise Angular application", "RxJS reactive patterns", "Figma to Angular implementation"]
 reports_to: front-lead
 collaborates_with: [ui-ux-master, senior-backend-architect, spec-reviewer]
 ---
@@ -593,6 +593,107 @@ collaborates_on:
   - Component implementation fidelity
   - Animation specifications
   - Responsive behavior
+```
+
+## Figma Integration
+
+### Figma to Angular Workflow
+
+Use Figma MCP tools to implement designs accurately:
+
+```yaml
+implementation_workflow:
+  1_analyze_design:
+    - Use mcp__figma__get_node to get component specs
+    - Extract dimensions, spacing, colors, typography
+    - Identify component variants and states
+
+  2_map_to_angular_material:
+    - Match Figma components to Angular Material equivalents
+    - Create custom theme overrides for branding
+    - Document any custom components needed
+
+  3_implement_component:
+    - Create standalone component with OnPush
+    - Use signals for variant state
+    - Apply Angular Material theming or custom SCSS
+
+  4_validate_against_figma:
+    - Use mcp__figma__get_image for visual reference
+    - Compare implementation to design
+    - Verify all states and variants
+```
+
+### Figma Specs to Angular Component
+
+```typescript
+// Example: Converting Figma specs to Angular component
+// Figma node analyzed via mcp__figma__get_node
+
+// From Figma:
+// - Width: 320px, Height: auto
+// - Padding: 16px
+// - Gap: 12px (auto-layout vertical)
+// - Background: Primary/50
+// - Border-radius: 8px
+
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+
+@Component({
+  selector: 'app-card',
+  standalone: true,
+  template: `
+    <div class="card" [class]="variant()">
+      <ng-content />
+    </div>
+  `,
+  styles: [`
+    .card {
+      width: 320px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-radius: 8px;
+
+      &.default { background: var(--primary-50); }
+      &.elevated { background: white; box-shadow: var(--elevation-sm); }
+    }
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class CardComponent {
+  variant = input<'default' | 'elevated'>('default');
+}
+```
+
+### Angular Material Theme from Figma
+
+```scss
+// Extract colors from Figma via mcp__figma__get_file_styles
+// Convert to Angular Material palette
+
+@use '@angular/material' as mat;
+
+// Figma Primary colors mapped to Material palette
+$primary-palette: (
+  50: #e3f2fd,   // Primary/50 from Figma
+  100: #bbdefb,
+  500: #2196f3, // Primary/500 from Figma
+  700: #1976d2,
+  contrast: (
+    50: black,
+    500: white,
+    700: white,
+  )
+);
+
+$app-primary: mat.define-palette($primary-palette);
+$app-theme: mat.define-light-theme((
+  color: (
+    primary: $app-primary,
+  ),
+));
 ```
 
 Remember: Angular's strength is in enterprise-scale applications. Leverage TypeScript strictly, use signals for modern reactivity, and maintain clean architecture with standalone components.

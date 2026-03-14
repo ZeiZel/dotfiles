@@ -11,10 +11,10 @@ capabilities:
   - Vite configuration and plugins
   - Vue testing (Vitest, Vue Test Utils)
   - TypeScript integration
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task, mcp__figma__get_file, mcp__figma__get_file_components, mcp__figma__get_file_styles, mcp__figma__get_node, mcp__figma__get_image
 auto_activate:
-  keywords: ["vue", "nuxt", "pinia", "vuetify", "quasar", "primevue", "composition api", "vite"]
-  conditions: ["Vue component development", "Nuxt application", "Vue 3 reactive patterns"]
+  keywords: ["vue", "nuxt", "pinia", "vuetify", "quasar", "primevue", "composition api", "vite", "figma"]
+  conditions: ["Vue component development", "Nuxt application", "Vue 3 reactive patterns", "Figma to Vue implementation"]
 reports_to: front-lead
 collaborates_with: [ui-ux-master, senior-backend-architect, spec-reviewer]
 ---
@@ -744,6 +744,116 @@ collaborates_on:
   - Component implementation
   - Animation specifications
   - Responsive behavior
+```
+
+## Figma Integration
+
+### Figma to Vue Workflow
+
+Use Figma MCP tools to implement designs accurately:
+
+```yaml
+implementation_workflow:
+  1_analyze_design:
+    - Use mcp__figma__get_node to get component specs
+    - Extract dimensions, spacing, colors, typography
+    - Identify component variants and states
+
+  2_map_to_tokens:
+    - Match Figma styles to CSS variables
+    - Create SCSS variables from Figma color styles
+    - Document any custom styles needed
+
+  3_implement_component:
+    - Create SFC with script setup
+    - Use props for variants
+    - Apply scoped styles with CSS variables
+
+  4_validate_against_figma:
+    - Use mcp__figma__get_image for visual reference
+    - Compare implementation to design
+    - Verify all states and variants
+```
+
+### Figma Specs to Vue Component
+
+```vue
+<!-- Example: Converting Figma specs to Vue component -->
+<!-- Figma node analyzed via mcp__figma__get_node -->
+
+<!-- From Figma:
+- Width: 320px, Height: auto
+- Padding: 16px
+- Gap: 12px (auto-layout vertical)
+- Background: Primary/50
+- Border-radius: 8px
+-->
+
+<script setup lang="ts">
+interface Props {
+  variant?: 'default' | 'elevated';
+}
+
+const { variant = 'default' } = defineProps<Props>();
+</script>
+
+<template>
+  <div class="card" :class="variant">
+    <slot />
+  </div>
+</template>
+
+<style scoped>
+.card {
+  width: 320px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 8px;
+}
+
+.card.default {
+  background: var(--color-primary-50);
+}
+
+.card.elevated {
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+</style>
+```
+
+### Vuetify Theme from Figma
+
+```typescript
+// plugins/vuetify.ts
+// Extract colors from Figma via mcp__figma__get_file_styles
+// Convert to Vuetify theme
+
+import { createVuetify } from 'vuetify';
+
+// Colors extracted from Figma styles
+const figmaColors = {
+  primary50: '#e3f2fd',
+  primary500: '#2196f3',
+  primary700: '#1976d2',
+  // ... other colors from Figma
+};
+
+export default createVuetify({
+  theme: {
+    themes: {
+      light: {
+        colors: {
+          primary: figmaColors.primary500,
+          'primary-darken-1': figmaColors.primary700,
+          // Map other Figma colors
+        },
+      },
+    },
+  },
+});
 ```
 
 Remember: Vue's strength is in its progressive nature and gentle learning curve. Leverage the Composition API for complex logic, keep templates clean and declarative, and use Pinia for predictable state management.
