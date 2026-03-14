@@ -1,0 +1,66 @@
+---
+# Claude Code configuration tasks
+# Creates symlink from dotfiles/.claude to ~/.claude for global agent access
+
+- name: Check if ~/.claude exists
+  ansible.builtin.stat:
+    path: "{{ dotfiles_home }}/.claude"
+  register: claude_dir
+  tags: claude
+
+- name: Check if ~/.claude is already correct symlink
+  ansible.builtin.set_fact:
+    claude_is_correct_symlink: >-
+      {{ claude_dir.stat.exists and
+         claude_dir.stat.islnk and
+         claude_dir.stat.lnk_source == configs_path + '/.claude' }}
+  tags: claude
+
+- name: Claude already configured correctly
+  ansible.builtin.debug:
+    msg: "~/.claude is already symlinked to {{ configs_path }}/.claude"
+  when: claude_is_correct_symlink
+  tags: claude
+
+- name: Handle existing ~/.claude directory
+  when: claude_dir.stat.exists and claude_dir.stat.isdir and not claude_dir.stat.islnk
+  tags: claude
+  block:
+    - name: Merge existing ~/.claude contents to dotfiles
+      ansible.builtin.command:
+        cmd: rsync -av --ignore-existing "{{ dotfiles_home }}/.claude/" "{{ configs_path }}/.claude/"
+      register: rsync_result
+      changed_when: "'total size is 0' not in rsync_result.stdout"
+
+    - name: Backup and remove existing ~/.claude directory
+      ansible.builtin.command:
+        cmd: mv "{{ dotfiles_home }}/.claude" "{{ dotfiles_home }}/.claude.backup"
+      when: rsync_result is succeeded
+
+- name: Remove incorrect symlink
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.claude"
+    state: absent
+  when: >
+    claude_dir.stat.exists and
+    claude_dir.stat.islnk and
+    not claude_is_correct_symlink
+  tags: claude
+
+- name: Create symlink for Claude Code configuration
+  ansible.builtin.file:
+    src: "{{ configs_path }}/.claude"
+    dest: "{{ dotfiles_home }}/.claude"
+    state: link
+  when: not claude_is_correct_symlink
+  tags: claude
+
+- name: Display Claude Code setup info
+  ansible.builtin.debug:
+    msg: |
+      Claude Code configured:
+      - Symlink: ~/.claude -> {{ configs_path }}/.claude
+      - Agents available globally via 'claude' CLI
+      - Skills: /teamlead, /project-setup, /agent-workflow
+      - Run 'claude' in any project to use agents
+  tags: claude

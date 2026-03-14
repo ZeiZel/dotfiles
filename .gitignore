@@ -31,5 +31,30 @@ node_modules/
 /tmux/plugins
 /tmux/resurrect
 
+# Claude Code - local settings
 .claude/settings.local.json
+
+# Claude Code - runtime/cache/temp (not for sync)
+.claude/backups/
+.claude/cache/
+.claude/chrome/
+.claude/debug/
+.claude/downloads/
+.claude/file-history/
+.claude/ide/
+.claude/paste-cache/
+.claude/plans/
+.claude/projects/
+.claude/session-env/
+.claude/shell-snapshots/
+.claude/statsig/
+.claude/tasks/
+.claude/telemetry/
+.claude/todos/
+
+# Claude Code - cache files
+.claude/history.jsonl
+.claude/stats-cache.json
+.claude/mcp-needs-auth-cache.json
+.claude/*-cache.json
 

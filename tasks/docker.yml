@@ -2,13 +2,36 @@
 - name: Installing Docker on macOS
   when: ansible_facts['os_family'] == "Darwin"
   block:
+    - name: Check if Docker is already installed
+      ansible.builtin.command:
+        cmd: docker --version
+      register: docker_installed
+      changed_when: false
+      failed_when: false
+      environment:
+        PATH: /usr/local/bin:/opt/homebrew/bin:{{ ansible_facts['env']['PATH'] }}
+
+    - name: Check if Docker Desktop app exists
+      ansible.builtin.stat:
+        path: /Applications/Docker.app
+      register: docker_app
+
     - name: Install Docker Desktop via Homebrew Cask
       community.general.homebrew_cask:
         name: docker
         state: present
       environment:
         PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
-    - name: Check if Docker CLI is available
+      when: docker_installed.rc != 0 and not docker_app.stat.exists
+      register: docker_install_result
+      ignore_errors: true
+
+    - name: Docker installation skipped (already installed)
+      ansible.builtin.debug:
+        msg: "Docker is already installed (version: {{ docker_installed.stdout | default('Docker.app found') }})"
+      when: docker_installed.rc == 0 or docker_app.stat.exists
+
+    - name: Check if Docker CLI is available after install
       ansible.builtin.command:
         cmd: docker --version
       register: docker_check
@@ -16,13 +39,14 @@
       failed_when: false
       environment:
         PATH: /usr/local/bin:/opt/homebrew/bin:{{ ansible_facts['env']['PATH'] }}
+
     - name: Notify user to start Docker Desktop
       ansible.builtin.debug:
         msg: >
           Docker Desktop has been installed. Please start Docker Desktop
           from Applications to complete the setup. No sudo or docker group
           configuration is needed on macOS.
-      when: docker_check.rc != 0
+      when: docker_check.rc != 0 and not docker_app.stat.exists
 
 - name: Installing Docker on Linux
   become: true
