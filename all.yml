@@ -98,6 +98,10 @@
         - name: Include Linux tasks
           ansible.builtin.include_tasks:
             file: tasks/node.yml
+        - name: Setup Claude Code
+          ansible.builtin.include_tasks:
+            file: tasks/claude.yml
+          tags: claude
         - name: docker install
           ansible.builtin.include_tasks:
             file: tasks/docker.yml

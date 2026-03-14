@@ -1,160 +1,232 @@
 ---
 name: teamlead
-description: Invoke the Team Lead orchestration agent for complex multi-agent development workflows with Beads task management
-allowed-tools: Task, Read, Write, Edit, Glob, Grep, Bash, TodoWrite
+description: Invoke the Team Lead orchestration agent for complex multi-agent development workflows with Beads task management and integrated tooling (Beads, Gastown, Repomix, Aider)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, TodoWrite, WebSearch
 ---
 
-# Team Lead Orchestration Skill
+# Team Lead Skill
 
-Invoke the Team Lead agent to orchestrate complex development workflows with intelligent sub-agent coordination.
+Invokes the Team Lead orchestration agent for managing complex multi-agent development workflows with full tooling integration.
 
 ## Overview
 
-The Team Lead is an active orchestration agent that:
-- Spawns specialized agents for each phase of development
-- Manages tasks persistently via Beads CLI
-- Executes parallel tasks when dependencies allow
-- Drives quality-driven iteration loops (95%+ target)
-- Maintains architecture documentation through dedicated agents
+The Team Lead agent:
+- Orchestrates multiple specialized agents
+- Manages tasks via Beads CLI
+- Drives quality-driven iteration loops (95%+ quality)
+- Maintains living documentation via architecture-keeper
+- Integrates with Gastown for large projects
+- Refreshes context via Repomix
 
 ## Usage
 
+```bash
+/teamlead                           # Start team lead for current task
+/teamlead implement user auth       # Implement a feature
+/teamlead --plan-only              # Planning phase only
+/teamlead --parallel               # Maximize parallel execution
 ```
-/teamlead                           # Interactive mode - discusses approach first
-/teamlead implement user auth       # Direct execution with feature description
-/teamlead --parallel                # Maximize parallel agent execution
-/teamlead --plan-only               # Planning phase only, no implementation
+
+## Integrated Tools
+
+### Beads - Task Management
+```bash
+bd init           # Initialize workspace
+bd ready          # View available tasks
+bd list           # View all tasks
+bd create         # Create new task
+bd update --claim # Claim task
+bd close          # Complete task
+```
+
+### Gastown - Multi-Agent Orchestration (Large Projects)
+```bash
+gt install .      # Initialize
+gt rig add main . # Add rig
+gt sling          # Distribute tasks
+gt convoy create  # Group related tasks
+gt feed           # Monitor progress
+```
+
+### Repomix - Context Refresh
+```bash
+repomix --output docs/context/codebase-snapshot.txt
+```
+
+### Aider - Pair Programming
+```bash
+aider [files]     # Interactive coding session
 ```
 
 ## Workflow Phases
 
-### Phase 1: Planning
-```
-User Request → spec-analyst → spec-architect → spec-planner → Beads Tasks
-```
+1. **Pre-flight** - Check tools, load context, verify project setup
+2. **Planning** - Requirements analysis, architecture design, task breakdown
+3. **Execution** - Parallel agent spawning for independent tasks
+4. **Quality Gates** - Code review, testing, validation (95%+ target)
+5. **Iteration** - Fix issues, re-validate (max 3 iterations)
+6. **Documentation** - Update architecture docs via architecture-keeper
 
-### Phase 2: Execution
-```
-Beads Tasks → [parallel agents] → Implementation
-```
+## Pre-flight Protocol
 
-### Phase 3: Quality Gates
-```
-Implementation → spec-reviewer → spec-tester → spec-validator → Quality Score
-```
-
-### Phase 4: Iteration (if needed)
-```
-Quality < 95% → Targeted Fixes → Re-validation (max 3 iterations)
-```
-
-### Phase 5: Architecture Update
-```
-Completion → architecture-keeper → Updated specs and domain documentation
-```
-
-## Context Management
-
-The Team Lead manages context for each sub-agent by providing:
-
-1. **Task-Specific Context**
-   - Beads task ID and details
-   - Acceptance criteria
-   - Technical constraints
-   - Integration points
-
-2. **Project Context**
-   - Architecture overview from `docs/architecture/`
-   - Domain models from `docs/domains/`
-   - Previous decisions and rationale
-
-3. **Phase Context**
-   - Current workflow phase
-   - Dependencies and blockers
-   - Expected deliverables
-
-## Agent Selection
-
-| Phase | Agent | Purpose |
-|-------|-------|---------|
-| Requirements | spec-analyst | Gather and document requirements |
-| Design | spec-architect | System architecture and API design |
-| Planning | spec-planner | Task breakdown with dependencies |
-| Backend | senior-backend-architect | API implementation |
-| Frontend | front-lead | Coordinate framework engineers |
-| Database | database-architect | Schema and optimization |
-| Testing | spec-tester | Comprehensive test suites |
-| Review | spec-reviewer | Code quality and security |
-| Validation | spec-validator | Final quality assessment |
-| Documentation | architecture-keeper | Maintain architecture specs |
-
-## Beads Integration
-
-All tasks are managed through Beads for persistence:
+Team Lead performs these checks at startup:
 
 ```bash
-# View ready tasks
-bd ready
+# 1. Check Beads
+if ! command -v bd &>/dev/null; then
+  notify "Beads not installed. Install: brew install beads"
+fi
+bd list 2>/dev/null || bd init
 
-# Create task with context
-bd create --title "[Feature] Description" --description "Full context..."
+# 2. Check Gastown (for large projects)
+file_count=$(find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.py" \) | wc -l)
+if [ $file_count -gt 50 ] && ! command -v gt &>/dev/null; then
+  notify "Large project detected. Consider: brew install gastown"
+fi
 
-# Track progress
-bd list
+# 3. Check Project Setup
+if [ ! -f docs/project.yaml ]; then
+  notify "Project not configured. Run: /project-setup"
+fi
 
-# Close with results
-bd close bd-123 --message "Completed with 96% quality score"
+# 4. Check MCP Servers
+if [ ! -f .mcp.json ]; then
+  notify "MCP servers not configured. Run: /project-setup"
+fi
+
+# 5. Refresh Context (if repomix available)
+if command -v repomix &>/dev/null && [ -f docs/context/codebase-snapshot.txt ]; then
+  age=$(stat -f %m docs/context/codebase-snapshot.txt 2>/dev/null || echo 0)
+  now=$(date +%s)
+  if [ $((now - age)) -gt 3600 ]; then
+    repomix --output docs/context/codebase-snapshot.txt
+    notify "Context refreshed via repomix"
+  fi
+fi
 ```
 
-## Quality Standards
+## Workflow with Tools
 
-- **Pass Threshold**: 95% quality score
-- **Max Iterations**: 3 attempts before escalation
-- **Required Checks**:
-  - Code quality and patterns
-  - Test coverage (>80%)
-  - Security scan
-  - Documentation completeness
-
-## Output
-
-The Team Lead provides:
-
-1. **Session Reports** - Current status and progress
-2. **Phase Transitions** - Summaries when moving between phases
-3. **Quality Reports** - Validation scores and issues
-4. **Completion Summary** - Final deliverables and metrics
-5. **Architecture Updates** - Updated domain and system documentation
-
-## Examples
-
-### Full Feature Implementation
 ```
-/teamlead implement user notification system with push, email, and in-app channels
+/teamlead implement [feature]
+       │
+       ▼
+[Pre-flight] Check tools availability
+       │
+       ▼
+[Beads] bd ready - check available tasks
+       │
+       ▼
+[Repomix] Refresh context snapshot (if stale)
+       │
+       ▼
+[Spec-agents] Spawn with context
+       │
+       ▼
+[Beads] bd update --claim - track work
+       │
+       ▼
+[Gastown] gt sling - distribute (if large project)
+       │
+       ▼
+[Quality] spec-reviewer, spec-validator
+       │
+       ▼
+[Beads] bd close - mark complete
+       │
+       ▼
+[Notify] Summary + suggestions
 ```
 
-### Planning Only
+## Notification System
+
+Team Lead notifies user in these cases:
+
+### Missing Tools
 ```
-/teamlead --plan-only design a payment processing integration with Stripe
+⚠️ Tool 'beads' not installed.
+Install: brew install beads
+This would help with: persistent task tracking across sessions
 ```
 
-### Parallel Execution
+### Tool Failure
 ```
-/teamlead --parallel implement dashboard with charts, tables, and export functionality
+❌ Tool 'repomix' failed: command not found
+Suggestion: npm install -g repomix
+Continuing without context snapshot...
 ```
+
+### Optimization Suggestions
+```
+💡 Recommendation: Install Gastown for parallel agent orchestration
+Install: brew install gastown
+Benefit: 3x faster development for large features
+```
+
+### Missing Context
+```
+📝 Project not prepared for AI development.
+Run: /project-setup
+This will create specifications and task structure.
+```
+
+## Prerequisites
+
+- Beads CLI installed (`brew install beads`)
+- Project documentation in `docs/` (run `/project-setup` first if needed)
+- Optional: Gastown for large projects
+- Optional: Repomix for context snapshots
+- Optional: Aider for pair programming
+
+## Integration
+
+### With Beads
+```bash
+bd ready          # View available tasks
+bd list           # View all tasks
+bd show bd-123    # View task details
+```
+
+### With Gastown (Large Projects)
+```bash
+gt sling          # Distribute tasks to agents
+gt convoy create  # Group related tasks
+gt feed           # Monitor progress
+```
+
+### With Repomix
+```bash
+repomix --output docs/context/snapshot.txt
+```
+
+### With Architecture
+- Reads context from `docs/project.yaml`
+- Reads architecture from `docs/architecture/`
+- Reads domains from `docs/domains/`
+- Updates via architecture-keeper agent
+
+### With MCP Servers
+- **context7**: Documentation lookup during development
+- **sequential-thinking**: Complex reasoning for architecture decisions
+- **github**: PR and issue management
 
 ## Execute
 
-**Feature**: $ARGUMENTS
+Invoke the team-lead agent with the Task tool:
 
-Starting Team Lead orchestration workflow...
+```
+subagent_type: team-lead
+prompt: [User's request or feature description]
+```
 
-Use the **team-lead** sub agent to orchestrate the complete development workflow for the requested feature. The team lead will:
-
-1. Analyze the request and determine scope
-2. Spawn planning agents (spec-analyst, spec-architect, spec-planner)
-3. Create Beads tasks with dependencies
-4. Execute implementation with appropriate agents in parallel where possible
-5. Run quality gates and iterate as needed
-6. Update architecture documentation via architecture-keeper
-7. Deliver completion report with quality metrics
+The agent will:
+1. Run pre-flight checks
+2. Load project context from docs/
+3. Refresh context via repomix (if available and stale)
+4. Create development plan
+5. Spawn specialized agents
+6. Track progress in Beads
+7. Use Gastown for distribution (if large project)
+8. Drive to 95%+ quality
+9. Update documentation
+10. Report completion with suggestions
