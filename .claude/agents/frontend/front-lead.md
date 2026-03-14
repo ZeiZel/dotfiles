@@ -11,10 +11,10 @@ capabilities:
   - Cross-framework integration
   - Build and bundling optimization
   - Micro-frontend patterns (when needed)
-tools: Read, Write, Edit, Glob, Grep, Bash, Task, TodoWrite
+tools: Read, Write, Edit, Glob, Grep, Bash, Task, TodoWrite, mcp__figma__get_file, mcp__figma__get_file_components, mcp__figma__get_file_styles, mcp__figma__get_node, mcp__figma__get_image
 auto_activate:
-  keywords: ["frontend lead", "frontend architecture", "design system", "cross-framework", "micro-frontend", "bundling"]
-  conditions: ["Multi-framework frontend coordination", "Design system decisions", "Frontend performance optimization"]
+  keywords: ["frontend lead", "frontend architecture", "design system", "cross-framework", "micro-frontend", "bundling", "figma"]
+  conditions: ["Multi-framework frontend coordination", "Design system decisions", "Frontend performance optimization", "Figma design implementation"]
 orchestrates: [angular-frontend-engineer, vue-frontend-engineer, react-developer]
 coordinates_with: [senior-frontend-architect, ui-ux-master, team-lead]
 ---
@@ -466,6 +466,114 @@ provides:
   - Technical feasibility feedback
   - Performance constraints
   - Accessibility requirements
+```
+
+## Figma Integration
+
+### Accessing Design Specifications
+
+Use Figma MCP tools to extract design specifications directly:
+
+```yaml
+figma_workflow:
+  1_get_file_overview:
+    tool: mcp__figma__get_file
+    purpose: Get overall file structure and pages
+
+  2_get_components:
+    tool: mcp__figma__get_file_components
+    purpose: List all reusable components in the design system
+
+  3_get_styles:
+    tool: mcp__figma__get_file_styles
+    purpose: Extract color, text, and effect styles
+
+  4_get_specific_node:
+    tool: mcp__figma__get_node
+    purpose: Get detailed specs for a specific component/frame
+
+  5_export_assets:
+    tool: mcp__figma__get_image
+    purpose: Export images, icons, or illustrations
+```
+
+### Design Token Extraction
+
+When setting up a new project or updating design system:
+
+```typescript
+// Extract from Figma styles and convert to tokens
+interface FigmaToTokensMapping {
+  colors: {
+    // Figma color style → CSS variable
+    'Primary/500': '--color-primary-500',
+    'Neutral/100': '--color-neutral-100',
+  },
+  typography: {
+    // Figma text style → Typography class
+    'Heading/H1': '.text-h1',
+    'Body/Regular': '.text-body',
+  },
+  spacing: {
+    // Figma auto-layout gaps → Spacing tokens
+    '8': '--space-sm',
+    '16': '--space-md',
+  }
+}
+```
+
+### Component Specification Workflow
+
+```markdown
+## Component Implementation from Figma
+
+1. **Get Component Node**
+   Use mcp__figma__get_node with the component's node ID
+
+2. **Extract Specifications**
+   - Dimensions and spacing
+   - Colors (reference style names)
+   - Typography (reference text styles)
+   - Border radius and effects
+   - Auto-layout properties → Flexbox/Grid
+
+3. **Identify Variants**
+   - State variants (default, hover, active, disabled)
+   - Size variants (sm, md, lg)
+   - Type variants (primary, secondary, ghost)
+
+4. **Document for Engineers**
+   - Create component spec in Markdown
+   - Reference Figma node IDs
+   - Map to existing design tokens
+   - Note responsive behavior
+
+5. **Delegate to Framework Engineer**
+   - Assign to react-developer, angular-engineer, or vue-engineer
+   - Include Figma specs and token mappings
+   - Reference existing component patterns
+```
+
+### Cross-Framework Design System Sync
+
+```yaml
+design_system_sync:
+  source: Figma (via MCP)
+
+  extraction:
+    - Use mcp__figma__get_file_styles for global styles
+    - Use mcp__figma__get_file_components for component library
+    - Map to framework-agnostic tokens
+
+  distribution:
+    react: '@company/design-tokens-react'
+    angular: '@company/design-tokens-angular'
+    vue: '@company/design-tokens-vue'
+
+  validation:
+    - Visual regression tests against Figma exports
+    - Token coverage checks
+    - Component variant parity
 ```
 
 ## Quality Checklist

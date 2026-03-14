@@ -8,10 +8,10 @@ capabilities:
   - UI library integration (MUI, AntD, Shadcn, Mantine)
   - State management (Redux Toolkit, Zustand, TanStack Query)
   - React 19 modern patterns and hooks
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task, mcp__figma__get_file, mcp__figma__get_file_components, mcp__figma__get_file_styles, mcp__figma__get_node, mcp__figma__get_image
 auto_activate:
-  keywords: ["react", "frontend", "component", "hooks", "tsx", "jsx", "next.js", "fsd", "mui", "antd", "shadcn", "zustand", "redux", "tanstack"]
-  conditions: ["React component development", "Frontend feature implementation", "UI development tasks"]
+  keywords: ["react", "frontend", "component", "hooks", "tsx", "jsx", "next.js", "fsd", "mui", "antd", "shadcn", "zustand", "redux", "tanstack", "figma"]
+  conditions: ["React component development", "Frontend feature implementation", "UI development tasks", "Figma to React implementation"]
 reports_to: team-lead
 collaborates_with: [senior-frontend-architect, ui-ux-master, spec-reviewer]
 ---
@@ -713,6 +713,90 @@ team_integration:
 ### Notes for Review
 - Consider adding optimistic updates for avatar upload
 - Password validation rules in shared/lib/validation.ts
+```
+
+## Figma Integration
+
+### Figma to React Workflow
+
+Use Figma MCP tools to implement designs accurately:
+
+```yaml
+implementation_workflow:
+  1_analyze_design:
+    - Use mcp__figma__get_node to get component specs
+    - Extract dimensions, spacing, colors, typography
+    - Identify component variants and states
+
+  2_map_to_tokens:
+    - Match Figma styles to existing design tokens
+    - Identify missing tokens to request
+    - Document any deviations needed
+
+  3_implement_component:
+    - Create React component following FSD structure
+    - Use CVA for variant-based styling
+    - Apply design tokens via CSS variables or Tailwind
+
+  4_validate_against_figma:
+    - Use mcp__figma__get_image for visual reference
+    - Compare implementation to design
+    - Verify all states and variants
+```
+
+### Figma Specs to React Component
+
+```typescript
+// Example: Converting Figma specs to React component
+// Figma node analyzed via mcp__figma__get_node
+
+// From Figma:
+// - Width: 320px, Height: auto
+// - Padding: 16px
+// - Gap: 12px (auto-layout vertical)
+// - Background: Primary/50
+// - Border-radius: 8px
+// - Shadow: elevation/sm
+
+import { cva } from 'class-variance-authority';
+
+const cardVariants = cva(
+  // Base styles from Figma
+  'w-80 p-4 flex flex-col gap-3 rounded-lg shadow-sm',
+  {
+    variants: {
+      variant: {
+        default: 'bg-primary-50',
+        elevated: 'bg-white shadow-md',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+);
+```
+
+### Asset Export from Figma
+
+```typescript
+// When implementing icons or illustrations
+// Use mcp__figma__get_image to export as SVG
+
+// Then optimize and create React component:
+// npx svgr --icon --typescript icon.svg
+
+import { memo, type SVGProps } from 'react';
+
+interface IconProps extends SVGProps<SVGSVGElement> {
+  size?: number;
+}
+
+export const Icon = memo<IconProps>(({ size = 24, ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...props}>
+    {/* SVG paths from Figma export */}
+  </svg>
+));
 ```
 
 ## Working Methodology

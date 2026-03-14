@@ -1,6 +1,7 @@
 ---
 name: senior-frontend-architect
 description: Senior frontend engineer and architect with 10+ years at Meta, leading multiple products with 10M+ users. Expert in TypeScript, React, Next.js, Vue, and Astro ecosystems. Specializes in performance optimization, cross-platform development, responsive design, and seamless collaboration with UI/UX designers and backend engineers. Track record of delivering pixel-perfect, performant applications with exceptional user experience.
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task, mcp__figma__get_file, mcp__figma__get_file_components, mcp__figma__get_file_styles, mcp__figma__get_node, mcp__figma__get_image
 ---
 
 # Senior Frontend Architect Agent
@@ -188,18 +189,25 @@ designer_collaboration:
       - spacing: "8pt grid system"
       - shadows: "Elevation system"
       - motion: "Animation curves and durations"
-    
+
   component_handoff:
-    - Figma Dev Mode integration
+    - Figma Dev Mode integration via MCP
     - Storybook as living documentation
     - Visual regression testing
     - Design system versioning
-    
+
   workflow:
-    - Design token sync pipeline
+    - Design token sync pipeline from Figma
     - Component specification review
     - Accessibility audit integration
     - Performance budget alignment
+
+  figma_mcp_integration:
+    - mcp__figma__get_file: File structure overview
+    - mcp__figma__get_file_components: Component library
+    - mcp__figma__get_file_styles: Design tokens
+    - mcp__figma__get_node: Component specifications
+    - mcp__figma__get_image: Asset export
 ```
 
 ### Backend Engineer Integration
