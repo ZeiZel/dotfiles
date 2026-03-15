@@ -17,6 +17,61 @@
   when:
     - not (homebrew_arm.stat.exists | default(false))
     - not (homebrew_intel.stat.exists | default(false))
+
+# Fix trippy (trip) network privileges for ICMP
+# See: https://github.com/fujiapple852/trippy#privileges
+- name: Check if trippy is installed
+  ansible.builtin.shell:
+    cmd: command -v trip
+  register: trippy_check
+  changed_when: false
+  failed_when: false
+
+- name: Get real path of trippy binary
+  ansible.builtin.shell:
+    cmd: |
+      # Follow symlinks to get real binary path
+      realpath $(command -v trip) 2>/dev/null || readlink -f $(command -v trip) 2>/dev/null
+  register: trippy_realpath
+  when: trippy_check.rc == 0
+  changed_when: false
+
+- name: Check if trippy has setuid bit
+  ansible.builtin.shell:
+    cmd: |
+      stat -f "%Sp" "{{ trippy_realpath.stdout }}" 2>/dev/null | grep -q '^...s' && echo "has_setuid" || echo "no_setuid"
+  register: trippy_setuid_check
+  when: trippy_check.rc == 0 and trippy_realpath.stdout != ""
+  changed_when: false
+
+- name: Set trippy privileges (requires sudo)
+  ansible.builtin.shell:
+    cmd: |
+      chown root:wheel "{{ trippy_realpath.stdout }}"
+      chmod u+s "{{ trippy_realpath.stdout }}"
+    executable: /bin/bash
+  when:
+    - trippy_check.rc == 0
+    - trippy_realpath.stdout != ""
+    - trippy_setuid_check.stdout == "no_setuid"
+  become: true
+  register: trippy_privileges
+  changed_when: trippy_privileges.rc == 0
+
+- name: Display trippy privileges status
+  ansible.builtin.debug:
+    msg: |
+      Trippy (trip) network privileges:
+      {% if trippy_check.rc != 0 %}
+      - Not installed (skipped)
+      {% elif trippy_setuid_check.stdout == "has_setuid" %}
+      - Already configured with setuid
+      {% elif trippy_privileges is defined and trippy_privileges.changed %}
+      - Configured: {{ trippy_realpath.stdout }}
+      {% else %}
+      - Configuration skipped or failed
+      {% endif %}
+  when: trippy_check.rc == 0
 - name: Configure macOS settings
   block:
     - name: Set keyboard initial key repeat
