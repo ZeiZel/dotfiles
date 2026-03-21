@@ -262,23 +262,49 @@ Complete catalog of all specialized Claude Code agents organized by category.
 
 ---
 
-## Usage Examples
+## How to Use Agents
 
-### Spawn an agent directly:
+### 1. Via Team Lead (recommended for complex tasks)
 ```bash
-# Use Task tool with subagent_type
-Task(subagent_type: "web-researcher", prompt: "Research GraphQL vs REST for mobile APIs")
+/teamlead implement user authentication
+# Team lead spawns: spec-analyst -> spec-architect -> spec-planner
+#                   spec-developer (parallel) -> spec-reviewer + spec-tester
+#                   spec-validator -> architecture-keeper
 ```
 
-### Via skills:
+### 2. Via Skills (for focused tasks)
 ```bash
 /research GraphQL vs REST       # Uses web-researcher
 /readme                         # Uses readme-generator
 /audit                          # Uses dependency-auditor
+/implement dark mode            # Uses spec-developer
+/test src/auth/service.ts       # Uses spec-tester
 ```
 
-### Via team-lead orchestration:
+### 3. Direct Agent Spawn (for specific expertise)
 ```bash
-/teamlead implement user authentication
-# Team lead spawns: spec-analyst, spec-architect, spec-developer, spec-tester, spec-reviewer
+# In Claude Code, use Agent tool with subagent_type:
+Agent(subagent_type: "senior-backend-architect", prompt: "Design caching layer for user profiles")
+Agent(subagent_type: "security-architect", prompt: "Threat model for payment processing")
+Agent(subagent_type: "database-architect", prompt: "Schema design for multi-tenant SaaS")
 ```
+
+### Agent Communication Protocol
+
+All agents spawned by team-lead use SendMessage:
+
+| Message | When | Example |
+|---------|------|---------|
+| `PROGRESS` | During long tasks | "Implemented 3/5 endpoints" |
+| `QUESTION` | Need clarification | "Should auth use JWT or sessions?" |
+| `BLOCKER` | Cannot proceed | "Missing database schema" |
+| `DONE` | Task complete | Files, decisions, confidence score |
+| `SUGGESTION` | Proactive insight | "Consider adding rate limiting" |
+
+### Model Routing
+
+| Model | Agents | Reasoning |
+|-------|--------|-----------|
+| **opus** | team-lead, spec-architect, spec-reviewer, security-architect | Complex decisions |
+| **sonnet** | spec-developer, spec-tester, spec-planner, spec-analyst, spec-validator | Implementation |
+| **haiku** | changelog-keeper, boilerplate-generator, regex-helper | Mechanical tasks |
