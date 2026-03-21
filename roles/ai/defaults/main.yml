@@ -1,0 +1,35 @@
+---
+# Qdrant Vector Database
+qdrant_enabled: true
+qdrant_image: "qdrant/qdrant"
+# Pin to current stable for deterministic builds
+qdrant_tag: "v1.13.2"
+qdrant_container_name: "qdrant"
+qdrant_port_rest: 6333
+qdrant_port_grpc: 6334
+qdrant_data_dir: "{{ dotfiles_home }}/.local/share/qdrant/storage"
+qdrant_snapshots_dir: "{{ dotfiles_home }}/.local/share/qdrant/snapshots"
+qdrant_memory_limit: "1g"
+qdrant_restart_policy: "unless-stopped"
+
+# Qdrant collection (mmap mode)
+qdrant_collection_name: "codebase"
+qdrant_vector_size: 384
+qdrant_distance: "Cosine"
+
+# Qdrant MCP Server
+qdrant_mcp_enabled: true
+qdrant_mcp_package: "mcp-server-qdrant"
+qdrant_mcp_embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+qdrant_mcp_url: "http://localhost:{{ qdrant_port_rest }}"
+
+# Code-Index-MCP
+code_index_mcp_enabled: true
+code_index_mcp_package: "code-index-mcp"
+
+# Paths
+uv_bin: "{{ dotfiles_home }}/.local/bin/uv"
+uvx_bin: "{{ dotfiles_home }}/.local/bin/uvx"
+claude_bin: "{{ dotfiles_home }}/.local/bin/claude"
+claude_mcp_scope: "user"
+docker_path: "/usr/local/bin:/opt/homebrew/bin:{{ ansible_facts['env']['PATH'] | default('/usr/bin:/bin') }}"

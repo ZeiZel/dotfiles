@@ -1,0 +1,34 @@
+---
+# Pre-cache: run --help to trigger uvx package download
+- name: MCP Servers | Pre-cache Qdrant MCP Server via uvx
+  ansible.builtin.command:
+    cmd: "{{ uvx_bin }} --from {{ qdrant_mcp_package }} mcp-server-qdrant --help"
+  register: qdrant_mcp_install
+  changed_when: false
+  failed_when: false
+  when: qdrant_mcp_enabled
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+# Pre-cache: run --help to trigger uvx package download
+- name: MCP Servers | Pre-cache Code-Index-MCP via uvx
+  ansible.builtin.command:
+    cmd: "{{ uvx_bin }} --from {{ code_index_mcp_package }} code-index-mcp --help"
+  register: code_index_mcp_install
+  changed_when: false
+  failed_when: false
+  when: code_index_mcp_enabled
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+- name: MCP Servers | Pre-download FastEmbed model
+  ansible.builtin.command:
+    cmd: >
+      {{ uv_bin }} run --with fastembed python -c
+      "from fastembed import TextEmbedding; TextEmbedding(model_name='{{ qdrant_mcp_embedding_model }}'); print('Model ready')"
+  register: fastembed_download
+  changed_when: false
+  failed_when: false
+  when: qdrant_mcp_enabled
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"

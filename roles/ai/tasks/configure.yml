@@ -1,0 +1,77 @@
+---
+- name: Configure | Skip if Claude not installed
+  ansible.builtin.debug:
+    msg: "Claude Code not found, skipping MCP configuration"
+  when: not (claude_stat.stat.exists | default(false))
+
+- name: Configure | MCP server setup
+  when: claude_stat.stat.exists | default(false)
+  block:
+    - name: Configure | List existing MCP servers
+      ansible.builtin.command:
+        cmd: "{{ claude_bin }} mcp list"
+      register: mcp_list
+      changed_when: false
+      failed_when: false
+      environment:
+        PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+    - name: Configure | Remove existing qdrant-mcp
+      ansible.builtin.command:
+        cmd: "{{ claude_bin }} mcp remove --scope {{ claude_mcp_scope }} qdrant-mcp"
+      when: "'qdrant-mcp' in mcp_list.stdout"
+      changed_when: false
+      failed_when: false
+      environment:
+        PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+    - name: Configure | Add Qdrant MCP Server
+      ansible.builtin.shell:
+        cmd: >
+          {{ claude_bin }} mcp add-json
+          --scope {{ claude_mcp_scope }}
+          qdrant-mcp
+          '{{ qdrant_mcp_config | to_json }}'
+      vars:
+        qdrant_mcp_config:
+          type: stdio
+          command: "{{ uvx_bin }}"
+          args:
+            - mcp-server-qdrant
+          env:
+            QDRANT_URL: "{{ qdrant_mcp_url }}"
+            COLLECTION_NAME: "{{ qdrant_collection_name }}"
+            EMBEDDING_MODEL: "{{ qdrant_mcp_embedding_model }}"
+      when: qdrant_mcp_enabled
+      register: qdrant_mcp_add
+      changed_when: qdrant_mcp_add.rc == 0
+      environment:
+        PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+    - name: Configure | Remove existing code-index-mcp
+      ansible.builtin.command:
+        cmd: "{{ claude_bin }} mcp remove --scope {{ claude_mcp_scope }} code-index-mcp"
+      when: "'code-index-mcp' in mcp_list.stdout"
+      changed_when: false
+      failed_when: false
+      environment:
+        PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+    - name: Configure | Add Code-Index-MCP
+      ansible.builtin.shell:
+        cmd: >
+          {{ claude_bin }} mcp add-json
+          --scope {{ claude_mcp_scope }}
+          code-index-mcp
+          '{{ code_index_mcp_config | to_json }}'
+      vars:
+        code_index_mcp_config:
+          type: stdio
+          command: "{{ uvx_bin }}"
+          args:
+            - code-index-mcp
+      when: code_index_mcp_enabled
+      register: code_index_mcp_add
+      changed_when: code_index_mcp_add.rc == 0
+      environment:
+        PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"

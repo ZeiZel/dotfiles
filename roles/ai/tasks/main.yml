@@ -1,0 +1,16 @@
+---
+- name: AI RAG | Check prerequisites
+  ansible.builtin.include_tasks: prerequisites.yml
+
+- name: AI RAG | Setup Qdrant
+  ansible.builtin.include_tasks: qdrant.yml
+  when: qdrant_enabled
+
+- name: AI RAG | Install MCP servers
+  ansible.builtin.include_tasks: mcp-servers.yml
+
+- name: AI RAG | Configure Claude Code
+  ansible.builtin.include_tasks: configure.yml
+
+- name: AI RAG | Verify setup
+  ansible.builtin.include_tasks: verify.yml

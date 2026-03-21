@@ -1,0 +1,24 @@
+{
+  "vectors": {
+    "size": {{ qdrant_vector_size }},
+    "distance": "{{ qdrant_distance }}",
+    "on_disk": true
+  },
+  "hnsw_config": {
+    "on_disk": true,
+    "m": 16,
+    "ef_construct": 100
+  },
+  "optimizers_config": {
+    "memmap_threshold": 20000,
+    "indexing_threshold": 20000
+  },
+  "on_disk_payload": true,
+  "quantization_config": {
+    "scalar": {
+      "type": "int8",
+      "quantile": 0.99,
+      "always_ram": true
+    }
+  }
+}

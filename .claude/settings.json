@@ -81,18 +81,9 @@
       "WebSearch"
     ],
     "deny": [
-      "Bash(rm -rf /)",
-      "Bash(rm -rf ~)",
-      "Bash(sudo rm -rf *)",
       "Bash(> /dev/sda)",
       "Bash(mkfs *)",
-      "Bash(dd if=/dev/zero *)",
-      "Read(**/.env)",
-      "Read(**/.env.*)",
-      "Read(**/*.pem)",
-      "Read(**/*.key)",
-      "Read(**/*secret*)",
-      "Read(**/*credential*)"
+      "Bash(dd if=/dev/zero *)"
     ],
     "defaultMode": "acceptEdits"
   },

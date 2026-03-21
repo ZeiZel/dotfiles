@@ -105,3 +105,8 @@
         - name: docker install
           ansible.builtin.include_tasks:
             file: tasks/docker.yml
+        - name: Setup AI RAG system
+          ansible.builtin.import_role:
+            name: ai
+          tags: ai
+          when: ai_rag_enabled | default(false) | bool

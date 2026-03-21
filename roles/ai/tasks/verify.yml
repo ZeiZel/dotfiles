@@ -1,0 +1,49 @@
+---
+- name: Verify | Qdrant container running
+  ansible.builtin.command:
+    cmd: "docker inspect -f '{%raw%}{{.State.Running}}{%endraw%}' {{ qdrant_container_name }}"
+  register: qdrant_running
+  changed_when: false
+  failed_when: false
+  environment:
+    PATH: "{{ docker_path }}"
+
+- name: Verify | Qdrant REST API health
+  ansible.builtin.uri:
+    url: "http://localhost:{{ qdrant_port_rest }}/healthz"
+    method: GET
+    status_code: 200
+  register: qdrant_api_health
+  failed_when: false
+
+- name: Verify | Collection exists
+  ansible.builtin.uri:
+    url: "http://localhost:{{ qdrant_port_rest }}/collections/{{ qdrant_collection_name }}"
+    method: GET
+    status_code: 200
+  register: qdrant_collection_info
+  failed_when: false
+
+- name: Verify | MCP servers configured
+  ansible.builtin.command:
+    cmd: "{{ claude_bin }} mcp list"
+  register: mcp_verify
+  changed_when: false
+  failed_when: false
+  when: claude_stat.stat.exists | default(false)
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+- name: Verify | Status Report
+  ansible.builtin.debug:
+    msg: |
+      ============================================
+      AI RAG System Status
+      ============================================
+      Qdrant container: {{ 'RUNNING' if 'true' in (qdrant_running.stdout | default('')) else 'STOPPED' }}
+      Qdrant API:       {{ 'OK' if (qdrant_api_health.status | default(0)) == 200 else 'FAILED' }}
+      Collection:       {{ 'OK' if (qdrant_collection_info.status | default(0)) == 200 else 'MISSING' }}
+      MCP qdrant-mcp:   {{ 'OK' if 'qdrant-mcp' in (mcp_verify.stdout | default('')) else 'MISSING' }}
+      MCP code-index:   {{ 'OK' if 'code-index-mcp' in (mcp_verify.stdout | default('')) else 'MISSING' }}
+      Endpoint:         http://localhost:{{ qdrant_port_rest }}
+      ============================================

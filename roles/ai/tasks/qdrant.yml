@@ -1,0 +1,79 @@
+---
+- name: Qdrant | Pull image
+  ansible.builtin.command:
+    cmd: "docker pull {{ qdrant_image }}:{{ qdrant_tag }}"
+  register: qdrant_pull
+  changed_when: "'Downloaded newer image' in qdrant_pull.stdout"
+  environment:
+    PATH: "{{ docker_path }}"
+
+- name: Qdrant | Check if container exists
+  ansible.builtin.command:
+    cmd: "docker inspect {{ qdrant_container_name }}"
+  register: qdrant_inspect
+  changed_when: false
+  failed_when: false
+  environment:
+    PATH: "{{ docker_path }}"
+
+- name: Qdrant | Remove container if image updated
+  ansible.builtin.command:
+    cmd: "docker rm -f {{ qdrant_container_name }}"
+  when: qdrant_inspect.rc == 0 and qdrant_pull.changed
+  register: qdrant_remove
+  changed_when: qdrant_remove.rc == 0
+  environment:
+    PATH: "{{ docker_path }}"
+
+- name: Qdrant | Create and start container
+  ansible.builtin.command:
+    cmd: >
+      docker run -d
+      --name {{ qdrant_container_name }}
+      --restart {{ qdrant_restart_policy }}
+      --memory {{ qdrant_memory_limit }}
+      -p 127.0.0.1:{{ qdrant_port_rest }}:6333
+      -p 127.0.0.1:{{ qdrant_port_grpc }}:6334
+      -v {{ qdrant_data_dir }}:/qdrant/storage
+      -v {{ qdrant_snapshots_dir }}:/qdrant/snapshots
+      {{ qdrant_image }}:{{ qdrant_tag }}
+  when: qdrant_inspect.rc != 0 or qdrant_pull.changed
+  environment:
+    PATH: "{{ docker_path }}"
+
+- name: Qdrant | Ensure container is running
+  ansible.builtin.command:
+    cmd: "docker start {{ qdrant_container_name }}"
+  changed_when: false
+  failed_when: false
+  when: qdrant_inspect.rc == 0 and not qdrant_pull.changed
+  environment:
+    PATH: "{{ docker_path }}"
+
+- name: Qdrant | Wait for REST API
+  ansible.builtin.uri:
+    url: "http://localhost:{{ qdrant_port_rest }}/healthz"
+    method: GET
+    status_code: 200
+  retries: 15
+  delay: 2
+  register: qdrant_health
+  until: qdrant_health.status == 200
+
+- name: Qdrant | Check if collection exists
+  ansible.builtin.uri:
+    url: "http://localhost:{{ qdrant_port_rest }}/collections/{{ qdrant_collection_name }}"
+    method: GET
+    status_code: [200, 404]
+  register: qdrant_collection_check
+
+- name: Qdrant | Create collection with mmap config
+  ansible.builtin.uri:
+    url: "http://localhost:{{ qdrant_port_rest }}/collections/{{ qdrant_collection_name }}"
+    method: PUT
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body: "{{ lookup('template', 'qdrant-collection.json.j2') | from_json }}"
+    status_code: [200]
+  when: qdrant_collection_check.status == 404

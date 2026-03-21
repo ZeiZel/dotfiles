@@ -36,6 +36,8 @@ Creates comprehensive project specification with all tooling integrated.
 | **sequential-thinking** | Complex reasoning support |
 | **github** | Repository integration |
 | **playwright** | E2E testing |
+| **qdrant-mcp** | RAG vector storage for large project context |
+| **code-index-mcp** | Deep code indexing and semantic search |
 
 ## Execution Phases
 
@@ -322,6 +324,8 @@ These directories contain:
 }
 ```
 
+**Note**: `qdrant-mcp` and `code-index-mcp` are configured at user scope (via `claude mcp add`), not per-project. They are provisioned by the `ai` Ansible role (`setup-ai.sh`). If not available, project-setup will warn and fall back to repomix strategy.
+
 Generate `docs/quality-gates.yaml`:
 ```yaml
 gates:
@@ -344,6 +348,67 @@ repomix --output docs/context/codebase-snapshot.txt
 ```
 
 Creates compressed codebase representation for quick context loading.
+
+### Phase 7.5: Context Strategy Assessment
+
+Determine whether the project needs RAG-based context or repomix is sufficient.
+
+```bash
+# 1. Estimate repomix token count
+if [ -f docs/context/codebase-snapshot.txt ]; then
+  SIZE=$(wc -c < docs/context/codebase-snapshot.txt)
+  ESTIMATED_TOKENS=$((SIZE / 4))
+  echo "Repomix snapshot: ~${ESTIMATED_TOKENS} tokens"
+fi
+```
+
+**Decision logic:**
+- If `ESTIMATED_TOKENS ≤ 700000` → strategy: `repomix`
+- If `ESTIMATED_TOKENS > 700000` → strategy: `rag`
+
+#### If strategy is `rag`:
+
+1. **Check Qdrant availability**
+   ```bash
+   curl -s http://localhost:6333/healthz
+   # If not available, warn user and fall back to repomix
+   ```
+
+2. **Index project via code-index-mcp**
+   ```
+   mcp__code-index-mcp__set_project_path(path: "{project_root}")
+   mcp__code-index-mcp__build_deep_index()
+   ```
+
+3. **Store architectural summaries in Qdrant**
+   ```
+   # For each key architectural document, store a summary:
+   mcp__qdrant-mcp__qdrant-store(
+     information: "Project {name}: {tech_stack}. Architecture: {style}. Key components: {list}",
+     metadata: { "type": "architecture", "project": "{name}" }
+   )
+
+   # Store domain model summaries:
+   mcp__qdrant-mcp__qdrant-store(
+     information: "Domain {domain}: entities {list}, events {list}, invariants {list}",
+     metadata: { "type": "domain", "domain": "{name}" }
+   )
+   ```
+
+4. **Update `docs/project.yaml`** with context section (see template below)
+
+#### Context strategy in project.yaml:
+
+```yaml
+context:
+  strategy: "{repomix|rag|auto}"
+  repomix_token_estimate: {number}
+  rag:
+    indexed: true
+    collection: "codebase"
+    last_indexed: "{ISO timestamp}"
+    indexed_files_count: {number}
+```
 
 ## Generated File Structure
 
@@ -415,6 +480,15 @@ domains:
   - name: "{domain_name}"
     entities: ["{Entity1}", "{Entity2}"]
     bounded_context: "{context_name}"
+
+context:
+  strategy: "{repomix|rag|auto}"
+  repomix_token_estimate: 0
+  rag:
+    indexed: false
+    collection: "codebase"
+    last_indexed: null
+    indexed_files_count: 0
 
 tooling:
   package_manager: "{bun|npm|yarn}"
@@ -585,6 +659,15 @@ polecats:
        ▼
 [Phase 7] Repomix Snapshot
    • repomix --output docs/context/codebase-snapshot.txt
+       │
+       ▼
+[Phase 7.5] Context Strategy Assessment
+   • Estimate repomix token count
+   • If >700k tokens AND Qdrant available:
+   •   Index project via code-index-mcp
+   •   Store arch summaries in Qdrant
+   •   Set strategy: "rag" in project.yaml
+   • Else: Set strategy: "repomix"
        │
        ▼
 ✓ Project ready for AI development

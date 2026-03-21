@@ -1,0 +1,43 @@
+---
+- name: AI Prereqs | Check Docker is running
+  ansible.builtin.command:
+    cmd: docker info
+  register: docker_info
+  changed_when: false
+  failed_when: false
+  environment:
+    PATH: "{{ docker_path }}"
+
+- name: AI Prereqs | Fail if Docker not running
+  ansible.builtin.fail:
+    msg: "Docker is not running. Start Docker Desktop or run install.sh first."
+  when: docker_info.rc != 0
+
+- name: AI Prereqs | Check uv installed
+  ansible.builtin.stat:
+    path: "{{ uv_bin }}"
+  register: uv_stat
+
+- name: AI Prereqs | Install uv if missing
+  ansible.builtin.shell:
+    cmd: curl -LsSf https://astral.sh/uv/install.sh | sh
+    creates: "{{ uv_bin }}"
+
+- name: AI Prereqs | Check Claude Code installed
+  ansible.builtin.stat:
+    path: "{{ claude_bin }}"
+  register: claude_stat
+
+- name: AI Prereqs | Warn if Claude not found
+  ansible.builtin.debug:
+    msg: "Claude Code not found at {{ claude_bin }}. MCP config will be skipped."
+  when: not claude_stat.stat.exists
+
+- name: AI Prereqs | Create data directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ qdrant_data_dir }}"
+    - "{{ qdrant_snapshots_dir }}"

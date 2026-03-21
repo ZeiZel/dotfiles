@@ -1,7 +1,7 @@
 ---
 name: teamlead
 description: Invoke the Team Lead orchestration agent for complex multi-agent development workflows with Beads task management and integrated tooling (Beads, Gastown, Repomix, Aider)
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, TodoWrite, WebSearch
+allowed-tools: Read, Write, Glob, Grep, Bash, Task, TodoWrite, SendMessage, WebSearch
 ---
 
 # Team Lead Skill
@@ -17,6 +17,8 @@ The Team Lead agent:
 - Maintains living documentation via architecture-keeper
 - Integrates with Gastown for large projects
 - Refreshes context via Repomix
+- Spawns **named** agents with bidirectional communication via SendMessage
+- **Never edits code directly** — pure orchestration only
 
 ## Usage
 
@@ -26,6 +28,57 @@ The Team Lead agent:
 /teamlead --plan-only              # Planning phase only
 /teamlead --parallel               # Maximize parallel execution
 ```
+
+## Context Pipeline
+
+Team Lead manages the context pipeline — deciding how agents receive project context.
+
+### Context Strategies
+
+| Strategy | When | How |
+|----------|------|-----|
+| **repomix** | Snapshot ≤700k tokens | Read snapshot, extract relevant sections, inject into agent prompt |
+| **rag** | Snapshot >700k tokens | Query qdrant-find + code-index-mcp, compose targeted Context Pack |
+| **auto** | Default | Check snapshot size at runtime, select repomix or rag |
+
+### Pipeline Flow
+
+```
+Pre-flight
+  └─ Read docs/project.yaml → context.strategy
+  └─ If auto: estimate tokens, decide
+  └─ If rag: verify Qdrant health
+
+Per-Agent Spawning
+  └─ Formulate task-specific queries
+  └─ If repomix: extract from snapshot
+  └─ If rag: qdrant-find + code-index-mcp
+  └─ Compose Context Pack (pre-loaded context)
+  └─ Add Context Source block (self-service instructions)
+  └─ Inject into agent spawn prompt
+```
+
+### RAG Tools (for rag strategy)
+
+```bash
+# Semantic search for architectural knowledge
+mcp__qdrant-mcp__qdrant-find(query: "how authentication works")
+
+# Search for code patterns
+mcp__code-index-mcp__search_code_advanced(pattern: "UserService")
+
+# Understand a specific file
+mcp__code-index-mcp__get_file_summary(file_path: "src/auth/service.ts")
+
+# Store new knowledge (after documentation phase)
+mcp__qdrant-mcp__qdrant-store(information: "Architecture update: ...", metadata: {...})
+```
+
+### Agent Context Levels
+
+- **Planning agents** (analyst, architect, planner): Get docs context only, no RAG tools
+- **Execution agents** (developer, reviewer, tester): Get pre-loaded context + RAG tools for self-service
+- **Documentation agents** (architecture-keeper): Get phase results + RAG for codebase understanding
 
 ## Integrated Tools
 
@@ -66,6 +119,19 @@ aider [files]     # Interactive coding session
 4. **Quality Gates** - Code review, testing, validation (95%+ target)
 5. **Iteration** - Fix issues, re-validate (max 3 iterations)
 6. **Documentation** - Update architecture docs via architecture-keeper
+
+## Bidirectional Communication
+
+Team Lead spawns agents with names so they can respond:
+
+| Message Type | Trigger | Team Lead Response |
+|---|---|---|
+| `QUESTION: ...` | Ambiguity before starting | Clarify immediately via SendMessage |
+| `BLOCKER: ...` | Cannot proceed | Resolve or escalate to user |
+| `DONE: ...` | Task complete | Close bd task, unblock dependents |
+| `SUGGESTION: ...` | Proactive insight | Evaluate, track in bd if significant |
+
+All spawned agents receive a **Team Context Block** with their name and communication instructions.
 
 ## Pre-flight Protocol
 
@@ -199,6 +265,21 @@ gt feed           # Monitor progress
 repomix --output docs/context/snapshot.txt
 ```
 
+### With RAG (Qdrant + code-index-mcp)
+```bash
+# Search for code context
+mcp__qdrant-mcp__qdrant-find(query: "...")
+mcp__code-index-mcp__search_code_advanced(pattern: "...")
+mcp__code-index-mcp__get_file_summary(file_path: "...")
+
+# Index project (first time / refresh)
+mcp__code-index-mcp__set_project_path(path: ".")
+mcp__code-index-mcp__build_deep_index()
+
+# Store knowledge
+mcp__qdrant-mcp__qdrant-store(information: "...", metadata: {...})
+```
+
 ### With Architecture
 - Reads context from `docs/project.yaml`
 - Reads architecture from `docs/architecture/`
@@ -209,6 +290,8 @@ repomix --output docs/context/snapshot.txt
 - **context7**: Documentation lookup during development
 - **sequential-thinking**: Complex reasoning for architecture decisions
 - **github**: PR and issue management
+- **qdrant-mcp**: RAG vector search for project context
+- **code-index-mcp**: Deep code indexing and semantic search
 
 ## Execute
 
