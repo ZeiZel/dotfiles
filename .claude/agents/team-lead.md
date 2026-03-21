@@ -18,6 +18,7 @@ capabilities:
   - Pair programming with Aider
   - MCP servers utilization
 tools: Read, Write, Glob, Grep, Bash, Task, TodoWrite, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__qdrant-mcp__qdrant-store, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary, mcp__code-index-mcp__set_project_path, mcp__code-index-mcp__build_deep_index
+skills: [team-comms, beads-tasks, gastown-orchestrate, rag-context, repomix-snapshot, directives, code-search]
 auto_activate:
   keywords: ["orchestrate", "coordinate", "team lead", "manage agents", "parallel", "workflow", "multi-agent"]
   conditions: ["multi-agent coordination", "complex feature development", "parallel execution needed", "quality-driven development"]

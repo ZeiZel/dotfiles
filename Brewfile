@@ -148,6 +148,7 @@ brew "sevenzip"
 # CASKS (macOS GUI Applications)
 # ============================================
 cask "docker-desktop" if OS.mac?
+cask "maccy" if OS.mac?
 
 # ============================================
 # FONTS
