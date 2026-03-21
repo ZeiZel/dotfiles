@@ -13,7 +13,9 @@ capabilities:
   - React Native testing (Detox, Jest)
   - CodePush for OTA updates
   - Deep linking and universal links
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, Task, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+skills: [team-comms, rag-context, code-search]
+reports_to: team-lead
 auto_activate:
   keywords: ["react native", "mobile", "expo", "ios", "android", "push notifications", "app store", "codepush"]
   conditions: ["Mobile app development", "Cross-platform implementation", "Native integration", "App store submission"]

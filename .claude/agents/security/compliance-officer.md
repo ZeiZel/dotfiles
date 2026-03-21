@@ -11,7 +11,9 @@ capabilities:
   - Data retention and deletion policies
   - Audit trail implementation
   - Privacy by design patterns
-tools: Read, Write, Edit, Glob, Grep, WebSearch
+tools: Read, Write, Glob, Grep, WebSearch, SendMessage
+skills: [team-comms]
+reports_to: team-lead
 auto_activate:
   keywords: ["gdpr", "soc2", "hipaa", "pci", "compliance", "privacy", "data protection", "audit", "retention"]
   conditions: ["Compliance requirements", "Privacy implementation", "Audit preparation", "Regulatory review"]

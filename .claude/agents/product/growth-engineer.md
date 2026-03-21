@@ -11,7 +11,9 @@ capabilities:
   - Statistical significance analysis
   - Growth metrics (retention, activation, referral)
   - Cohort analysis
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+skills: [team-comms, rag-context, code-search]
+reports_to: team-lead
 auto_activate:
   keywords: ["a/b test", "experiment", "feature flag", "conversion", "funnel", "growth", "retention", "activation"]
   conditions: ["Experimentation setup", "Growth optimization", "Feature flag implementation", "Conversion analysis"]

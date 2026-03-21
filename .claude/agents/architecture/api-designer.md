@@ -11,7 +11,9 @@ capabilities:
   - Rate limiting and quotas design
   - API gateway patterns (Kong, Nginx, AWS API Gateway)
   - Webhook design patterns
-tools: Read, Write, Edit, Glob, Grep, WebSearch
+tools: Read, Write, Glob, Grep, WebSearch, SendMessage
+skills: [team-comms]
+reports_to: team-lead
 auto_activate:
   keywords: ["api", "rest", "graphql", "grpc", "openapi", "swagger", "webhook", "rate limiting"]
   conditions: ["API design", "API documentation", "API versioning", "API gateway configuration"]

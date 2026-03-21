@@ -11,7 +11,9 @@ capabilities:
   - MongoDB/DynamoDB NoSQL patterns
   - Time-series databases (InfluxDB, TimescaleDB)
   - Database migration strategies
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+skills: [team-comms, rag-context, code-search]
+reports_to: team-lead
 auto_activate:
   keywords: ["database", "schema", "sql", "postgres", "mysql", "mongodb", "sharding", "replication", "query optimization"]
   conditions: ["Database design", "Schema migration", "Query performance", "Database scaling"]

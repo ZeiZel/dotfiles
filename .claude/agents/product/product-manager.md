@@ -11,7 +11,7 @@ capabilities:
   - User persona and journey mapping
   - Product-market fit validation
   - Go-to-market strategy
-tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch
+tools: Read, Write, Glob, Grep, WebSearch, WebFetch, SendMessage
 auto_activate:
   keywords: ["roadmap", "product strategy", "prioritization", "okr", "kpi", "user persona", "market fit", "gtm"]
   conditions: ["Product strategy needed", "Feature prioritization", "Roadmap planning", "Stakeholder alignment"]

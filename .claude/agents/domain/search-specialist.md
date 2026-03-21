@@ -11,7 +11,9 @@ capabilities:
   - Search analytics and A/B testing
   - Vector search for semantic queries (HNSW, FAISS)
   - Multi-language search support
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+skills: [team-comms, rag-context, code-search]
+reports_to: team-lead
 auto_activate:
   keywords: ["search", "elasticsearch", "opensearch", "relevance", "autocomplete", "facets", "vector search"]
   conditions: ["Search implementation", "Relevance tuning", "Search optimization", "Discovery systems"]

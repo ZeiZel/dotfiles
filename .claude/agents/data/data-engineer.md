@@ -11,7 +11,9 @@ capabilities:
   - Orchestration (Airflow, Dagster, Prefect)
   - Data lake architecture (Delta Lake, Iceberg)
   - Real-time analytics pipelines
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+skills: [team-comms, rag-context, code-search]
+reports_to: team-lead
 auto_activate:
   keywords: ["etl", "data pipeline", "data warehouse", "kafka", "airflow", "dbt", "spark", "data lake"]
   conditions: ["Data pipeline design", "Data warehouse modeling", "Stream processing", "Data quality implementation"]

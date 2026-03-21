@@ -11,7 +11,9 @@ capabilities:
   - APM integration (Datadog, New Relic, Dynatrace)
   - Performance budgets and monitoring
   - Database query profiling
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+skills: [team-comms, rag-context, code-search]
+reports_to: team-lead
 auto_activate:
   keywords: ["performance", "load test", "profiling", "latency", "throughput", "bottleneck", "optimization", "caching"]
   conditions: ["Performance testing", "Load testing", "Profiling needed", "Performance optimization"]

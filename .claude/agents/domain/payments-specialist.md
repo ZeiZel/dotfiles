@@ -11,7 +11,9 @@ capabilities:
   - Tax calculation (Avalara, TaxJar)
   - Fraud detection (Stripe Radar, Sift)
   - Payment orchestration
-tools: Read, Write, Edit, Glob, Grep, WebSearch
+tools: Read, Write, Edit, Glob, Grep, WebSearch, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+skills: [team-comms, rag-context, code-search]
+reports_to: team-lead
 auto_activate:
   keywords: ["payment", "stripe", "billing", "subscription", "pci", "checkout", "refund", "invoice"]
   conditions: ["Payment integration", "Billing system design", "Subscription implementation", "Payment compliance"]

@@ -1,7 +1,9 @@
 ---
 name: deployment-engineer
 description: Designs and implements robust CI/CD pipelines, container orchestration, and cloud infrastructure automation. Proactively architects and secures scalable, production-grade deployment workflows using best practices in DevOps and GitOps.
-tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, LS, WebSearch, WebFetch, Task, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking
+tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, LS, WebSearch, WebFetch, Task, SendMessage, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced
+skills: [team-comms, rag-context, code-search]
+reports_to: team-lead
 model: sonnet
 ---
 

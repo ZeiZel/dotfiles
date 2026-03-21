@@ -9,7 +9,9 @@ capabilities:
   - Integration point tracking
   - Change history documentation
   - Context preparation for agents
-tools: Read, Write, Edit, Glob, Grep, WebSearch
+tools: Read, Write, Edit, Glob, Grep, WebSearch, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__qdrant-mcp__qdrant-store, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+skills: [team-comms, rag-context, code-search]
+reports_to: team-lead
 auto_activate:
   keywords: ["architecture docs", "domain model", "adr", "decision log", "architecture update"]
   conditions: ["Post-implementation documentation", "Architecture changes", "Domain updates"]

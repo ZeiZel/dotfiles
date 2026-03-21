@@ -11,7 +11,9 @@ capabilities:
   - Authentication/authorization (OAuth 2.0, OIDC, RBAC, ABAC)
   - Security compliance frameworks
   - Penetration testing guidance
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+skills: [team-comms, rag-context, code-search]
+reports_to: team-lead
 auto_activate:
   keywords: ["security", "threat model", "oauth", "authentication", "authorization", "rbac", "zero-trust", "secrets", "owasp"]
   conditions: ["Security architecture needed", "Authentication design", "Threat assessment", "Security review"]

@@ -33,6 +33,7 @@ node_modules/
 
 # Claude Code - local settings
 .claude/settings.local.json
+.claude/sessions
 
 # Claude Code - runtime/cache/temp (not for sync)
 .claude/backups/

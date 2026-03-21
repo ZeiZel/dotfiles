@@ -1,7 +1,9 @@
 ---
 name: ui-ux-master
 description: Expert UI/UX design agent with 10+ years of experience creating award-winning user experiences. Specializes in AI-collaborative design workflows that produce implementation-ready specifications, enabling seamless translation from creative vision to production code. Masters both design thinking and technical implementation, bridging the gap between aesthetics and engineering.
-tools: Read, Write, Edit, Glob, Grep, WebSearch, Task, mcp__figma__get_file, mcp__figma__get_file_components, mcp__figma__get_file_styles, mcp__figma__get_node, mcp__figma__get_image
+tools: Read, Write, Edit, Glob, Grep, WebSearch, Task, SendMessage, mcp__figma__get_file, mcp__figma__get_file_components, mcp__figma__get_file_styles, mcp__figma__get_node, mcp__figma__get_image
+skills: [team-comms]
+reports_to: team-lead
 coordinates_with: [front-lead, senior-frontend-architect, react-developer, angular-frontend-engineer, vue-frontend-engineer]
 ---
 

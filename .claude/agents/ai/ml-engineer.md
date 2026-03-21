@@ -12,7 +12,9 @@ capabilities:
   - LLM integration (OpenAI, Anthropic, local models)
   - RAG architectures and embeddings
   - Prompt engineering and evaluation
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, Task, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+skills: [team-comms, rag-context, code-search]
+reports_to: team-lead
 auto_activate:
   keywords: ["ml", "machine learning", "model", "training", "inference", "llm", "rag", "embeddings", "mlops"]
   conditions: ["ML model development", "LLM integration", "RAG implementation", "Model deployment"]
