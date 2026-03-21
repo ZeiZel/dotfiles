@@ -512,6 +512,44 @@ User Request
 [Report] Completion summary + recommendations
 ```
 
+## Model Selection
+
+Route agents to appropriate models based on task complexity:
+
+```yaml
+model_routing:
+  opus:   # Complex reasoning, nuanced analysis
+    - team-lead
+    - spec-architect
+    - spec-reviewer
+    - security-architect
+    - senior-backend-architect
+    - senior-frontend-architect
+  sonnet: # Implementation, structured tasks
+    - spec-developer
+    - spec-tester
+    - spec-planner
+    - spec-analyst
+    - spec-validator
+    - architecture-keeper
+    - front-lead
+    - react-developer
+    - angular-frontend-engineer
+    - vue-frontend-engineer
+  haiku:  # Mechanical, template-based tasks
+    - changelog-keeper
+    - boilerplate-generator
+    - regex-helper
+    - meeting-summarizer
+    - readme-generator
+```
+
+When spawning agents, pass the `model:` parameter:
+```
+Task(subagent_type: "spec-developer", model: "sonnet", ...)
+Task(subagent_type: "spec-architect", model: "opus", ...)
+```
+
 ## Context Pipeline
 
 ### Context Strategy Detection
@@ -710,6 +748,43 @@ Phase: {planning|execution|quality|iteration}
 {Where to write results}
 ```
 
+## Workflow Templates
+
+Select the appropriate template based on task type. Not every task needs the full pipeline.
+
+| Template | Phases | Quality | Use When |
+|----------|--------|---------|----------|
+| **feature** | analyst -> architect -> planner -> dev -> review -> test -> validate | 95% | New features, complex changes |
+| **bugfix** | dev -> review -> test | 90% | Bug fixes with known root cause |
+| **hotfix** | dev -> test | 85% | Critical production fixes |
+| **refactor** | architect -> dev -> review -> test | 95% | Code restructuring |
+| **docs** | technical-writer -> architecture-keeper | review | Documentation updates |
+| **prototype** | architect -> dev | 75% | Exploration, spikes |
+| **security-fix** | security-architect -> dev -> review -> test -> validate | 98% | Security vulnerabilities |
+
+### Template Selection Logic
+
+1. User explicitly specifies template: use it
+2. Keywords in task: "fix" / "bug" -> bugfix, "urgent" / "critical" -> hotfix, "refactor" -> refactor, "docs" -> docs
+3. Default: feature (full pipeline)
+
+### Artifact-Based Communication
+
+For multi-phase workflows, create a shared artifact directory:
+
+```
+docs/artifacts/{workflow-id}/
+  00-requirements.md        # spec-analyst output
+  01-architecture.md        # spec-architect output
+  02-task-plan.md           # spec-planner output
+  03-implementation-log.md  # spec-developer notes
+  04-review-report.md       # spec-reviewer output
+  05-test-report.md         # spec-tester output
+  06-validation-report.md   # spec-validator output
+```
+
+Each agent reads previous artifacts and writes own output. Pass artifact directory path in spawn prompt instead of duplicating full content.
+
 ## Phase-Based Agent Lifecycle
 
 ### Phase Management Principle
@@ -847,30 +922,36 @@ Phase: {planning|execution|quality|iteration}
 
 **Trigger**: Implementation complete
 
+**Optimization**: Run review and testing in PARALLEL (they are independent), then validate sequentially.
+
 **Steps**:
-1. **Code Review**
+1. **Code Review + Testing (PARALLEL)**
+
+   Spawn both agents simultaneously:
+
    ```markdown
+   # Agent 1: spec-reviewer
    Use **spec-reviewer** with:
    - All changed files from execution phase
    - Project coding standards
    - Security checklist
-
    Deliverable: Review report with score
-   ```
 
-2. **Testing**
-   ```markdown
+   # Agent 2: spec-tester (spawn in parallel)
    Use **spec-tester** with:
    - Implementation files
    - Acceptance criteria from planning
    - Test coverage requirements
-
    Deliverable: Test suite and coverage report
    ```
 
-3. **Validation**
+   Wait for BOTH agents to send DONE before proceeding.
+
+2. **Validation (after both review + test complete)**
    ```markdown
    Use **spec-validator** with:
+   - Review report (from step 1, agent 1)
+   - Test report (from step 1, agent 2)
    - All artifacts from workflow
    - Original requirements
    - Quality thresholds
@@ -878,7 +959,7 @@ Phase: {planning|execution|quality|iteration}
    Deliverable: Final quality score
    ```
 
-4. **Gate Decision**
+3. **Gate Decision**
    | Score | Decision | Action |
    |-------|----------|--------|
    | >= 95% | PASS | Proceed to documentation |
@@ -954,6 +1035,59 @@ if MAX_ITERATIONS reached and quality < 95%:
    ```
 
 4. **Generate Completion Report**
+
+### Phase 6: Knowledge Persistence
+
+**Trigger**: After documentation update (Phase 5)
+
+**Purpose**: Store learnings so future sessions benefit from this workflow's experience.
+
+**Steps**:
+1. **Store Architectural Decisions**
+   ```
+   mcp__qdrant-mcp__qdrant-store(
+     information: "Architecture decision: {decision summary with rationale}",
+     metadata: {
+       "type": "decision",
+       "domain": "{affected domain}",
+       "workflow": "{workflow-id}",
+       "created": "{date}"
+     }
+   )
+   ```
+
+2. **Store Quality Insights** (if issues were found during review)
+   ```
+   mcp__qdrant-mcp__qdrant-store(
+     information: "Quality insight: {what was wrong, root cause, fix applied}",
+     metadata: {
+       "type": "quality-insight",
+       "severity": "{high|medium|low}",
+       "created": "{date}"
+     }
+   )
+   ```
+
+3. **Store Implementation Patterns** (if a reusable pattern emerged)
+   ```
+   mcp__qdrant-mcp__qdrant-store(
+     information: "Pattern: {pattern description with code example}",
+     metadata: {
+       "type": "pattern",
+       "domain": "{domain}",
+       "language": "{ts|py|go}",
+       "created": "{date}"
+     }
+   )
+   ```
+
+4. **Query Past Knowledge Before Planning**
+   At the start of each new workflow, query for relevant past insights:
+   ```
+   mcp__qdrant-mcp__qdrant-find(query: "{task domain} patterns and decisions")
+   mcp__qdrant-mcp__qdrant-find(query: "{task domain} quality issues")
+   ```
+   Include relevant findings in agent spawn prompts as "Lessons Learned" section.
 
 ## bd (Beads) Integration
 

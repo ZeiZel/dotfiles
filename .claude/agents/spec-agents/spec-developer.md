@@ -534,12 +534,28 @@ export function sanitizeHtml(input: string): string {
 ### Task Execution
 1. Read task specification carefully
 2. Review architectural guidelines
-3. Check existing code patterns
+3. Check existing code patterns (use code-search skill)
 4. Implement feature incrementally
 5. Write tests alongside code
 6. Handle edge cases
 7. Optimize if needed
 8. Document complex logic
+9. Run self-review checklist before sending DONE
+
+### Pre-DONE Self-Review (MANDATORY)
+
+Before sending DONE, verify ALL items:
+
+- [ ] Code compiles / passes linting (`tsc --noEmit`, `eslint`)
+- [ ] All acceptance criteria from task specification addressed
+- [ ] Tests cover happy path + at least 2 error cases
+- [ ] No hardcoded values, secrets, or debug code (`console.log`, `debugger`)
+- [ ] Imports are clean (no unused imports)
+- [ ] Error handling present for external calls and user input
+- [ ] Code follows existing project patterns (verify via RAG if unsure)
+- [ ] No TODO/FIXME left without explicit justification in DONE message
+
+If any item fails, fix it before sending DONE. This reduces review iterations.
 
 ### Code Quality Checklist
 - [ ] Code follows project conventions
@@ -585,9 +601,14 @@ Use your judgment — only escalate genuine blockers, not minor details.
 SendMessage(to: "team-lead", message: "BLOCKER: I cannot proceed because {reason}. I tried: {attempts}. I need: {specific ask}.")
 ```
 
-**DONE** — when your deliverables are complete:
+**DONE** — when your deliverables are complete (use structured format):
 ```
-SendMessage(to: "team-lead", message: "DONE: Completed {task summary}. Deliverables: {list}. Notable findings: {surprises or important context}.")
+SendMessage(to: "team-lead", message: "DONE: Completed {task summary}.
+  Files: {list of changed files}
+  Decisions: {key technical decisions made}
+  Tests: {count passing, coverage %}
+  Confidence: {0-1}
+  Follow-up: {items not in scope but noticed}")
 ```
 
 **SUGGESTION** — proactively flag issues you notice while working:

@@ -75,3 +75,58 @@
       changed_when: code_index_mcp_add.rc == 0
       environment:
         PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+    # Context7 MCP - live library documentation
+    - name: Configure | Remove existing context7
+      ansible.builtin.command:
+        cmd: "{{ claude_bin }} mcp remove --scope {{ claude_mcp_scope }} context7"
+      when: "'context7' in mcp_list.stdout"
+      changed_when: false
+      failed_when: false
+      environment:
+        PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+    - name: Configure | Add Context7 MCP Server
+      ansible.builtin.command:
+        cmd: >
+          {{ claude_bin }} mcp add
+          --scope {{ claude_mcp_scope }}
+          --transport http
+          context7
+          {{ context7_mcp_url }}
+      when: context7_mcp_enabled
+      register: context7_mcp_add
+      changed_when: context7_mcp_add.rc == 0
+      failed_when: false
+      environment:
+        PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+    # Mem0 MCP - structured agent memory
+    - name: Configure | Remove existing mem0
+      ansible.builtin.command:
+        cmd: "{{ claude_bin }} mcp remove --scope {{ claude_mcp_scope }} mem0"
+      when: "'mem0' in mcp_list.stdout"
+      changed_when: false
+      failed_when: false
+      environment:
+        PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+    - name: Configure | Add Mem0 MCP Server
+      ansible.builtin.shell:
+        cmd: >
+          {{ claude_bin }} mcp add-json
+          --scope {{ claude_mcp_scope }}
+          mem0
+          '{{ mem0_mcp_config | to_json }}'
+      vars:
+        mem0_mcp_config:
+          type: stdio
+          command: "{{ uvx_bin }}"
+          args:
+            - mem0-mcp
+      when: mem0_enabled
+      register: mem0_mcp_add
+      changed_when: mem0_mcp_add.rc == 0
+      failed_when: false
+      environment:
+        PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"

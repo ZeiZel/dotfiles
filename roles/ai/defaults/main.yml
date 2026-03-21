@@ -17,6 +17,10 @@ qdrant_collection_name: "codebase"
 qdrant_vector_size: 384
 qdrant_distance: "Cosine"
 
+# Hybrid search: BM25 sparse vectors alongside dense
+# Enables keyword+semantic fusion for 20-40% better retrieval
+qdrant_hybrid_search_enabled: true
+
 # Qdrant MCP Server
 qdrant_mcp_enabled: true
 qdrant_mcp_package: "mcp-server-qdrant"
@@ -27,9 +31,21 @@ qdrant_mcp_url: "http://localhost:{{ qdrant_port_rest }}"
 code_index_mcp_enabled: true
 code_index_mcp_package: "code-index-mcp"
 
+# Context7 MCP - live library documentation in LLM context
+# #1 MCP server by usage, eliminates hallucinated APIs
+context7_mcp_enabled: true
+context7_mcp_url: "https://mcp.context7.com/mcp"
+
+# Mem0 - structured agent memory (episodic/semantic/procedural)
+# 26% accuracy boost over flat vector search
+mem0_enabled: true
+mem0_package: "mem0ai"
+mem0_data_dir: "{{ dotfiles_home }}/.local/share/mem0"
+
 # Paths
 uv_bin: "{{ dotfiles_home }}/.local/bin/uv"
 uvx_bin: "{{ dotfiles_home }}/.local/bin/uvx"
+npx_bin: "npx"
 claude_bin: "{{ dotfiles_home }}/.local/bin/claude"
 claude_mcp_scope: "user"
 docker_path: "/usr/local/bin:/opt/homebrew/bin:{{ ansible_facts['env']['PATH'] | default('/usr/bin:/bin') }}"

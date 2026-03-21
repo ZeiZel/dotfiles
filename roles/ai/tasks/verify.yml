@@ -43,7 +43,10 @@
       Qdrant container: {{ 'RUNNING' if 'true' in (qdrant_running.stdout | default('')) else 'STOPPED' }}
       Qdrant API:       {{ 'OK' if (qdrant_api_health.status | default(0)) == 200 else 'FAILED' }}
       Collection:       {{ 'OK' if (qdrant_collection_info.status | default(0)) == 200 else 'MISSING' }}
+      Hybrid search:    {{ 'ENABLED' if qdrant_hybrid_search_enabled | default(false) else 'DISABLED' }}
       MCP qdrant-mcp:   {{ 'OK' if 'qdrant-mcp' in (mcp_verify.stdout | default('')) else 'MISSING' }}
       MCP code-index:   {{ 'OK' if 'code-index-mcp' in (mcp_verify.stdout | default('')) else 'MISSING' }}
+      MCP context7:     {{ 'OK' if 'context7' in (mcp_verify.stdout | default('')) else 'MISSING' }}
+      MCP mem0:         {{ 'OK' if 'mem0' in (mcp_verify.stdout | default('')) else 'MISSING' }}
       Endpoint:         http://localhost:{{ qdrant_port_rest }}
       ============================================

@@ -185,11 +185,80 @@ mcp__qdrant-mcp__qdrant-store(
 mcp__code-index-mcp__build_deep_index()
 ```
 
+## Smart Context Injection
+
+When building context packs, use task-type-aware patterns to minimize token waste:
+
+### Task-Type File Patterns
+
+```yaml
+context_patterns:
+  backend:
+    include: ["src/services/**", "src/models/**", "src/controllers/**", "src/middleware/**"]
+    queries: ["service architecture", "API patterns", "database models"]
+  frontend:
+    include: ["src/components/**", "src/pages/**", "src/hooks/**", "src/store/**"]
+    queries: ["component patterns", "state management", "routing"]
+  infra:
+    include: ["docker*", "*.yml", "terraform/**", "k8s/**", "ci/**"]
+    queries: ["deployment", "infrastructure", "CI/CD"]
+  testing:
+    include: ["**/*.test.*", "**/*.spec.*", "test/**", "cypress/**"]
+    queries: ["test patterns", "test utilities", "fixtures"]
+  auth:
+    include: ["src/**/auth*", "src/**/session*", "src/**/token*"]
+    queries: ["authentication flow", "JWT", "session management"]
+```
+
+### Context Budget Per Agent Role
+
+| Agent Role | Target Budget | Allocation |
+|------------|--------------|------------|
+| Orchestrator (team-lead) | 30-40k tokens | 40% coordination, 60% agent summaries |
+| Planning (analyst, architect) | 40-50k tokens | 50% docs, 30% summaries, 20% buffer |
+| Execution (developer, tester) | 50-60k tokens | 20% instructions, 60% relevant code, 20% buffer |
+| Review (reviewer, validator) | 40-50k tokens | 30% standards, 50% code, 20% buffer |
+
+### Three-Layer Context Model
+
+```
+Layer 1 (always, ~5k tokens):
+  - Project overview from CLAUDE.md
+  - Architecture summary
+  - Coding standards
+
+Layer 2 (task-specific, ~20-40k tokens):
+  - Relevant module code (via task-type patterns)
+  - Related tests
+  - API specs for the domain
+
+Layer 3 (on-demand, unlimited but lazy):
+  - Full file reads via RAG self-service
+  - Only when Layer 1+2 insufficient
+```
+
+## Hybrid Search
+
+Qdrant collection supports BM25 sparse vectors alongside dense embeddings.
+
+### When to Use Hybrid Search
+
+- Searching for specific function/class names (BM25 excels at exact matches)
+- Combined semantic + keyword queries
+- Finding code with domain-specific terminology
+
+### Query Strategy
+
+1. **Keyword-heavy queries** (function names, class names): weight BM25 higher (70/30)
+2. **Conceptual queries** ("how does auth work?"): weight dense higher (30/70)
+3. **Balanced queries**: use 40/60 BM25/dense split (default)
+
 ## RAG Infrastructure
 
 - **Qdrant**: Docker container, port 6333 (REST) / 6334 (gRPC)
-- **Collection**: "codebase" (384-dim vectors)
+- **Collection**: "codebase" (384-dim dense + BM25 sparse vectors)
 - **Embedding model**: sentence-transformers/all-MiniLM-L6-v2
+- **Hybrid search**: BM25 + dense vector fusion (20-40% better retrieval)
 - **Provisioned by**: `roles/ai/` Ansible role via `setup-ai.sh`
 
 ### Health Check

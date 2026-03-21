@@ -528,9 +528,14 @@ Use your judgment — only escalate genuine blockers, not minor details.
 SendMessage(to: "team-lead", message: "BLOCKER: I cannot proceed because {reason}. I tried: {attempts}. I need: {specific ask}.")
 ```
 
-**DONE** — when your deliverables are complete:
+**DONE** — when your deliverables are complete (use structured format):
 ```
-SendMessage(to: "team-lead", message: "DONE: Completed {task summary}. Deliverables: {list}. Notable findings: {surprises or important context}.")
+SendMessage(to: "team-lead", message: "DONE: Completed {task summary}.
+  Files: {files reviewed}
+  Issues: {critical: N, important: N, minor: N}
+  Decisions: {key review decisions}
+  Score: {quality score 0-100}
+  Confidence: {0-1}")
 ```
 
 **SUGGESTION** — proactively flag issues you notice while working:

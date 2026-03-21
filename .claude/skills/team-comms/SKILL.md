@@ -17,6 +17,23 @@ Skill defining the bidirectional communication protocol for multi-agent teams. A
 
 ## Message Types
 
+### PROGRESS — Intermediate Status Update
+
+Send periodically during long tasks to provide visibility.
+
+```
+SendMessage(
+  to: "team-lead",
+  message: "PROGRESS: 60% complete on bd-123. Completed: UserService, AuthController. Remaining: tests, error handling."
+)
+```
+
+**Rules:**
+- Send every ~25% completion or when a significant milestone is reached
+- Include what's done and what remains
+- Do NOT send for tasks that take <5 minutes
+- Reference the Beads task ID
+
 ### QUESTION — Need Clarification
 
 Send BEFORE starting work if requirements have genuine ambiguity.
@@ -53,18 +70,24 @@ SendMessage(
 
 ### DONE — Task Complete
 
-Send when all deliverables are finished.
+Send when all deliverables are finished. Use structured format for efficient parsing by team-lead.
 
 ```
 SendMessage(
   to: "team-lead",
-  message: "DONE: Implemented JWT auth endpoints (bd-101). Deliverables:\n- POST /api/auth/login\n- POST /api/auth/refresh\n- POST /api/auth/logout\n- 15 unit tests, all passing\n- 95% code coverage"
+  message: "DONE: Implemented JWT auth endpoints (bd-101).
+    Files: src/auth/auth.controller.ts, src/auth/auth.service.ts, src/auth/auth.module.ts, tests/auth.test.ts
+    Decisions: RS256 for JWT signing, 15m access token TTL, refresh tokens in httpOnly cookies
+    Tests: 15 passing, 95% coverage
+    Confidence: 0.9
+    Follow-up: rate limiting on /login endpoint (not in scope)"
 )
 ```
 
 **Rules:**
-- List all deliverables
-- Include test results if applicable
+- Include **Files** changed (team-lead needs this for context propagation)
+- Include **Decisions** made (stored in knowledge base for future reference)
+- Include **Confidence** score 0-1 (helps team-lead decide if review needs extra scrutiny)
 - Reference the Beads task ID
 - Note any follow-up items or tech debt
 

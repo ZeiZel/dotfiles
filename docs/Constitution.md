@@ -51,9 +51,10 @@ ALL agents spawned by team-lead MUST use SendMessage with these message types:
 
 | Type | When | Format |
 |------|------|--------|
+| PROGRESS | Intermediate update (long tasks) | `PROGRESS: {percent}% on {task}. Done: {list}. Remaining: {list}` |
 | QUESTION | Genuine ambiguity before starting | `QUESTION: {question}. This affects: {impact}` |
 | BLOCKER | Cannot proceed | `BLOCKER: {reason}. Tried: {attempts}. Need: {ask}` |
-| DONE | Task complete | `DONE: {summary}. Deliverables: {list}` |
+| DONE | Task complete | `DONE: {summary}. Files: {list}. Decisions: {list}. Confidence: {0-1}` |
 | SUGGESTION | Proactive insight | `SUGGESTION: {observation}. Recommendation: {action}` |
 
 **Escalation rule**: Do NOT work silently on ambiguity. Ask first.
@@ -66,6 +67,22 @@ ALL agents spawned by team-lead MUST use SendMessage with these message types:
 
 Execution agents receive pre-loaded context + self-service RAG tools.
 Planning agents receive docs context only (no RAG tools).
+
+### Available MCP Servers
+
+| Server | Purpose | Tools |
+|--------|---------|-------|
+| **qdrant-mcp** | Vector search for architectural knowledge | qdrant-find, qdrant-store |
+| **code-index-mcp** | Deep code indexing and semantic search | search_code_advanced, get_file_summary |
+| **context7** | Live library documentation (eliminates hallucinated APIs) | resolve-library-id, get-library-docs |
+| **mem0** | Structured agent memory (episodic/semantic/procedural) | add-memory, search-memory, get-memories |
+
+### Context Budget Rules
+
+- At 70% context fill: precision drops. Start being selective.
+- At 85%: hallucinations increase. Compact aggressively.
+- At 90%+: responses become erratic. Clear mandatory.
+- Target per agent: <60k tokens of injected context.
 
 ## 4. Documentation-First Development
 

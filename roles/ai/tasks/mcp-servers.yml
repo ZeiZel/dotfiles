@@ -32,3 +32,21 @@
   when: qdrant_mcp_enabled
   environment:
     PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+# Mem0 - structured agent memory
+- name: MCP Servers | Pre-cache Mem0 MCP via uvx
+  ansible.builtin.command:
+    cmd: "{{ uvx_bin }} --from mem0-mcp mem0-mcp --help"
+  register: mem0_mcp_install
+  changed_when: false
+  failed_when: false
+  when: mem0_enabled
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+- name: MCP Servers | Create Mem0 data directory
+  ansible.builtin.file:
+    path: "{{ mem0_data_dir }}"
+    state: directory
+    mode: "0755"
+  when: mem0_enabled

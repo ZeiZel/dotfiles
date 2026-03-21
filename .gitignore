@@ -33,25 +33,35 @@ node_modules/
 
 # Claude Code - local settings
 .claude/settings.local.json
-.claude/sessions
 
 # Claude Code - runtime/cache/temp (not for sync)
 .claude/backups/
 .claude/cache/
 .claude/chrome/
+.claude/commands/
+.claude/context/
 .claude/debug/
+.claude/docs/
 .claude/downloads/
 .claude/file-history/
+.claude/hooks/
 .claude/ide/
+.claude/image-cache/
 .claude/paste-cache/
 .claude/plans/
 .claude/projects/
 .claude/session-env/
+.claude/sessions/
 .claude/shell-snapshots/
 .claude/statsig/
 .claude/tasks/
+.claude/teams/
 .claude/telemetry/
+.claude/templates/
 .claude/todos/
+
+# Claude Code - plugins runtime (marketplaces are cloned repos)
+.claude/plugins/marketplaces/
 
 # Claude Code - cache files
 .claude/history.jsonl
