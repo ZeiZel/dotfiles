@@ -1,0 +1,75 @@
+---
+name: dotfiles
+description: Ansible-based macOS/Linux developer environment provisioning with multi-agent AI system
+
+tech_stack:
+  provisioning: ansible
+  shell: zsh
+  terminal: ghostty
+  editor: neovim
+  package_manager: homebrew
+  dotfiles_manager: stow
+  ai_tools:
+    - claude-code
+    - aider
+    - repomix
+
+context:
+  strategy: auto  # auto | repomix | rag
+  threshold_tokens: 700000
+  snapshot_path: docs/context/codebase-snapshot.txt
+
+quality:
+  target_score: 95
+  max_iterations: 3
+  mandatory_agents:
+    - spec-reviewer
+    - security-architect
+    - spec-tester
+
+model_routing:
+  opus:
+    - team-lead
+    - spec-architect
+    - spec-reviewer
+    - security-architect
+    - senior-backend-architect
+    - senior-frontend-architect
+  sonnet:
+    - spec-developer
+    - spec-tester
+    - spec-planner
+    - spec-analyst
+    - spec-validator
+    - agile-master
+  haiku:
+    - changelog-keeper
+    - boilerplate-generator
+    - regex-helper
+
+workflow_templates:
+  feature:
+    phases: [analyst, architect, agile-master, dev, review, test, validate]
+    quality: 95
+  bugfix:
+    phases: [dev, review, test]
+    quality: 90
+  hotfix:
+    phases: [dev, test]
+    quality: 85
+  refactor:
+    phases: [architect, dev, review, test]
+    quality: 95
+  docs:
+    phases: [writer, architecture-keeper]
+    quality: review
+  prototype:
+    phases: [architect, dev]
+    quality: 75
+
+rag:
+  enabled: false
+  collection: codebase
+  embedding_model: paraphrase-multilingual-MiniLM-L12-v2
+  embedding_dim: 384
+  qdrant_port: 6333

@@ -9,12 +9,15 @@ Rules that ALL agents in this system MUST follow. Violations are considered bugs
 - **NEVER creates Beads tasks** — spec-analyst creates tasks
 - **NEVER makes technical decisions** — architects make decisions
 - **NEVER plans phases or priorities** — agile-master plans phases
+- **NEVER analyzes source code for understanding** — only reads it to build context packs for agents
+- **NEVER does "quick fixes"** — ALL work goes through agents regardless of size
 - `Write` is reserved for coordination artifacts: docs, context files, task summaries
 - Delegates ALL code changes to specialist agents
 - Spawns agents with `name:` parameter and Team Context Block
 - Routes context between agents, collects results
 - Drives quality gates (95%+ target)
 - **MUST spawn `preflight-checker` agent BEFORE any workflow** — verifies RAG, MCP servers, CLI tools
+- **MUST run self-check before every tool call**: "Is this action spawning an agent or routing context? If NO → delegate."
 
 ### Spec Analyst (spec-analyst)
 - **Sole creator of Beads tasks** — uses `bd create` and `bd dep add`
@@ -191,7 +194,7 @@ Use `llms.txt` for navigation/index, `llms-full.txt` for comprehensive context.
 - Tasks have DAG dependencies
 - Agents claim tasks before working: `bd update bd-XXX --claim`
 - Agents close tasks on completion: `bd close bd-XXX --message "..."`
-- Team Lead creates tasks and manages lifecycle
+- Spec Analyst creates tasks; Team Lead tracks lifecycle and routes task IDs to agents
 
 ## 6. Quality Standards
 

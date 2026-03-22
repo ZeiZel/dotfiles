@@ -17,7 +17,7 @@ alias ld='lazydocker'
 alias div='dive'
 alias post='posting'
 alias hq='harlequin'
-alias tr='trip'
+alias trp='trip'
 alias ya='yazi'
 alias k9='k9s'
 
@@ -35,7 +35,7 @@ alias gco="git checkout"
 alias gb='git branch'
 alias gba='git branch -a'
 alias gadd='git add'
-alias ga='git add -p'
+alias gap='git add -p'  # ga is used by forgit (interactive add with preview)
 alias gcoall='git checkout -- .'
 alias gr='git remote'
 alias gre='git reset'
@@ -323,8 +323,8 @@ alias brs='broot --sizes'               # With sizes
 alias brg='broot --git-status'          # With git status
 
 # navi - interactive cheatsheet
-alias nv='navi'
-alias nvq='navi --query'
+alias nav='navi'
+alias navq='navi --query'
 
 # doggo - modern dig
 alias dig='doggo'

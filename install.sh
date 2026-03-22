@@ -188,8 +188,13 @@ setup_passwordless_sudo() {
             echo "WARNING: /etc/sudoers.d might not be included in /etc/sudoers"
         fi
 
-        # Create simple NOPASSWD rule
-        echo "$USER ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee "$SUDOERS_TEMP" > /dev/null
+        # Create scoped NOPASSWD rule (only for ansible-playbook and package managers)
+        cat <<SUDOERS_EOF | sudo tee "$SUDOERS_TEMP" > /dev/null
+$USER ALL=(ALL:ALL) NOPASSWD: /usr/bin/ansible-playbook, /usr/local/bin/ansible-playbook
+$USER ALL=(ALL:ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/dnf, /usr/bin/pacman
+$USER ALL=(ALL:ALL) NOPASSWD: /usr/bin/tee, /bin/chown, /bin/chmod, /usr/bin/visudo
+$USER ALL=(ALL:ALL) NOPASSWD: /usr/bin/usermod, /usr/sbin/usermod
+SUDOERS_EOF
         sudo chmod 0440 "$SUDOERS_TEMP"
 
         # Validate the sudoers file

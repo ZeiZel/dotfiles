@@ -26,15 +26,6 @@ function nvims() {
 	NVIM_APPNAME=$config nvim $@
 }
 
-# Fast directory search and navigation
-function fcd() {
-	local dir
-	dir=$(fd --type d --hidden --follow --exclude .git | fzf --prompt="📁 " --preview 'eza --tree --level=2 --icons --color=always {}')
-	if [[ -n "$dir" ]]; then
-		cd "$dir"
-	fi
-}
-
 # Fast file search and open in neovim
 function fv() {
 	local file

@@ -81,11 +81,10 @@
     msg: "Claude Code native binary: {{ ansible_facts.env.HOME }}/.local/bin/claude"
 
 # AI pair programming tools
-- name: install aider (AI pair programming)
+- name: install aider via uv (AI pair programming)
   ansible.builtin.shell:
-    cmd: |
-      pip3 install --user aider-chat --break-system-packages || pip3 install --user aider-chat
+    cmd: uv tool install aider-chat
     executable: /bin/bash
   register: aider_install
-  changed_when: "'Successfully installed' in aider_install.stdout"
-  ignore_errors: true
+  changed_when: "'Installed' in aider_install.stdout or 'installed' in aider_install.stderr"
+  failed_when: false

@@ -3,7 +3,7 @@
   autocrlf = input
   editor = nvim
   trustctime = false
-  excludesfile = /Users/zeizel/.gitignore
+  excludesfile = ~/.gitignore
 
 # [init]
 #  templatedir = ~/.dotfiles/git/gitdir_template
@@ -19,7 +19,6 @@
   diffFilter = delta --color-only
 
 [credential]
-  helper = osxkeychain
   useHttpPath = false
 
 [help]
@@ -33,7 +32,6 @@
 
 [commit]
   verbose = true
-  template = /Users/zeizel/.stCommitMsg
 
 [apply]
   whitespace = fix
@@ -151,10 +149,6 @@
 [mergetool "kdiff3"]
   cmd = "kdiff3 \"$BASE\" \"$LOCAL\" \"$REMOTE\" -o \"$MERGED\""
 
-[user]
-	name = ZeiZel
-  email = valera2003lvov@yandex.ru
-
-[github]
-  user = ZeiZel
+[include]
+  path = ~/.gitconfig.local
 

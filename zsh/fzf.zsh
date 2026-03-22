@@ -2,6 +2,19 @@
 # FZF - CATPPUCCIN MOCHA THEME
 # ============================================
 
+# Cross-platform clipboard command
+if [[ "$OSTYPE" == darwin* ]]; then
+  _clipboard_cmd="pbcopy"
+elif command -v wl-copy &>/dev/null; then
+  _clipboard_cmd="wl-copy"
+elif command -v xclip &>/dev/null; then
+  _clipboard_cmd="xclip -selection clipboard"
+elif command -v xsel &>/dev/null; then
+  _clipboard_cmd="xsel --clipboard --input"
+else
+  _clipboard_cmd="cat > /dev/null"
+fi
+
 # Catppuccin Mocha colors for FZF
 export FZF_DEFAULT_OPTS="
 --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
@@ -24,7 +37,7 @@ export FZF_DEFAULT_OPTS="
 --bind='ctrl-u:preview-half-page-up'
 --bind='ctrl-d:preview-half-page-down'
 --bind='ctrl-a:select-all'
---bind='ctrl-y:execute-silent(echo {+} | pbcopy)'
+--bind='ctrl-y:execute-silent(echo {+} | ${_clipboard_cmd})'
 --bind='?:toggle-preview'"
 
 # Default commands
@@ -45,7 +58,7 @@ export FZF_ALT_C_OPTS="
 export FZF_CTRL_R_OPTS="
 --preview 'echo {}'
 --preview-window=down:3:wrap
---bind 'ctrl-y:execute-silent(echo -n {2..} | pbcopy)+abort'"
+--bind 'ctrl-y:execute-silent(echo -n {2..} | ${_clipboard_cmd})+abort'"
 
 # ============================================
 # FZF INTEGRATION (optimized)

@@ -12,4 +12,7 @@ export GF_SNAPSHOT_DIRECTORY="$HOME/.git-fuzzy-snapshots"
 export GF_HORIZONTAL_PREVIEW_PERCENT_CALCULATION="60"
 # export GF_PREFERRED_PAGER="delta -s -w __WIDTH__"
 
-source "$DOTFILES/git/funcs.sh"
+# Git functions (loaded from dotfiles config dir)
+if [[ -f "${0:A:h}/funcs.sh" ]]; then
+  source "${0:A:h}/funcs.sh"
+fi

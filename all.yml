@@ -26,6 +26,12 @@
             file: tasks/linux.yml
           when: ansible_facts['os_family'] != "Darwin"
 
+        # Configure git user (prompts once, caches for future runs)
+        - name: Configure git user identity
+          ansible.builtin.include_tasks:
+            file: tasks/git-user.yml
+          tags: git
+
         # Install packages via brew bundle
         - name: Run brew bundle
           ansible.builtin.command:
