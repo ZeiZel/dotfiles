@@ -1,0 +1,20 @@
+---
+- name: OpenPencil | Install CLI globally
+  ansible.builtin.command:
+    cmd: "bun add -g {{ open_pencil_cli_package }}"
+  register: open_pencil_cli_install
+  changed_when: "'added' in (open_pencil_cli_install.stdout | default(''))"
+  failed_when: false
+  when: open_pencil_enabled
+  environment:
+    PATH: "{{ dotfiles_home }}/.bun/bin:{{ ansible_facts['env']['PATH'] }}"
+
+- name: OpenPencil | Pre-cache MCP server via npx
+  ansible.builtin.command:
+    cmd: "{{ npx_bin }} {{ open_pencil_mcp_package }} --help"
+  register: open_pencil_mcp_precache
+  changed_when: false
+  failed_when: false
+  when: open_pencil_enabled
+  environment:
+    PATH: "{{ dotfiles_home }}/.bun/bin:{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"

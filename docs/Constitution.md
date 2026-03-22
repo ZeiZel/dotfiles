@@ -48,11 +48,18 @@ Rules that ALL agents in this system MUST follow. Violations are considered bugs
 - Must claim tasks via `bd update --claim` before starting
 - Must report completion via `bd close` and DONE message
 
+### Design Agents (open-pencil-designer, ui-ux-master)
+- Work with design files via OpenPencil MCP and Figma MCP tools
+- Can create, modify, and export design files
+- Report to team-lead or front-lead
+- MUST NOT make architectural decisions — only design implementation
+- Hand off design specs and tokens to frontend agents for code generation
+
 ### Frontend Agents (react-developer, angular-frontend-engineer, vue-frontend-engineer)
 - **MUST read framework documentation before coding** (see Section 4)
 - Write frontend code and server functions allowed by their framework
 - Report to front-lead, who reports to team-lead
-- Have Figma MCP tools for design implementation
+- Have Figma MCP and OpenPencil MCP tools for design implementation
 
 ### Orchestration Leads (front-lead)
 - Coordinate their domain team, delegate to specialists

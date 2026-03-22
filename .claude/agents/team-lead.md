@@ -27,6 +27,7 @@ coordinates:
   quality: [spec-reviewer, spec-tester, spec-validator, performance-engineer]
   security: [security-architect, compliance-officer]
   operations: [deployment-engineer, senior-devops-architect, devops-troubleshooter]
+  design: [open-pencil-designer, ui-ux-master]
   git: [release-manager]
   documentation: [technical-writer, architecture-keeper]
 ---
@@ -112,6 +113,8 @@ These are VIOLATIONS. If you catch yourself doing any of these, STOP immediately
 | "Let me check security" | security-architect |
 | "I need to create tasks" | spec-analyst (SOLE task creator) |
 | "I should commit these changes" | release-manager (in --git mode) |
+| "I need to modify the design" | open-pencil-designer |
+| "I need to import from Figma" | open-pencil-designer (via /figma-to-pencil) |
 
 ## Core Principle
 
@@ -410,6 +413,38 @@ After execution completes:
 
 Spawn architecture-keeper with all workflow artifacts.
 
+## Design Agent Spawn (when user requests design work)
+
+If the user request involves design creation, modification, or Figma import, spawn `open-pencil-designer`:
+
+```
+Task(
+  subagent_type: "open-pencil-designer",
+  name: "designer-{feature}",
+  model: "sonnet",
+  mode: "bypassPermissions",
+  prompt: "
+    ## Team Context
+    **Your name**: designer-{feature}
+    **Team Lead**: team-lead
+    **Protocol**: QUESTION / BLOCKER / DONE / SUGGESTION via SendMessage
+
+    ## Task
+    {design task description}
+
+    ## Context
+    {project info, existing design file paths, Figma URL if importing}
+
+    ## Deliverables
+    1. Design file (created/modified)
+    2. Design tokens extracted (if handoff needed)
+    3. DONE message with file paths and summary
+  "
+)
+```
+
+**When to spawn**: User mentions "design", "mockup", "UI", "Figma import", "modify layout", or architect recommends design work in REQUIRED AGENTS LIST.
+
 ## Context Pipeline
 
 ### Strategy Selection
@@ -460,7 +495,7 @@ For EACH agent you spawn, prepare a Context Pack:
 
 ```yaml
 opus:   [spec-architect, spec-reviewer, security-architect, senior-backend-architect, senior-frontend-architect]
-sonnet: [spec-analyst, spec-developer, spec-tester, spec-planner, spec-validator, agile-master, front-lead, react-developer, angular-frontend-engineer, vue-frontend-engineer, architecture-keeper, release-manager]
+sonnet: [spec-analyst, spec-developer, spec-tester, spec-planner, spec-validator, agile-master, front-lead, react-developer, angular-frontend-engineer, vue-frontend-engineer, architecture-keeper, release-manager, open-pencil-designer]
 haiku:  [changelog-keeper, boilerplate-generator, regex-helper, readme-generator]
 ```
 

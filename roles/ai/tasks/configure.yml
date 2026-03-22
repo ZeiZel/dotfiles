@@ -130,3 +130,33 @@
       failed_when: false
       environment:
         PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+    # OpenPencil MCP - design tool with AI
+    - name: Configure | Remove existing open-pencil
+      ansible.builtin.command:
+        cmd: "{{ claude_bin }} mcp remove --scope {{ claude_mcp_scope }} open-pencil"
+      when: open_pencil_enabled and "'open-pencil' in mcp_list.stdout"
+      changed_when: false
+      failed_when: false
+      environment:
+        PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+    - name: Configure | Add OpenPencil MCP Server
+      ansible.builtin.shell:
+        cmd: >
+          {{ claude_bin }} mcp add-json
+          --scope {{ claude_mcp_scope }}
+          open-pencil
+          '{{ open_pencil_mcp_config | to_json }}'
+      vars:
+        open_pencil_mcp_config:
+          type: stdio
+          command: "{{ npx_bin }}"
+          args:
+            - "{{ open_pencil_mcp_package }}"
+      when: open_pencil_enabled
+      register: open_pencil_mcp_add
+      changed_when: open_pencil_mcp_add.rc == 0
+      failed_when: false
+      environment:
+        PATH: "{{ dotfiles_home }}/.bun/bin:{{ dotfiles_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"

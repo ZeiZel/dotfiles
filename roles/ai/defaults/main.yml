@@ -47,6 +47,11 @@ mem0_enabled: true
 mem0_package: "mem0ai"
 mem0_data_dir: "{{ dotfiles_home }}/.local/share/mem0"
 
+# OpenPencil - open-source Figma alternative with AI MCP
+open_pencil_enabled: true
+open_pencil_cli_package: "@open-pencil/cli"
+open_pencil_mcp_package: "@open-pencil/mcp"
+
 # Paths
 uv_bin: "{{ dotfiles_home }}/.local/bin/uv"
 uvx_bin: "{{ dotfiles_home }}/.local/bin/uvx"

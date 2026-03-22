@@ -524,6 +524,44 @@ gates:
     validators: [all_tests_pass, documentation_complete]
 ```
 
+### Phase 6.5: Design Tool Integration (optional)
+
+Detect Figma design references and offer OpenPencil transfer.
+
+1. **Search for Figma URLs**
+   ```bash
+   grep -r "figma.com/\(file\|design\)" README.md docs/ 2>/dev/null
+   ```
+
+2. **Check existing design config**
+   ```bash
+   grep -q "design:" docs/project.yaml 2>/dev/null && echo "Design already configured"
+   ```
+
+3. **Ask user** via AskUserQuestion:
+   ```yaml
+   question: "Is there a Figma design for this project?"
+   options:
+     - label: "Yes, transfer to OpenPencil (Recommended)"
+       description: "Import Figma design locally for AI-driven design workflow via MCP"
+     - label: "Yes, keep using Figma only"
+       description: "Use existing Figma MCP tools without local OpenPencil"
+     - label: "No design yet"
+       description: "Skip — can set up later with /figma-to-pencil"
+   ```
+
+4. **If transfer chosen**: Run `/figma-to-pencil <url>` skill
+   - Imports design to `designs/` directory
+   - Adds `open-pencil` MCP to `.mcp.json`
+   - Updates `docs/project.yaml` with `design:` section
+
+5. **If Figma only**: Add note to project.yaml
+   ```yaml
+   design:
+     tool: "figma"
+     mcp_configured: true
+   ```
+
 ### Phase 7: Repomix Snapshot
 
 ```bash
@@ -855,6 +893,12 @@ polecats:
    • Update .gitignore (Claude Code exclusions)
    • Generate .mcp.json
    • Generate quality-gates.yaml
+       │
+       ▼
+[Phase 6.5] Design Tool Integration (optional)
+   • Detect Figma URLs in project docs
+   • Offer transfer to local OpenPencil
+   • If yes: /figma-to-pencil -> .mcp.json + project.yaml
        │
        ▼
 [Phase 7] Repomix Snapshot

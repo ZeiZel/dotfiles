@@ -9,6 +9,10 @@
 - name: AI RAG | Install MCP servers
   ansible.builtin.include_tasks: mcp-servers.yml
 
+- name: AI RAG | Setup OpenPencil
+  ansible.builtin.include_tasks: open-pencil.yml
+  when: open_pencil_enabled
+
 - name: AI RAG | Configure Claude Code
   ansible.builtin.include_tasks: configure.yml
 
