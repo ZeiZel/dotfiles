@@ -1,0 +1,4 @@
+---
+# Node role defaults
+
+nvm_version: "v0.40.1"

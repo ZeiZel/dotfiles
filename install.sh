@@ -5,7 +5,7 @@
 # Only installs Ansible, then runs playbook
 # ============================================
 
-set -e
+set -euo pipefail
 
 # CHECKING ROOT
 if [[ $EUID -eq 0 ]]; then

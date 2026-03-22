@@ -8,7 +8,7 @@ capabilities:
   - Progress tracking and reporting  
   - Process optimization and improvement
   - Resource allocation planning
-tools: Read, Write, Glob, Grep, Bash, Task, TodoWrite, mcp__sequential-thinking__sequentialthinking, SendMessage
+tools: Read, Write, Glob, Grep, Bash, Task, TodoWrite, SendMessage
 skills: [team-comms, beads-tasks, gastown-orchestrate, directives, repomix-snapshot]
 complexity: complex
 auto_activate:

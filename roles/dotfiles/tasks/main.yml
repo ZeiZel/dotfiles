@@ -1,0 +1,62 @@
+---
+# Dotfiles symlinks management via stow
+
+# Create required directories
+- name: Ensure ~/.config directory exists
+  ansible.builtin.file:
+    path: "{{ config_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Create tmux resurrect directory
+  ansible.builtin.file:
+    path: "{{ config_dir }}/tmux/resurrect"
+    state: directory
+    mode: "0755"
+
+- name: Create cache directories for zsh tools
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dotfiles_home }}/.cache/atuin"
+    - "{{ dotfiles_home }}/.cache/zoxide"
+    - "{{ dotfiles_home }}/.cache/navi"
+
+# Run stow for symlinks
+- name: Run stow to create symlinks
+  ansible.builtin.command:
+    cmd: stow --restow --adopt .
+    chdir: "{{ configs_path }}"
+  register: stow_result
+  changed_when: false
+
+# Additional symlinks (home directory)
+- name: Create .zshrc symlink in home
+  ansible.builtin.file:
+    src: "{{ config_dir }}/zsh/.zshrc"
+    dest: "{{ dotfiles_home }}/.zshrc"
+    state: link
+    force: true
+
+- name: Create .tmux.conf symlink in home
+  ansible.builtin.file:
+    src: "{{ config_dir }}/tmux/tmux.conf"
+    dest: "{{ dotfiles_home }}/.tmux.conf"
+    state: link
+    force: true
+
+- name: Create .gitconfig symlink in home
+  ansible.builtin.file:
+    src: "{{ config_dir }}/git/.gitconfig"
+    dest: "{{ dotfiles_home }}/.gitconfig"
+    state: link
+    force: true
+
+- name: Create .gitignore_global symlink in home
+  ansible.builtin.file:
+    src: "{{ config_dir }}/git/.gitignore_global"
+    dest: "{{ dotfiles_home }}/.gitignore_global"
+    state: link
+    force: true

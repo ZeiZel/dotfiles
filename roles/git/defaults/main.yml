@@ -1,0 +1,4 @@
+---
+# Git role defaults
+# git_user_name, git_user_email, github_user are prompted interactively
+# and cached in ~/.dotfiles-cache/git-user.yml

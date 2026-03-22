@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 echo "Getting current DNS servers, this takes a couple of seconds"
 

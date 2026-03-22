@@ -1,0 +1,46 @@
+---
+# Linux specific setup: system packages, zsh, Homebrew bashrc
+
+- name: Install system dependencies (Debian/Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name: '{{ linux_system_packages_debian }}'
+    state: present
+    update_cache: true
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Install system dependencies (RedHat/Fedora)
+  become: true
+  ansible.builtin.dnf:
+    name: '{{ linux_system_packages_redhat }}'
+    state: present
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: Add Homebrew to .bashrc
+  ansible.builtin.blockinfile:
+    path: '{{ dotfiles_home }}/.bashrc'
+    create: true
+    mode: '0644'
+    marker: '# {mark} ANSIBLE - Homebrew'
+    block: eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+- name: Get zsh path
+  ansible.builtin.command:
+    cmd: which zsh
+  register: zsh_path
+  changed_when: false
+  environment:
+    PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+
+- name: Ensure zsh is in /etc/shells
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/shells
+    line: '{{ zsh_path.stdout }}'
+    state: present
+
+- name: Change default shell to zsh
+  become: true
+  ansible.builtin.user:
+    name: '{{ dotfiles_user }}'
+    shell: '{{ zsh_path.stdout }}'

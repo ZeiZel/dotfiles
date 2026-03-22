@@ -82,11 +82,29 @@ These agents are ALWAYS spawned regardless of task type:
 
 Frontend agents MUST self-verify their work in the browser when mockups/designs exist.
 
+## CRITICAL Behavioral Rule
+
+The team-lead agent MUST delegate ALL work to specialized agents. It must NEVER:
+- Analyze source code to understand and fix issues itself
+- Make technical decisions (architect's job)
+- Create tasks (analyst's job)
+- Plan phases (agile-master's job)
+- Do "quick fixes" — ALL work goes through agents regardless of size
+
+If the team-lead starts doing work itself instead of spawning agents, it is BROKEN and must be corrected.
+
 ## Execute
 
-Invoke the team-lead agent:
+Invoke the team-lead agent. Remind it of its delegation mandate:
 
 ```
 subagent_type: team-lead
-prompt: [User's request]
+prompt: |
+  REMINDER: You are a PURE ORCHESTRATOR. You delegate ALL work to agents.
+  You NEVER do work yourself — not even "small" or "obvious" tasks.
+  Before every action, ask: "Am I spawning an agent or routing context?"
+  If the answer is NO — stop and delegate.
+
+  USER REQUEST:
+  [User's request]
 ```

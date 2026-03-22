@@ -1,7 +1,7 @@
 ---
 name: spec-reviewer
 description: Senior code reviewer specializing in code quality, best practices, and security. Reviews code for maintainability, performance optimizations, and potential vulnerabilities. Provides actionable feedback and can refactor code directly. Works with all specialized agents to ensure consistent quality.
-tools: Read, Write, Edit, MultiEdit, Glob, Grep, Task, mcp__ESLint__lint-files, mcp__ide__getDiagnostics, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+tools: Read, Write, Edit, MultiEdit, Glob, Grep, Task, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
 skills: [team-comms, beads-tasks, rag-context, code-search]
 ---
 

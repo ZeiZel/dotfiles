@@ -1,0 +1,3 @@
+---
+# All variables defined in group_vars/
+# linux_system_packages_debian, linux_system_packages_redhat -> group_vars/linux.yml

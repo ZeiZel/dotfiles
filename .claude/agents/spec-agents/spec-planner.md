@@ -1,7 +1,7 @@
 ---
 name: spec-planner
 description: Implementation planning specialist that breaks down architectural designs into actionable tasks. Creates detailed task lists, estimates complexity, defines implementation order, and plans comprehensive testing strategies. Bridges the gap between design and development.
-tools: Read, Write, Glob, Grep, Bash, TodoWrite, mcp__sequential-thinking__sequentialthinking, SendMessage
+tools: Read, Write, Glob, Grep, Bash, TodoWrite, SendMessage
 skills: [team-comms, beads-tasks, repomix-snapshot, directives, code-search]
 ---
 

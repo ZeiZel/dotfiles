@@ -1,0 +1,114 @@
+---
+# Claude Code installation and configuration tasks
+# 1. Install/update native binary
+# 2. Cleanup npm/bun package leftovers
+# 3. Symlink configuration
+# 4. Display status
+
+# Claude Code native binary installation
+# Native binary: ~/.local/bin/claude -> ~/.local/share/claude/versions/<ver>
+# NOT native: ~/.bun/bin/claude (bun global package) or nvm node bin
+
+- name: Check if native claude binary exists
+  ansible.builtin.stat:
+    path: "{{ ansible_facts.env.HOME }}/.local/bin/claude"
+  register: native_claude_stat
+
+- name: Update native claude binary
+  ansible.builtin.command:
+    cmd: "{{ ansible_facts.env.HOME }}/.local/bin/claude update"
+  when: native_claude_stat.stat.exists
+  register: claude_update
+  changed_when: "'Updated' in claude_update.stdout"
+  failed_when: false
+
+- name: Install native claude binary (bootstrap via npm)
+  ansible.builtin.shell:
+    cmd: |
+      export NVM_DIR="{{ ansible_facts.env.HOME }}/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      npm install -g @anthropic-ai/claude-code@latest
+      claude install
+    executable: /bin/bash
+  when: not native_claude_stat.stat.exists
+
+- name: Remove npm/bun claude packages (direct rm, no npm uninstall)
+  ansible.builtin.shell:
+    cmd: |
+      # Remove from all nvm node versions
+      for dir in ~/.nvm/versions/node/*/lib/node_modules/@anthropic-ai/claude-code; do
+        [ -d "$dir" ] || continue
+        node_dir="${dir%%/lib/node_modules*}"
+        rm -rf "$dir"
+        rm -f "$node_dir/bin/claude"
+        echo "removed nvm: $node_dir"
+      done
+      # Remove bun global package (not the native binary)
+      if [ -d ~/.bun/install/global/node_modules/@anthropic-ai/claude-code ]; then
+        rm -rf ~/.bun/install/global/node_modules/@anthropic-ai/claude-code
+        rm -f ~/.bun/bin/claude
+        echo "removed bun claude"
+      fi
+    executable: /bin/bash
+  register: pkg_claude_cleanup
+  changed_when: "'removed' in pkg_claude_cleanup.stdout"
+
+# Claude Code configuration symlink
+# Creates symlink from dotfiles/.claude to ~/.claude for global agent access
+
+- name: Check if ~/.claude exists
+  ansible.builtin.stat:
+    path: "{{ dotfiles_home }}/.claude"
+  register: claude_dir
+
+- name: Check if ~/.claude is already correct symlink
+  ansible.builtin.set_fact:
+    claude_is_correct_symlink: >-
+      {{ claude_dir.stat.exists and
+         claude_dir.stat.islnk and
+         claude_dir.stat.lnk_source == configs_path + '/.claude' }}
+
+- name: Claude already configured correctly
+  ansible.builtin.debug:
+    msg: "~/.claude is already symlinked to {{ configs_path }}/.claude"
+  when: claude_is_correct_symlink
+
+- name: Handle existing ~/.claude directory
+  when: claude_dir.stat.exists and claude_dir.stat.isdir and not claude_dir.stat.islnk
+  block:
+    - name: Merge existing ~/.claude contents to dotfiles
+      ansible.builtin.command:
+        cmd: rsync -av --ignore-existing "{{ dotfiles_home }}/.claude/" "{{ configs_path }}/.claude/"
+      register: rsync_result
+      changed_when: "'total size is 0' not in rsync_result.stdout"
+
+    - name: Backup and remove existing ~/.claude directory
+      ansible.builtin.command:
+        cmd: mv "{{ dotfiles_home }}/.claude" "{{ dotfiles_home }}/.claude.backup"
+      when: rsync_result is succeeded
+
+- name: Remove incorrect symlink
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.claude"
+    state: absent
+  when: >
+    claude_dir.stat.exists and
+    claude_dir.stat.islnk and
+    not claude_is_correct_symlink
+
+- name: Create symlink for Claude Code configuration
+  ansible.builtin.file:
+    src: "{{ configs_path }}/.claude"
+    dest: "{{ dotfiles_home }}/.claude"
+    state: link
+  when: not claude_is_correct_symlink
+
+- name: Display Claude Code setup info
+  ansible.builtin.debug:
+    msg: |
+      Claude Code configured:
+      - Binary: {{ ansible_facts.env.HOME }}/.local/bin/claude
+      - Symlink: ~/.claude -> {{ configs_path }}/.claude
+      - Agents available globally via 'claude' CLI
+      - Skills: /teamlead, /project-setup, /agent-workflow
+      - Run 'claude' in any project to use agents

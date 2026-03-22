@@ -1,0 +1,38 @@
+---
+# Node.js and npm packages installation
+
+- name: Install nvm
+  ansible.builtin.shell:
+    cmd: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{{ nvm_version }}/install.sh | bash
+    creates: '{{ ansible_facts.env.HOME }}/.nvm/nvm.sh'
+  register: nvm_status
+
+- name: Install node lts
+  ansible.builtin.shell:
+    cmd: |
+      export NVM_DIR="{{ ansible_facts.env.HOME }}/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      nvm install --lts
+      nvm alias default node
+    executable: /bin/bash
+  args:
+    creates: '{{ ansible_facts.env.HOME }}/.nvm/versions/node'
+
+- name: Install global npm packages (without claude)
+  ansible.builtin.shell:
+    cmd: |
+      export NVM_DIR="{{ ansible_facts.env.HOME }}/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      npm install -g @beads/bd @gastown/gt nx@latest @nestjs/cli@latest @angular/cli@latest repomix@latest
+    executable: /bin/bash
+  register: npm_global_install
+  changed_when: "'added' in npm_global_install.stdout"
+
+# AI pair programming tools
+- name: Install aider via uv (AI pair programming)
+  ansible.builtin.shell:
+    cmd: uv tool install aider-chat
+    executable: /bin/bash
+  register: aider_install
+  changed_when: "'Installed' in aider_install.stdout or 'installed' in aider_install.stderr"
+  failed_when: false

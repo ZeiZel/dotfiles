@@ -1,7 +1,7 @@
 ---
 name: spec-architect
 description: System architect specializing in technical design. Creates architecture, makes technology decisions, AND returns an implementation plan with a REQUIRED AGENTS LIST — telling team-lead exactly which agents to spawn and what context they need.
-tools: Read, Write, Glob, Grep, WebFetch, TodoWrite, mcp__sequential-thinking__sequentialthinking, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
+tools: Read, Write, Glob, Grep, WebFetch, TodoWrite, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary
 skills: [team-comms, rag-context, repomix-snapshot, directives, code-search]
 ---
 
