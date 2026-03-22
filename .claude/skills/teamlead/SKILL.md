@@ -63,7 +63,30 @@ User Request -> Team Lead
 /teamlead implement user auth       # Implement a feature
 /teamlead fix login bug             # Fix a bug (bugfix workflow)
 /teamlead refactor auth module      # Refactor (refactor workflow)
+/teamlead --git implement feature   # With auto-commits per phase
+/teamlead --git fix critical bug    # Bugfix with phased commits
 ```
+
+## Flags
+
+### `--git` — Phased Git Commits
+
+When `--git` is present, team-lead spawns a **release-manager** agent after each execution phase and after the quality loop. The release manager:
+
+1. Collects changed files from the completed phase
+2. Groups them by task/logical unit
+3. Creates atomic commits with conventional commit messages
+4. Reports commit hashes back to team-lead
+
+**Flow with `--git`:**
+```
+Phase 1 execution -> release-manager commits Phase 1
+Phase 2 execution -> release-manager commits Phase 2
+Quality fixes      -> release-manager commits fixes
+Documentation      -> release-manager commits docs
+```
+
+The release-manager agent definition: `.claude/agents/orchestration/release-manager.md`
 
 ## Context Pipeline
 
@@ -95,16 +118,59 @@ If the team-lead starts doing work itself instead of spawning agents, it is BROK
 
 ## Execute
 
-Invoke the team-lead agent. Remind it of its delegation mandate:
+Parse arguments for flags, then invoke the team-lead agent.
+
+**Flag detection**: If arguments contain `--git`, strip the flag from the user request and enable git mode.
 
 ```
+# Parse --git flag from arguments
+git_mode = "--git" in [User's arguments]
+user_request = [User's arguments with --git removed]
+
 subagent_type: team-lead
+mode: "bypassPermissions"
 prompt: |
   REMINDER: You are a PURE ORCHESTRATOR. You delegate ALL work to agents.
   You NEVER do work yourself — not even "small" or "obvious" tasks.
   Before every action, ask: "Am I spawning an agent or routing context?"
   If the answer is NO — stop and delegate.
 
+  {if git_mode}
+  ## GIT MODE ACTIVE
+  After EACH execution phase completes and after the quality fix loop,
+  spawn a `release-manager` agent to commit that phase's changes.
+
+  Release manager spawn template:
+  Task(
+    subagent_type: "release-manager",
+    name: "release-mgr-phase-{N}",
+    model: "sonnet",
+    mode: "bypassPermissions",
+    prompt: "
+      ## Team Context
+      **Your name**: release-mgr-phase-{N}
+      **Team Lead**: team-lead
+      **Protocol**: QUESTION / BLOCKER / DONE / SUGGESTION via SendMessage
+
+      ## Task
+      Create git commits for the completed phase.
+
+      Phase: {phase_name}
+      Tasks: {task IDs completed in this phase}
+      Task descriptions: {brief descriptions}
+      Workflow: {workflow-id}
+      Artifact dir: docs/artifacts/{workflow-id}/
+
+      Collect changed files, group by logical unit, create atomic
+      conventional commits. Report back commit hashes.
+    "
+  )
+
+  IMPORTANT: Do NOT commit all changes at once at the end.
+  Commit AFTER EACH PHASE so the git history reflects the workflow phases.
+  Wait for release-manager's DONE before starting the next phase.
+  {end if}
+
   USER REQUEST:
-  [User's request]
+  {user_request}
 ```

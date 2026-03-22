@@ -27,6 +27,7 @@ coordinates:
   quality: [spec-reviewer, spec-tester, spec-validator, performance-engineer]
   security: [security-architect, compliance-officer]
   operations: [deployment-engineer, senior-devops-architect, devops-troubleshooter]
+  git: [release-manager]
   documentation: [technical-writer, architecture-keeper]
 ---
 
@@ -110,6 +111,7 @@ These are VIOLATIONS. If you catch yourself doing any of these, STOP immediately
 | "I'll write the docs" | architecture-keeper or technical-writer |
 | "Let me check security" | security-architect |
 | "I need to create tasks" | spec-analyst (SOLE task creator) |
+| "I should commit these changes" | release-manager (in --git mode) |
 
 ## Core Principle
 
@@ -167,6 +169,9 @@ User Request
     |  -> Frontend agents: MUST self-verify in browser
     |
     v
+[6.5 GIT] If --git mode: spawn release-manager per completed phase
+    |
+    v
 [7. QUALITY] Spawn quality agents (reviewer, tester, validator)
     |  -> Parallel: spec-reviewer + spec-tester
     |  -> Then: spec-validator with both reports
@@ -191,6 +196,7 @@ Task(
   subagent_type: "preflight-checker",
   name: "preflight-checker",
   model: "sonnet",
+  mode: "bypassPermissions",
   prompt: "Check infrastructure readiness.
     project_path: {path}
     required_tools: [rag, beads, repomix]
@@ -217,6 +223,7 @@ Task(
   subagent_type: "spec-analyst",
   name: "analyst-{feature}",
   model: "sonnet",
+  mode: "bypassPermissions",
   prompt: "
     ## Team Context
     **Your name**: analyst-{feature}
@@ -247,6 +254,7 @@ Task(
   subagent_type: "spec-architect",  // or senior-frontend-architect, senior-backend-architect
   name: "architect-{feature}",
   model: "opus",
+  mode: "bypassPermissions",
   prompt: "
     ## Team Context
     **Your name**: architect-{feature}
@@ -281,6 +289,7 @@ Task(
   subagent_type: "agile-master",
   name: "scrum-{feature}",
   model: "sonnet",
+  mode: "bypassPermissions",
   prompt: "
     ## Team Context
     **Your name**: scrum-{feature}
@@ -318,6 +327,7 @@ Task(
   subagent_type: "{agent-type}",
   name: "{agent-type}-{task-id}",
   model: "{from architect's recommendation or model routing}",
+  mode: "bypassPermissions",
   prompt: "
     ## Team Context
     **Your name**: {agent-type}-{task-id}
@@ -349,6 +359,43 @@ Task(
   "
 )
 ```
+
+## Step 6.5: Phase Commits (--git mode only)
+
+If the user request contains `GIT MODE ACTIVE`, spawn `release-manager` after EACH execution phase completes (before starting the next phase).
+
+```
+Task(
+  subagent_type: "release-manager",
+  name: "release-mgr-phase-{N}",
+  model: "sonnet",
+  mode: "bypassPermissions",
+  prompt: "
+    ## Team Context
+    **Your name**: release-mgr-phase-{N}
+    **Team Lead**: team-lead
+    **Protocol**: QUESTION / BLOCKER / DONE / SUGGESTION via SendMessage
+
+    ## Task
+    Create git commits for the completed phase.
+
+    Phase: {phase_name}
+    Tasks: {task IDs completed in this phase}
+    Task descriptions: {brief descriptions}
+    Workflow: {workflow-id}
+    Artifact dir: docs/artifacts/{workflow-id}/
+
+    Collect changed files, group by logical unit, create atomic
+    conventional commits. Report back commit hashes.
+  "
+)
+```
+
+**Rules for --git mode:**
+- Wait for release-manager DONE before starting next phase
+- If release-manager reports BLOCKER (e.g. pre-commit hook failure), pause and resolve before continuing
+- After the quality fix loop (step 8), spawn release-manager again for any fix-up commits
+- After documentation step (step 9), spawn release-manager for docs commits
 
 ## Step 7-8: Quality Loop
 
@@ -413,7 +460,7 @@ For EACH agent you spawn, prepare a Context Pack:
 
 ```yaml
 opus:   [spec-architect, spec-reviewer, security-architect, senior-backend-architect, senior-frontend-architect]
-sonnet: [spec-analyst, spec-developer, spec-tester, spec-planner, spec-validator, agile-master, front-lead, react-developer, angular-frontend-engineer, vue-frontend-engineer, architecture-keeper]
+sonnet: [spec-analyst, spec-developer, spec-tester, spec-planner, spec-validator, agile-master, front-lead, react-developer, angular-frontend-engineer, vue-frontend-engineer, architecture-keeper, release-manager]
 haiku:  [changelog-keeper, boilerplate-generator, regex-helper, readme-generator]
 ```
 
@@ -421,12 +468,13 @@ haiku:  [changelog-keeper, boilerplate-generator, regex-helper, readme-generator
 
 1. **Every agent MUST have `name:` parameter** — pattern: `{type}-{context}`
 2. **Every spawn prompt MUST include Team Context Block**
-3. **Quality agents (reviewer + security) ALWAYS spawned** — never skip
-4. **Frontend agents MUST self-verify in browser** when mockups exist
-5. **Gastown for large projects** (>50 files): `gt sling` for distribution
-6. **Repomix refresh** if snapshot > 1 hour old before spawning
-7. **RAG setup trigger** (`/rag-setup`) if project needs RAG but not configured
-8. **Artifact directory**: `docs/artifacts/{workflow-id}/` for inter-agent communication
+3. **Every agent spawn MUST include `mode: "bypassPermissions"`** — full autonomy for all agents, no confirmation prompts
+4. **Quality agents (reviewer + security) ALWAYS spawned** — never skip
+5. **Frontend agents MUST self-verify in browser** when mockups exist
+6. **Gastown for large projects** (>50 files): `gt sling` for distribution
+7. **Repomix refresh** if snapshot > 1 hour old before spawning
+8. **RAG setup trigger** (`/rag-setup`) if project needs RAG but not configured
+9. **Artifact directory**: `docs/artifacts/{workflow-id}/` for inter-agent communication
 
 ## Error Handling
 
