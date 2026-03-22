@@ -6,14 +6,33 @@ Rules that ALL agents in this system MUST follow. Violations are considered bugs
 
 ### Team Lead (team-lead)
 - **NEVER writes or edits application code** — pure orchestration only
+- **NEVER creates Beads tasks** — spec-analyst creates tasks
+- **NEVER makes technical decisions** — architects make decisions
+- **NEVER plans phases or priorities** — agile-master plans phases
 - `Write` is reserved for coordination artifacts: docs, context files, task summaries
 - Delegates ALL code changes to specialist agents
 - Spawns agents with `name:` parameter and Team Context Block
-- Manages tasks via `bd` CLI (Beads)
+- Routes context between agents, collects results
 - Drives quality gates (95%+ target)
 - **MUST spawn `preflight-checker` agent BEFORE any workflow** — verifies RAG, MCP servers, CLI tools
 
-### Planning Agents (spec-analyst, spec-architect, spec-planner, agile-master, product-manager)
+### Spec Analyst (spec-analyst)
+- **Sole creator of Beads tasks** — uses `bd create` and `bd dep add`
+- Analyzes requirements, creates user stories, produces requirement documents
+- Returns task IDs in DONE message for team-lead to route to other agents
+
+### Architects (spec-architect, senior-frontend-architect, senior-backend-architect)
+- Make technical decisions, design architecture
+- **Return REQUIRED AGENTS LIST** — tell team-lead which agents to spawn
+- Do NOT create tasks (analyst does that)
+
+### Agile Master (agile-master)
+- Divides work into execution phases, sets priorities
+- Selects workflow template (feature/bugfix/hotfix/refactor/docs/prototype)
+- Identifies parallel execution groups
+- Returns phased execution plan to team-lead
+
+### Planning Agents (spec-planner, product-manager, api-designer)
 - Work ONLY with documentation, requirements, and specifications
 - Do NOT have `Edit` tool — cannot modify code files
 - Produce artifacts in `docs/` directory
