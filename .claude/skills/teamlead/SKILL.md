@@ -44,10 +44,11 @@ Team Lead manages the context pipeline — deciding how agents receive project c
 ### Pipeline Flow
 
 ```
-Pre-flight
-  └─ Read docs/project.yaml → context.strategy
-  └─ If auto: estimate tokens, decide
-  └─ If rag: verify Qdrant health
+Pre-flight (MANDATORY)
+  └─ Spawn preflight-checker agent (ALWAYS FIRST!)
+  └─ Auto-fixes: code-index-mcp path, Qdrant restart
+  └─ Returns: readiness report with effective strategy
+  └─ If BLOCKED: stop and report to user
 
 Per-Agent Spawning
   └─ Formulate task-specific queries

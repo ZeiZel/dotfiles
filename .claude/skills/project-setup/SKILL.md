@@ -360,54 +360,60 @@ if [ -f docs/context/codebase-snapshot.txt ]; then
   ESTIMATED_TOKENS=$((SIZE / 4))
   echo "Repomix snapshot: ~${ESTIMATED_TOKENS} tokens"
 fi
+
+# 2. Count source files
+SOURCE_COUNT=$(find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.py" -o -name "*.go" -o -name "*.rs" -o -name "*.md" \) -not -path "*/node_modules/*" -not -path "*/.git/*" | wc -l)
+echo "Source files: $SOURCE_COUNT"
 ```
 
 **Decision logic:**
-- If `ESTIMATED_TOKENS ≤ 700000` → strategy: `repomix`
-- If `ESTIMATED_TOKENS > 700000` → strategy: `rag`
+- If `ESTIMATED_TOKENS ≤ 700000` AND `SOURCE_COUNT < 200` → strategy: `repomix`
+- If `ESTIMATED_TOKENS > 700000` OR `SOURCE_COUNT >= 200` → strategy: `rag`
 
-#### If strategy is `rag`:
+#### If strategy is `rag`: Run `/rag-setup`
 
-1. **Check Qdrant availability**
-   ```bash
-   curl -s http://localhost:6333/healthz
-   # If not available, warn user and fall back to repomix
-   ```
+**IMPORTANT**: Use the `rag-setup` skill for full RAG initialization. Do NOT manually configure Qdrant or generate embeddings one-by-one via MCP (too slow for large projects).
 
-2. **Index project via code-index-mcp**
-   ```
-   mcp__code-index-mcp__set_project_path(path: "{project_root}")
-   mcp__code-index-mcp__build_deep_index()
-   ```
+The `rag-setup` skill handles:
+1. Verify Qdrant is running (start container if needed)
+2. Create/verify collection with proper vector config (384-dim, cosine, BM25 hybrid)
+3. Check MCP server configuration (qdrant-mcp, code-index-mcp)
+4. **Bulk index all project files** via Python script with sentence-transformers (NOT via MCP one-by-one — that's 10x slower for 200+ files)
+5. Build code-index-mcp deep index
+6. Update `docs/project.yaml` with RAG metadata
 
-3. **Store architectural summaries in Qdrant**
-   ```
-   # For each key architectural document, store a summary:
-   mcp__qdrant-mcp__qdrant-store(
-     information: "Project {name}: {tech_stack}. Architecture: {style}. Key components: {list}",
-     metadata: { "type": "architecture", "project": "{name}" }
-   )
+```bash
+# Trigger rag-setup skill
+# This handles everything: Qdrant, embeddings, MCP config, project.yaml
+```
 
-   # Store domain model summaries:
-   mcp__qdrant-mcp__qdrant-store(
-     information: "Domain {domain}: entities {list}, events {list}, invariants {list}",
-     metadata: { "type": "domain", "domain": "{name}" }
-   )
-   ```
+#### If strategy is `repomix`:
 
-4. **Update `docs/project.yaml`** with context section (see template below)
-
-#### Context strategy in project.yaml:
+Set in project.yaml and continue:
 
 ```yaml
 context:
-  strategy: "{repomix|rag|auto}"
+  strategy: "repomix"
+  repomix_token_estimate: {number}
+  rag:
+    indexed: false
+    collection: "codebase"
+    last_indexed: null
+    indexed_files_count: 0
+```
+
+#### Context strategy in project.yaml (after rag-setup):
+
+```yaml
+context:
+  strategy: "rag"
   repomix_token_estimate: {number}
   rag:
     indexed: true
-    collection: "codebase"
+    collection: "{project-name}-codebase"
     last_indexed: "{ISO timestamp}"
     indexed_files_count: {number}
+    indexed_chunks_count: {number}
 ```
 
 ## Generated File Structure
@@ -662,10 +668,9 @@ polecats:
        │
        ▼
 [Phase 7.5] Context Strategy Assessment
-   • Estimate repomix token count
-   • If >700k tokens AND Qdrant available:
-   •   Index project via code-index-mcp
-   •   Store arch summaries in Qdrant
+   • Estimate repomix token count + source file count
+   • If >700k tokens OR >200 files:
+   •   Run /rag-setup (bulk embeddings, Qdrant, code-index)
    •   Set strategy: "rag" in project.yaml
    • Else: Set strategy: "repomix"
        │

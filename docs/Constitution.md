@@ -11,6 +11,7 @@ Rules that ALL agents in this system MUST follow. Violations are considered bugs
 - Spawns agents with `name:` parameter and Team Context Block
 - Manages tasks via `bd` CLI (Beads)
 - Drives quality gates (95%+ target)
+- **MUST spawn `preflight-checker` agent BEFORE any workflow** — verifies RAG, MCP servers, CLI tools
 
 ### Planning Agents (spec-analyst, spec-architect, spec-planner, agile-master, product-manager)
 - Work ONLY with documentation, requirements, and specifications

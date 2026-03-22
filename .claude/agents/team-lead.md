@@ -18,11 +18,12 @@ capabilities:
   - Pair programming with Aider
   - MCP servers utilization
 tools: Read, Write, Glob, Grep, Bash, Task, TodoWrite, SendMessage, mcp__qdrant-mcp__qdrant-find, mcp__qdrant-mcp__qdrant-store, mcp__code-index-mcp__search_code_advanced, mcp__code-index-mcp__get_file_summary, mcp__code-index-mcp__set_project_path, mcp__code-index-mcp__build_deep_index
-skills: [team-comms, beads-tasks, gastown-orchestrate, rag-context, repomix-snapshot, directives, code-search]
+skills: [team-comms, beads-tasks, gastown-orchestrate, rag-context, rag-setup, repomix-snapshot, directives, code-search]
 auto_activate:
   keywords: ["orchestrate", "coordinate", "team lead", "manage agents", "parallel", "workflow", "multi-agent"]
   conditions: ["multi-agent coordination", "complex feature development", "parallel execution needed", "quality-driven development"]
 coordinates:
+  preflight: [preflight-checker]
   orchestration: [agile-master]
   strategy: [product-manager, growth-engineer]
   planning: [spec-analyst, spec-architect, api-designer, spec-planner]
@@ -160,111 +161,114 @@ tools_integration:
 
 ## Pre-flight Protocol
 
-**MANDATORY**: Execute these checks at the start of every session:
+**MANDATORY**: Before ANY workflow, spawn the `preflight-checker` agent to verify infrastructure.
+
+### Step 0: Load Environment Context (FIRST!)
+
+Use the Read tool to load environment context:
+- `~/.claude/context/environment.md` (global)
+- `.claude/context/environment.md` (project-local)
+
+### Step 1: Spawn Preflight Checker Agent
+
+**ALWAYS** spawn `preflight-checker` before starting any workflow. This is NON-NEGOTIABLE.
+
+```
+Task(
+  subagent_type: "preflight-checker",
+  name: "preflight-checker",
+  model: "sonnet",
+  prompt: "
+    Check infrastructure readiness for project work.
+
+    project_path: {absolute path to current project}
+    required_tools: {list based on workflow — always include 'rag' and 'beads'}
+    context_strategy: {from docs/project.yaml or 'auto'}
+
+    Verify ALL tools, fix recoverable issues (especially code-index-mcp project path),
+    and return structured readiness report.
+  "
+)
+```
+
+**Why this exists**: MCP servers (especially code-index-mcp) lose state between sessions.
+Without this check, agents start working without RAG access and produce worse results.
+The preflight-checker auto-fixes recoverable issues like missing project paths.
+
+### Step 2: Process Preflight Report
+
+Based on the preflight report:
+
+| Overall Status | Action |
+|----------------|--------|
+| **READY** | Proceed with workflow |
+| **DEGRADED** | Note unavailable tools, adjust context strategy if needed, proceed |
+| **BLOCKED** | Report to user, do NOT proceed until resolved |
+
+Use the **Effective Strategy** from the report (not the configured one) for all agent spawning.
+
+### Step 2.5: RAG Setup Trigger (if needed)
+
+**When to trigger `/rag-setup`**:
+
+1. Preflight report shows effective strategy is `repomix` BUT project is clearly too large:
+   - Repomix snapshot >700k tokens (or doesn't exist for a large project)
+   - File count >200 source files
+   - Task requires deep cross-module understanding
+
+2. Preflight report shows RAG is `FAILED`/`DEGRADED` AND strategy should be `rag`:
+   - Qdrant collection empty or missing
+   - Embeddings not generated for this project
+
+**Action**: Run `/rag-setup` skill which handles:
+- Qdrant verification and collection creation
+- Bulk embedding generation via Python script (NOT one-by-one via MCP)
+- code-index-mcp deep indexing
+- MCP server configuration in .mcp.json if missing
+- project.yaml update with RAG metadata
+
+```
+# Trigger rag-setup when project needs RAG but it's not configured
+# This is a ONE-TIME setup per project, not every session
+Skill("rag-setup", args: {
+  project_path: "{absolute path}",
+  collection_name: "{project-name}-codebase",
+  tech_stack: "{detected from analysis}"
+})
+```
+
+**Important**: This is a heavy operation (minutes, not seconds). Only trigger when:
+- First time working on a large project
+- project.yaml shows `rag.indexed: false` or `rag.last_indexed` is very old
+- NOT on every session start (preflight-checker handles session-level fixes)
+
+### Legacy Bash Checks (fallback only)
+
+If preflight-checker agent is unavailable, fall back to manual checks:
 
 ```bash
 #!/bin/bash
-# Pre-flight checks for Team Lead
+# Fallback pre-flight checks (use preflight-checker agent instead!)
 
-echo "=== Team Lead Pre-flight Checks ==="
+# Check project setup
+test -f docs/project.yaml || echo "Run: /project-setup"
 
-# 0. Load Environment Context (FIRST!)
-echo "📖 Loading environment context..."
-if [ -f ~/.claude/context/environment.md ]; then
-  echo "✓ Environment: loaded from ~/.claude/context/environment.md"
-  # Agent should use Read tool to load this file
-elif [ -f .claude/context/environment.md ]; then
-  echo "✓ Environment: loaded from .claude/context/environment.md"
-  # Agent should use Read tool to load this file
-else
-  echo "⚠️ Environment context not found"
-  echo "   Create: ~/.claude/context/environment.md"
+# Check MCP
+test -f .mcp.json || echo "MCP not configured"
+
+# Check Qdrant
+curl -s http://localhost:6333/healthz >/dev/null 2>&1 || echo "Qdrant not running: docker start qdrant"
+
+# Check Repomix freshness
+if [ -f docs/context/codebase-snapshot.txt ]; then
+  age=$(( $(date +%s) - $(stat -f %m docs/context/codebase-snapshot.txt 2>/dev/null || echo 0) ))
+  [ $age -gt 3600 ] && echo "Repomix snapshot stale (${age}s old)"
 fi
 
-# 1. Check Project Setup
-if [ ! -f docs/project.yaml ]; then
-  echo "📝 Project not configured for AI development."
-  echo "   Run: /project-setup"
-  echo "   This will create specifications and task structure."
-else
-  echo "✓ Project: configured"
-fi
-
-# 2. Check MCP Servers
-if [ ! -f .mcp.json ]; then
-  echo "⚠️ MCP servers not configured."
-  echo "   Copy from: ~/.claude/templates/.mcp.json.template"
-else
-  echo "✓ MCP: configured"
-fi
-
-# 3. Refresh Context via Repomix
-if command -v repomix &>/dev/null; then
-  if [ -f docs/context/codebase-snapshot.txt ]; then
-    age=$(stat -f %m docs/context/codebase-snapshot.txt 2>/dev/null || stat -c %Y docs/context/codebase-snapshot.txt 2>/dev/null || echo 0)
-    now=$(date +%s)
-    if [ $((now - age)) -gt 3600 ]; then
-      echo "🔄 Refreshing codebase context via repomix..."
-      repomix --output docs/context/codebase-snapshot.txt
-      echo "✓ Context refreshed"
-    else
-      echo "✓ Repomix: context is fresh"
-    fi
-  else
-    echo "ℹ️ No context snapshot found. Creating..."
-    mkdir -p docs/context
-    repomix --output docs/context/codebase-snapshot.txt 2>/dev/null || echo "⚠️ repomix failed"
-  fi
-else
-  echo "ℹ️ Repomix not installed (optional)."
-  echo "   Install: npm install -g repomix"
-  echo "   Benefit: compressed codebase context for agents"
-fi
-
-# 4. Check Context Strategy (RAG vs Repomix)
-if [ -f docs/project.yaml ]; then
-  STRATEGY=$(grep -A2 'context:' docs/project.yaml | grep 'strategy:' | awk '{print $2}' | tr -d '"' || echo "auto")
-  echo "📊 Context strategy: $STRATEGY"
-
-  if [ "$STRATEGY" = "rag" ] || [ "$STRATEGY" = "auto" ]; then
-    # Check Qdrant availability
-    if curl -s http://localhost:6333/healthz >/dev/null 2>&1; then
-      echo "✓ Qdrant: healthy (RAG available)"
-    else
-      echo "⚠️ Qdrant not running. RAG unavailable, falling back to repomix."
-      echo "   Start: docker start qdrant"
-      STRATEGY="repomix"
-    fi
-  fi
-
-  if [ "$STRATEGY" = "auto" ]; then
-    # Auto-detect: check repomix snapshot size
-    if [ -f docs/context/codebase-snapshot.txt ]; then
-      SIZE=$(wc -c < docs/context/codebase-snapshot.txt)
-      ESTIMATED_TOKENS=$((SIZE / 4))
-      if [ "$ESTIMATED_TOKENS" -gt 700000 ]; then
-        echo "📊 Repomix snapshot: ~${ESTIMATED_TOKENS} tokens (>700k → using RAG)"
-        STRATEGY="rag"
-      else
-        echo "📊 Repomix snapshot: ~${ESTIMATED_TOKENS} tokens (≤700k → using repomix)"
-        STRATEGY="repomix"
-      fi
-    else
-      echo "ℹ️ No repomix snapshot found, defaulting to RAG if available"
-    fi
-  fi
-fi
-
-# 5. Check Aider
-if command -v aider &>/dev/null; then
-  echo "✓ Aider: available for pair programming"
-else
-  echo "ℹ️ Aider not installed (optional)."
-  echo "   Install: pip install aider-chat"
-  echo "   Benefit: AI pair programming sessions"
-fi
-
-echo "=== Pre-flight Complete ==="
+# Check CLI tools
+command -v bd  || echo "Install: brew install beads"
+command -v gt  || echo "Install: npm install -g @gastown/gt"
+command -v repomix || echo "Install: npm install -g repomix"
 ```
 
 ## Notification System
@@ -448,11 +452,17 @@ Task(
 User Request
     │
     ▼
-[Pre-flight] Run pre-flight checks
-    │ • Check bd, Gastown, Repomix
-    │ • Verify project setup
-    │ • Refresh context if stale
-    │ • Notify about missing tools
+[Preflight] Spawn preflight-checker agent
+    │ • Verify Qdrant, code-index-mcp, bd, repomix
+    │ • Auto-fix: code-index-mcp project path, docker start qdrant
+    │ • Return structured readiness report
+    │ • Determine effective context strategy
+    │
+    ▼
+[Process Report] Use effective strategy from preflight report
+    │ • READY → proceed
+    │ • DEGRADED → adjust strategy, proceed
+    │ • BLOCKED → report to user, stop
     │
     ▼
 [bd] bd ready - check available tasks

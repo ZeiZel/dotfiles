@@ -24,7 +24,12 @@ qdrant_hybrid_search_enabled: true
 # Qdrant MCP Server
 qdrant_mcp_enabled: true
 qdrant_mcp_package: "mcp-server-qdrant"
-qdrant_mcp_embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+# Default: multilingual model for RU/EN projects (same 384 dims, drop-in replacement)
+# Options:
+#   sentence-transformers/all-MiniLM-L6-v2 — EN only, fastest
+#   sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 — 50+ languages, 384 dims
+#   nomic-embed-text-v1.5 — best quality, 768 dims (requires collection recreation)
+qdrant_mcp_embedding_model: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 qdrant_mcp_url: "http://localhost:{{ qdrant_port_rest }}"
 
 # Code-Index-MCP

@@ -257,7 +257,9 @@ Qdrant collection supports BM25 sparse vectors alongside dense embeddings.
 
 - **Qdrant**: Docker container, port 6333 (REST) / 6334 (gRPC)
 - **Collection**: "codebase" (384-dim dense + BM25 sparse vectors)
-- **Embedding model**: sentence-transformers/all-MiniLM-L6-v2
+- **Embedding model**: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 (default, 50+ languages)
+- **Alternative**: sentence-transformers/all-MiniLM-L6-v2 (EN-only, faster)
+- **CRITICAL**: Indexing model MUST match qdrant-mcp EMBEDDING_MODEL env var. Check `docs/project.yaml` -> `context.rag.embedding_model`
 - **Hybrid search**: BM25 + dense vector fusion (20-40% better retrieval)
 - **Provisioned by**: `roles/ai/` Ansible role via `setup-ai.sh`
 

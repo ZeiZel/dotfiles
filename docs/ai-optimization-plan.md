@@ -370,11 +370,15 @@ Team-lead selects template based on task classification.
 
 ### 6.4 Embedding Model Upgrade Path
 
-**Problem**: Current model `all-MiniLM-L6-v2` (384 dims) is the smallest option. Fine for start, but limits retrieval quality.
+**Problem**: Original model `all-MiniLM-L6-v2` (384 dims) is EN-only. Does not work for Russian content.
 
-**Recommendation**: Plan upgrade path:
-- Current: all-MiniLM-L6-v2 (384 dims) — fast, low quality
-- Next: all-mpnet-base-v2 (768 dims) — balanced
+**DONE (2026-03-22)**: Switched default to `paraphrase-multilingual-MiniLM-L12-v2` (384 dims, 50+ languages).
+- RU search: 0 -> 0.65-0.77 score
+- Same 384 dims — no collection recreation needed
+- Supported by both sentence-transformers and fastembed
+
+**Future upgrade path** (if quality insufficient):
+- Next: all-mpnet-base-v2 (768 dims) — balanced, EN-only
 - Best: nomic-embed-text-v1.5 (768 dims) — SOTA for code
 - Requires: recreate Qdrant collection with new dimension
 

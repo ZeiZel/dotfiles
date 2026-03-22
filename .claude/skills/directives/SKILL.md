@@ -40,7 +40,7 @@ context:
   snapshot_ttl: 3600      # seconds before snapshot is stale
   rag:
     collection: "codebase"
-    embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+    embedding_model: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"  # multilingual default
     embedding_dim: 384
 
 quality:
