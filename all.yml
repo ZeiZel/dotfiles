@@ -30,8 +30,3 @@
       tags: node
     - role: docker
       tags: docker
-    - role: claude
-      tags: claude
-    - role: ai
-      when: ai_rag_enabled | default(false) | bool
-      tags: ai

@@ -8,6 +8,16 @@ Personal dotfiles for macOS/Linux with Zsh, Tmux, Neovim, and modern CLI tools. 
 sh -c "$(curl -fsSL https://github.com/ZeiZel/dotfiles/raw/master/install.sh)"
 ```
 
+### AI-only install
+
+To install only the AI tooling (Qdrant, MCP servers, Claude Code config) without the full dotfiles setup:
+
+```bash
+sh -c "$(curl -fsSL https://github.com/ZeiZel/dotfiles/raw/master/setup-ai.sh)"
+```
+
+Requires Ansible and Docker to be installed first (run `install.sh` if not).
+
 ### Post-install
 
 ```bash

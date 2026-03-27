@@ -250,6 +250,25 @@ else
     ansible-playbook -i inventory/hosts.ini all.yml "$@"
 fi
 
+# Install AI configuration (Claude Code agents, MCP servers, RAG)
+AI_CONFIG_REPO="https://github.com/ZeiZel/ai-config.git"
+AI_CONFIG_DIR="${HOME}/.ai-config"
+
+echo ""
+echo "Setting up AI configuration..."
+
+if [ -d "$AI_CONFIG_DIR" ]; then
+    echo "Updating existing ai-config..."
+    cd "$AI_CONFIG_DIR"
+    git pull origin master || true
+else
+    echo "Cloning ai-config repository..."
+    git clone "$AI_CONFIG_REPO" "$AI_CONFIG_DIR"
+    cd "$AI_CONFIG_DIR"
+fi
+
+bash "$AI_CONFIG_DIR/install.sh" "$@"
+
 echo ""
 echo "Installation complete!"
 echo "Please restart your terminal or run: source ~/.zshrc"
