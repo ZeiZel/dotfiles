@@ -1,0 +1,12 @@
+---
+- name: ccusage | Ensure scripts directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.claude/scripts"
+    state: directory
+    mode: "0755"
+
+- name: ccusage | Deploy statusline wrapper
+  ansible.builtin.template:
+    src: statusline-usage.sh.j2
+    dest: "{{ dotfiles_home }}/.claude/scripts/statusline-usage.sh"
+    mode: "0755"

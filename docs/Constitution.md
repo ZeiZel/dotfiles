@@ -29,6 +29,16 @@ Rules that ALL agents in this system MUST follow. Violations are considered bugs
 - **Return REQUIRED AGENTS LIST** — tell team-lead which agents to spawn
 - Do NOT create tasks (analyst does that)
 
+### Sub-Orchestrators (senior-frontend-architect, senior-backend-architect, senior-devops-architect, security-architect)
+- Make technical decisions within their domain
+- Spawn implementation agents within their domain via Task tool
+- Resolve domain-internal BLOCKERs without escalating to team-lead
+- Escalate cross-domain BLOCKERs to team-lead with `resolution_hint`
+- Send ONE aggregate DONE to team-lead (not individual sub-agent results)
+- Do NOT spawn agents outside their domain
+- Maximum 4 concurrent sub-agents per sub-orchestrator
+- Have `orchestrates:` field listing their managed agents
+
 ### Agile Master (agile-master)
 - Divides work into execution phases, sets priorities
 - Selects workflow template (feature/bugfix/hotfix/refactor/docs/prototype)
@@ -61,10 +71,11 @@ Rules that ALL agents in this system MUST follow. Violations are considered bugs
 - Report to front-lead, who reports to team-lead
 - Have Figma MCP and OpenPencil MCP tools for design implementation
 
-### Orchestration Leads (front-lead)
-- Coordinate their domain team, delegate to specialists
-- Do NOT write application code directly — delegate to framework engineers
-- Have `Task` tool to spawn sub-agents
+### Frontend Standards Advisor (front-lead)
+- Consult on code standards, design system governance, framework selection
+- Do NOT orchestrate or spawn agents — senior-frontend-architect handles frontend orchestration
+- Available via SendMessage for frontend domain questions
+- Do NOT have `Task` tool
 
 ### Quality Agents (spec-reviewer, spec-tester, spec-validator)
 - Review, test, and validate — may edit code to fix issues found
@@ -83,11 +94,53 @@ ALL agents spawned by team-lead MUST use SendMessage with these message types:
 |------|------|--------|
 | PROGRESS | Intermediate update (long tasks) | `PROGRESS: {percent}% on {task}. Done: {list}. Remaining: {list}` |
 | QUESTION | Genuine ambiguity before starting | `QUESTION: {question}. This affects: {impact}` |
-| BLOCKER | Cannot proceed | `BLOCKER: {reason}. Tried: {attempts}. Need: {ask}` |
+| BLOCKER | Cannot proceed | `BLOCKER: {reason}. Tried: {attempts}. Need: {ask}. resolution_hint: {HINT_CODE}. blocked_task: {bd-ID}. blocking_dependency: {bd-ID or agent}. context: {details}` |
 | DONE | Task complete | `DONE: {summary}. Files: {list}. Decisions: {list}. Confidence: {0-1}` |
 | SUGGESTION | Proactive insight | `SUGGESTION: {observation}. Recommendation: {action}` |
 
 **Escalation rule**: Do NOT work silently on ambiguity. Ask first.
+
+### 2.1 Blocker Resolution Protocol
+
+When team-lead receives a BLOCKER with a `resolution_hint`:
+
+1. If hint is `NEEDS_CLARIFICATION` → escalate to user immediately
+2. Otherwise → spawn the appropriate resolver agent automatically
+3. Resolver receives the BLOCKER context and fixes the issue
+4. Upon resolver DONE → team-lead notifies the blocked agent to resume
+5. Maximum **2** auto-resolution attempts per blocker; then escalate to user
+6. If resolver blocks with the SAME hint as original → escalate to user immediately (circular detection)
+
+Agents SHOULD always include `resolution_hint` in BLOCKER messages to enable automatic resolution. BLOCKERs without hints will be handled manually by team-lead (slower).
+
+### 2.2 Hierarchical Communication
+
+When an agent is spawned by a sub-orchestrator (not directly by team-lead):
+
+- The agent reports to its **spawning sub-orchestrator**, not to team-lead
+- The sub-orchestrator aggregates results and reports to team-lead
+- Cross-domain issues are escalated from sub-orchestrator to team-lead
+
+Communication chain: `agent → sub-orchestrator → team-lead → user`
+
+Sub-orchestrators MUST NOT:
+- Spawn agents outside their domain
+- Suppress BLOCKER messages that require cross-domain resolution
+- Exceed their spawn budget
+
+Sub-orchestrators MUST:
+- Include Team Context Block in all sub-agent spawn prompts (with themselves as reporting target)
+- Send aggregate DONE to team-lead listing all sub-agent results
+- Escalate to team-lead any blocker they cannot resolve within their domain
+
+### 2.3 Spawn Loop Prevention
+
+To prevent infinite agent spawning:
+
+1. **Depth limit**: Maximum 3 levels (team-lead → sub-orchestrator → agent). Agents spawned by sub-orchestrators CANNOT themselves spawn agents.
+2. **Budget per orchestrator**: team-lead max 10 concurrent, sub-orchestrators max 4 concurrent, implementers 0 (cannot spawn).
+3. **Resolution chain limit**: Maximum 2 auto-resolution attempts per blocker. Third failure = escalate to user.
+4. **Circular detection**: If agent A blocks on agent B, and agent B blocks on agent A → both escalated to team-lead immediately.
 
 ## 3. Context Strategy
 
@@ -220,6 +273,15 @@ Use `llms.txt` for navigation/index, `llms-full.txt` for comprehensive context.
 - spec-analyst (requirements only)
 - spec-architect (design only)
 - spec-planner (planning only)
+
+### Agents that MUST have Task tool (sub-orchestrator capability):
+- senior-frontend-architect (frontend sub-orchestrator)
+- senior-backend-architect (backend sub-orchestrator)
+- senior-devops-architect (devops sub-orchestrator)
+- security-architect (security sub-orchestrator)
+
+### Agents that MUST NOT have Task tool (advisory/implementation only):
+- front-lead (standards advisor, not orchestrator)
 
 ### Agents that MUST have SendMessage:
 - ALL spec-agents

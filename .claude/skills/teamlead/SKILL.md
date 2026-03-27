@@ -65,6 +65,8 @@ User Request -> Team Lead
 /teamlead refactor auth module      # Refactor (refactor workflow)
 /teamlead --git implement feature   # With auto-commits per phase
 /teamlead --git fix critical bug    # Bugfix with phased commits
+/teamlead --unlimited implement feature   # No token budget limit
+/teamlead --git --unlimited fix bug       # Both flags combined
 ```
 
 ## Flags
@@ -87,6 +89,18 @@ Documentation      -> release-manager commits docs
 ```
 
 The release-manager agent definition: `.claude/agents/orchestration/release-manager.md`
+
+### `--unlimited` — Bypass Token Budget
+
+When `--unlimited` is present, the token budget mid-check (Check 1) is disabled.
+Team-lead runs all phases regardless of token consumption.
+
+Without this flag (default), team-lead reads `~/.claude/session-usage.json`
+at each mid-check point. If the 5-hour rate limit exceeds 60%, it stops
+and preserves remaining budget for interactive work.
+
+**Note**: Other mid-phase checks (context pressure, failure accumulation,
+drift detection) always run regardless of this flag.
 
 ## Context Pipeline
 
@@ -120,12 +134,13 @@ If the team-lead starts doing work itself instead of spawning agents, it is BROK
 
 Parse arguments for flags, then invoke the team-lead agent.
 
-**Flag detection**: If arguments contain `--git`, strip the flag from the user request and enable git mode.
+**Flag detection**: Parse `--git` and `--unlimited` from arguments, strip them from the user request.
 
 ```
-# Parse --git flag from arguments
+# Parse flags from arguments
 git_mode = "--git" in [User's arguments]
-user_request = [User's arguments with --git removed]
+unlimited_mode = "--unlimited" in [User's arguments]
+user_request = [User's arguments with --git and --unlimited removed]
 
 subagent_type: team-lead
 mode: "bypassPermissions"
@@ -134,6 +149,20 @@ prompt: |
   You NEVER do work yourself — not even "small" or "obvious" tasks.
   Before every action, ask: "Am I spawning an agent or routing context?"
   If the answer is NO — stop and delegate.
+
+  {if NOT unlimited_mode}
+  ## TOKEN BUDGET CHECK (limit: 60%)
+  Before each phase (steps 3-9), read `~/.claude/session-usage.json` via Bash:
+  ```bash
+  cat ~/.claude/session-usage.json 2>/dev/null || echo '{"five_hour_pct":0}'
+  ```
+  - `five_hour_pct` > 60 → STOP, report completed/pending phases,
+    suggest `/teamlead --unlimited` or wait for rate limit reset.
+  - Otherwise (including null, 0, file missing) → CONTINUE.
+
+  This is the ONLY condition that stops the workflow.
+  Do NOT stop for context window size, agent failures, or other reasons.
+  {end if}
 
   {if git_mode}
   ## GIT MODE ACTIVE

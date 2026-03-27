@@ -27,6 +27,32 @@ quality:
     - security-architect
     - spec-tester
 
+orchestration:
+  sub_orchestrators:
+    senior-frontend-architect:
+      domain: frontend
+      manages: [react-developer, vue-frontend-engineer, angular-frontend-engineer, open-pencil-designer]
+      max_concurrent: 4
+    senior-backend-architect:
+      domain: backend
+      manages: [database-architect, api-designer, realtime-specialist, search-specialist, payments-specialist]
+      max_concurrent: 4
+    senior-devops-architect:
+      domain: devops
+      manages: [deployment-engineer, devops-troubleshooter]
+      max_concurrent: 2
+    security-architect:
+      domain: security
+      manages: [compliance-officer]
+      max_concurrent: 2
+  blocker_resolution:
+    max_auto_attempts: 2
+    always_escalate: [NEEDS_CLARIFICATION]
+  spawn_limits:
+    team_lead_max_concurrent: 10
+    sub_orchestrator_max_concurrent: 4
+    max_nesting_depth: 3
+
 model_routing:
   opus:
     - team-lead
@@ -35,6 +61,7 @@ model_routing:
     - security-architect
     - senior-backend-architect
     - senior-frontend-architect
+    - senior-devops-architect
   sonnet:
     - spec-developer
     - spec-tester
@@ -42,10 +69,48 @@ model_routing:
     - spec-analyst
     - spec-validator
     - agile-master
+    - front-lead
+    - react-developer
+    - angular-frontend-engineer
+    - vue-frontend-engineer
+    - open-pencil-designer
+    - database-architect
+    - api-designer
+    - realtime-specialist
+    - search-specialist
+    - payments-specialist
+    - deployment-engineer
+    - devops-troubleshooter
+    - compliance-officer
+    - architecture-keeper
+    - release-manager
+    - technical-writer
+    - api-documenter
+    - mobile-developer
+    - data-engineer
+    - ml-engineer
+    - performance-engineer
+    - code-reviewer
+    - data-analyst
+    - web-researcher
+    - competitor-analyst
+    - trend-watcher
+    - docs-collector
+    - growth-engineer
+    - dependency-auditor
+    - refactor-agent
+    - migration-assistant
+    - spec-orchestrator
+    - git-historian
+    - sql-optimizer
+    - ui-ux-master
+    - product-manager
+    - devops-troubleshooter
   haiku:
     - changelog-keeper
     - boilerplate-generator
     - regex-helper
+    - readme-generator
 
 workflow_templates:
   feature:

@@ -59,3 +59,6 @@ npx_bin: "npx"
 claude_bin: "{{ dotfiles_home }}/.local/bin/claude"
 claude_mcp_scope: "user"
 docker_path: "/usr/local/bin:/opt/homebrew/bin:{{ ansible_facts['env']['PATH'] | default('/usr/bin:/bin') }}"
+
+# ccusage - Claude Code usage tracking & statusline
+ccusage_enabled: true

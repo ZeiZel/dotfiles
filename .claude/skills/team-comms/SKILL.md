@@ -68,6 +68,43 @@ SendMessage(
 - Explain what you tried and why it failed
 - Suggest potential resolutions
 
+### Enhanced BLOCKER Format (v2)
+
+When sending a BLOCKER, include a structured `resolution_hint` to enable automatic resolution by team-lead:
+
+```
+SendMessage(
+  to: "team-lead",
+  message: "BLOCKER: {reason}. Tried: {attempts}. Need: {ask}.
+    resolution_hint: {HINT_CODE}
+    blocked_task: {bd-XXX}
+    blocking_dependency: {bd-YYY | agent-name | external}
+    context: {details needed by resolver agent}"
+)
+```
+
+**Resolution Hint Codes:**
+
+| Hint Code | Meaning | Auto-Resolution Agent |
+|-----------|---------|----------------------|
+| NEEDS_REANALYSIS | Requirements incomplete/ambiguous | spec-analyst |
+| NEEDS_REARCH | Architecture decision missing/flawed | spec-architect or domain architect |
+| NEEDS_PREREQ | Prerequisite task not complete | Owner of prerequisite task |
+| NEEDS_SCHEMA | Database schema not ready | database-architect |
+| NEEDS_API_CONTRACT | API contract not defined | api-designer |
+| NEEDS_DESIGN | Design specs/mockups missing | open-pencil-designer |
+| NEEDS_SECURITY_REVIEW | Security decision required | security-architect |
+| NEEDS_INFRA | Infrastructure not provisioned | senior-devops-architect |
+| NEEDS_CLARIFICATION | Only user can resolve | Escalate to user (NEVER auto-resolve) |
+| NEEDS_BUGFIX | Existing code has blocking bug | spec-developer |
+| NEEDS_CONFIG | Configuration/environment issue | devops-troubleshooter |
+
+**Rules for resolution_hint:**
+- ALWAYS include `resolution_hint` when sending BLOCKER — it enables faster automatic resolution
+- If unsure which hint applies, use the closest match; team-lead will route appropriately
+- NEEDS_CLARIFICATION always escalates to user immediately — never auto-resolved
+- Include enough `context` for the resolver agent to fix the issue without asking questions back
+
 ### DONE — Task Complete
 
 Send when all deliverables are finished. Use structured format for efficient parsing by team-lead.
@@ -150,11 +187,17 @@ SendMessage(
 
 ### On Receiving BLOCKER
 
-1. Assess: can you resolve without user input?
-   - Yes: resolve (spawn helper agent, provide missing info)
-   - No: escalate to user immediately
-2. `bd update bd-XXX --status blocked --message "{reason}"`
-3. SendMessage back with resolution or ETA
+1. Parse `resolution_hint` from the BLOCKER message
+2. If hint is `NEEDS_CLARIFICATION` → escalate to user immediately
+3. If hint has a mapped resolver agent → spawn resolver automatically:
+   - Provide the BLOCKER context to resolver
+   - Resolver sends DONE when fixed
+   - SendMessage to blocked agent: "RESOLVED: {hint} addressed. You may proceed."
+4. If no hint provided → assess manually:
+   - Can resolve without user? Yes → spawn helper agent
+   - No → escalate to user
+5. Track resolution: `bd update bd-XXX --status blocked --message "{reason}"`
+6. Anti-loop: max 2 auto-resolution attempts per blocker. If resolver also blocks with same hint → escalate to user.
 
 ### On Receiving DONE
 
