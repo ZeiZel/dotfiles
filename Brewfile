@@ -4,6 +4,7 @@
 tap "jesseduffield/lazygit"
 tap "hashicorp/tap"
 tap "derailed/k9s"
+tap "nikitabobko/tap" if OS.mac?
 
 # ============================================
 # CORE UTILITIES
@@ -147,6 +148,7 @@ brew "sevenzip"
 # ============================================
 # CASKS (macOS GUI Applications)
 # ============================================
+cask "nikitabobko/tap/aerospace" if OS.mac?
 cask "docker-desktop" if OS.mac?
 cask "maccy" if OS.mac?
 

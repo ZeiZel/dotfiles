@@ -77,6 +77,7 @@ dotfiles/
 ├── yazi/                 # Yazi file manager
 ├── lazygit/              # Lazygit config
 ├── ghostty/              # Ghostty terminal
+├── aerospace/            # AeroSpace tiling window manager
 ├── git/                  # Git configuration
 ├── Brewfile              # Homebrew packages
 ├── all.yml               # Ansible playbook
@@ -513,6 +514,44 @@ Sessions are automatically saved every 5 minutes and restored on tmux start.
 
 - Manual save: `prefix + Ctrl+s`
 - Manual restore: `prefix + Ctrl+r`
+
+---
+
+## AeroSpace Configuration
+
+Config path: `~/.config/aerospace/aerospace.toml`
+
+### Core Bindings
+
+| Key                  | Action                                  |
+| -------------------- | --------------------------------------- |
+| `Alt+h/j/k/l`        | Focus left/down/up/right                |
+| `Alt+Shift+h/j/k/l`  | Move window left/down/up/right          |
+| `Alt+1..9`           | Switch workspace                        |
+| `Alt+Shift+1..9`     | Move window to workspace                |
+| `Alt+Tab`            | Switch back to previous workspace       |
+| `Alt+Shift+Tab`      | Move workspace to next monitor          |
+| `Alt+/`              | Toggle tiled horizontal/vertical layout |
+| `Alt+,`              | Toggle accordion layout                 |
+| `Alt+f`              | Toggle fullscreen                       |
+| `Alt+-` / `Alt+=`    | Resize focused window smaller/larger    |
+| `Alt+Shift+;`        | Enter service mode                      |
+
+### Service Mode
+
+Press `Alt+Shift+;`, then one of:
+
+| Key                 | Action                         |
+| ------------------- | ------------------------------ |
+| `Esc`               | Reload config and exit mode    |
+| `r`                 | Flatten/reset workspace layout |
+| `f`                 | Toggle floating/tiling layout  |
+| `Backspace`         | Close all windows but current  |
+| `Alt+Shift+h/j/k/l` | Join window with neighbor      |
+
+### macOS Notes
+
+AeroSpace is installed via Homebrew only on macOS. The Ansible macOS role also disables display-specific native Spaces and app-triggered Space switching, which keeps AeroSpace workspace movement predictable. After the first launch, grant AeroSpace Accessibility permissions in System Settings if macOS asks for them.
 
 ---
 

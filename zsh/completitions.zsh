@@ -56,6 +56,8 @@ zstyle ':fzf-tab:*' switch-group ',' '.'
 
 # Use tmux popup if in tmux
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
+zstyle ':fzf-tab:*' popup-min-width 100
+zstyle ':fzf-tab:*' popup-pad 30 0
 
 # FZF-tab bindings
 zstyle ':fzf-tab:*' fzf-bindings 'tab:accept'

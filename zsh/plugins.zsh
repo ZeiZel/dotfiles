@@ -38,7 +38,7 @@ zinit wait lucid light-mode for \
 
 # Syntax highlighting - load async
 zinit wait lucid light-mode for \
-  atinit"ZINIT[COMPINIT_OPTS]}=-C; zicompinit; zicdreplay" \
+  atinit"ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay" \
   zdharma-continuum/fast-syntax-highlighting
 
 # Autosuggestions - load async with config

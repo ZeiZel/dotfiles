@@ -44,16 +44,15 @@ export BUN_INSTALL="$HOME/.bun"
 export PNPM_HOME="$HOME/.local/share/pnpm"
 [[ -d "$PNPM_HOME" ]] && export PATH="$PNPM_HOME:$PATH"
 
-# NVM (lazy loading - don't load until needed)
+# NVM
+# Load the default nvm version eagerly so node/npm/npx and npm globals all
+# resolve from the same prefix. This keeps Codex updates consistent and avoids
+# Homebrew node/npm taking precedence in non-interactive shells.
 export NVM_DIR="$HOME/.nvm"
-nvm() {
-  unset -f nvm node npm npx
-  [[ -s "$NVM_DIR/nvm.sh" ]] && \. "$NVM_DIR/nvm.sh"
-  nvm "$@"
-}
-node() { nvm use default &>/dev/null; command node "$@"; }
-npm() { nvm use default &>/dev/null; command npm "$@"; }
-npx() { nvm use default &>/dev/null; command npx "$@"; }
+if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+  \. "$NVM_DIR/nvm.sh"
+  nvm use --silent default >/dev/null 2>&1 || true
+fi
 
 # Go
 export GOPATH="$HOME/go"

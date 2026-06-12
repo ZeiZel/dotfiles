@@ -123,3 +123,19 @@
         type: int
         value: 1
         check_type: false
+
+    - name: Disable macOS space auto-switching by application activation
+      community.general.osx_defaults:
+        domain: com.apple.dock
+        key: workspaces-auto-swoosh
+        type: bool
+        value: false
+        check_type: false
+
+    - name: Disable display-specific macOS Spaces for AeroSpace
+      community.general.osx_defaults:
+        domain: com.apple.spaces
+        key: spans-displays
+        type: bool
+        value: true
+        check_type: false

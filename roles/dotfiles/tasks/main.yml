@@ -14,6 +14,12 @@
     state: directory
     mode: "0755"
 
+- name: Create AeroSpace config directory
+  ansible.builtin.file:
+    path: "{{ config_dir }}/aerospace"
+    state: directory
+    mode: "0755"
+
 - name: Create cache directories for zsh tools
   ansible.builtin.file:
     path: "{{ item }}"
@@ -58,5 +64,12 @@
   ansible.builtin.file:
     src: "{{ config_dir }}/git/.gitignore_global"
     dest: "{{ dotfiles_home }}/.gitignore_global"
+    state: link
+    force: true
+
+- name: Create AeroSpace config symlink
+  ansible.builtin.file:
+    src: "{{ configs_path }}/aerospace/aerospace.toml"
+    dest: "{{ config_dir }}/aerospace/aerospace.toml"
     state: link
     force: true

@@ -8,3 +8,9 @@ if [[ -d "$HOME/.config/zsh" ]]; then
 fi
 
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+
+# opencode
+export PATH=/Users/zeizel/.opencode/bin:$PATH
+
+# bun completions
+[ -s "/Users/zeizel/.bun/_bun" ] && source "/Users/zeizel/.bun/_bun"
