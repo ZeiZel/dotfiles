@@ -8,5 +8,13 @@ return {
 			"MunifTanjim/nui.nvim",
 			"nvim-telescope/telescope.nvim",
 		},
+		cmd = {
+			"RemoteCleanup",
+			"RemoteConfigDel",
+			"RemoteInfo",
+			"RemoteLog",
+			"RemoteStart",
+			"RemoteStop",
+		},
 	},
 }

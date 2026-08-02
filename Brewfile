@@ -12,10 +12,13 @@ tap "nikitabobko/tap" if OS.mac?
 brew "stow"
 brew "bat"
 brew "btop"
-brew "tmux"
+brew "herdr"
 brew "yazi"
 brew "atuin"
-brew "antigen"
+brew "zsh-autosuggestions"
+brew "zsh-syntax-highlighting"
+brew "zsh-completions"
+brew "fzf-tab"
 brew "git"
 brew "neovim"
 brew "atool"
@@ -30,6 +33,7 @@ brew "zoxide"
 brew "tree"
 brew "tldr"
 brew "starship"
+brew "mas" if OS.mac?
 
 # ============================================
 # MODERN CLI REPLACEMENTS
@@ -40,14 +44,14 @@ brew "gping"         # Ping with graph
 brew "bottom"        # Better htop/top alternative
 brew "hyperfine"     # Benchmarking tool
 brew "sd"            # Better sed
-brew "choose"        # Better cut/awk for columns
+brew "choose-rust"   # Better cut/awk for columns (binary: choose)
 brew "tokei"         # Code statistics
 brew "glow"          # Markdown renderer in terminal
-brew "delta"         # Better git diff (git-delta)
 brew "xh"            # Better HTTPie (Rust, faster)
 brew "viddy"         # Modern watch replacement
 brew "jless"         # JSON viewer/explorer
 brew "difftastic"    # Structural diff (AST-aware)
+brew "ast-grep"      # Structural code search, linting, and rewriting
 brew "broot"         # Interactive tree navigator
 brew "navi"          # Interactive cheatsheet
 brew "doggo"         # Modern dig replacement (DNS)
@@ -90,6 +94,7 @@ brew "thefuck"
 brew "jesseduffield/lazygit/lazygit"
 brew "gh"
 brew "glab"
+brew "git-lfs"
 brew "git-delta"
 
 # ============================================
@@ -101,6 +106,7 @@ brew "minikube"
 brew "helm"
 brew "derailed/k9s/k9s"
 brew "kustomize"
+brew "kubeconform"
 brew "stern"
 brew "lazydocker"
 brew "dive"
@@ -114,6 +120,12 @@ brew "ansible"
 brew "ansible-lint"
 
 # ============================================
+# SECURITY & CI
+# ============================================
+brew "gitleaks"      # Detect secrets before they reach a remote
+brew "trivy"         # Scan repositories, IaC, containers, and dependencies
+
+# ============================================
 # CLOUD TOOLS
 # ============================================
 brew "awscli"
@@ -122,9 +134,17 @@ brew "awscli"
 # BACKEND DEVELOPMENT
 # ============================================
 brew "go"
+brew "rustup"
+brew "dotnet"
 brew "python"
 brew "pyenv"
+brew "uv"
+brew "cargo-nextest"
 brew "httpie"
+brew "httpyac"
+brew "posting"
+brew "resterm"
+brew "harlequin"
 brew "grpcurl"
 brew "redis"
 brew "postgresql@16"
@@ -148,9 +168,17 @@ brew "sevenzip"
 # ============================================
 # CASKS (macOS GUI Applications)
 # ============================================
-cask "nikitabobko/tap/aerospace" if OS.mac?
-cask "docker-desktop" if OS.mac?
-cask "maccy" if OS.mac?
+if OS.mac?
+  cask "nikitabobko/tap/aerospace"
+  cask "docker-desktop"
+  cask "maccy"
+  cask "flameshot"
+  cask "chatgpt"
+  cask "claude"
+  cask "mos"
+  cask "visual-studio-code"
+  cask "jetbrains-toolbox"
+end
 
 # ============================================
 # FONTS

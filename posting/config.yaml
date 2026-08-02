@@ -1,0 +1,7 @@
+keymap:
+  # Keep Posting's defaults and add Vim-style command keys. Native widget
+  # navigation keys (h/j/k/l and g/G) are intentionally not overridden here.
+  send-request: "ctrl+j,alt+enter,ctrl+enter"
+  search-requests: "/,ctrl+P,ctrl+shift+p"
+  commands: ":,ctrl+p"
+  help: "f1,question_mark,ctrl+question_mark,ctrl+shift+slash"

@@ -21,9 +21,9 @@ alias gcE="git commit --amend"
 alias gws="git status --short"
 alias gwsi="git fuzzy status"
 
-# Git status in Vim using vim-fugitive plugin
+# Open the repository status in the lazy-loaded Neogit tab.
 function gwsvim(){
-  vim -c ":Git"
+  nvim -c "Neogit kind=tab"
 }
 
 # ==================================================
@@ -31,8 +31,8 @@ function gwsvim(){
 # ==================================================
 alias gdd="git diff --stat -p"            # diff with stat and patch (via git-delta viewer)
 alias gds="git --no-pager diff --stat"    # diff with stat only
-alias gdt='git difftool'                  # difftool in Vim
-alias gdtui='git difftool --gui'          # DiffMerge or whatever GUI diff tool
+alias gdt='git difftool'                  # built-in Neovim difftool
+alias gdtui='git difftool --gui'          # VS Code GUI difftool
 
 # git fuzzy diff, plus opening selected files in "git difftool"
 function gdi(){
@@ -50,7 +50,7 @@ alias d2h="diff2html -i stdin --summary open --style side"
 # Merging
 # ==================================================
 alias gmm='git merge --no-ff'
-alias gmt='git mergetool --no-ff'
+alias gmt='git mergetool'
 alias gmb="git show-branch --merge-base" # show commit merge-base between multiple refs
 alias gmc='git log --left-right --oneline --merge' # in case of conflicting merge, show which commits contribute to a conflict
 
@@ -126,16 +126,16 @@ alias gla="glo --topo-order --boundary --graph --all"
 # $ gllr HEAD...MERGE_HEAD
 alias gllr="git log --oneline --graph --left-right --boundary --decorate"
 
-# git log interactive. Opens selected commit in Vim via :Gedit command
+# Git log interactive. Opens the selected commit in Diffview.
 function gli() {
   local commit=$(git fuzzy log "$@")
 
   if [ -n "$commit" ]; then
-    vim -c ":Gedit $commit"
+    nvim -c "DiffviewOpen ${commit}^!"
   fi
 }
 
-# Git file history, shows only commits affecting given file. Open selected file from selected commit in Vim
+# Git file history, then open the selected revision read-only in Neovim.
 function glf() {
   if [ "$#" -eq 0 ]; then echo "Usage: gfh <file> <revision>"; return 1; fi
   if [[ ! -f "$1" ]]; then echo "Non existent file: $1"; return 1; fi
@@ -152,8 +152,7 @@ function glf() {
 
   if [[ -n "$selection" ]]; then
     local commit=$(echo $selection | awk '{ print $1 }')
-    # use vim-fugitive Gedit command to open file at specific revision
-    vim -c "Gedit $commit:$file"
+    git --no-pager show "${commit}:${file}" | nvim -R -
   fi
 }
 
@@ -190,7 +189,7 @@ function gsi() {
 # Pull requests
 # ==================================================
 
-# Review PR: show list of affected files, complete diff, and open selected file in Vim
+# Review PR changes in Diffview.
 # NOTE: requires you to "git checkout <pr>" first
 function git_review_pr(){
   echo "PR: $(git symbolic-ref --short HEAD)"
@@ -198,18 +197,14 @@ function git_review_pr(){
 
   read -s -k '?Press any key to continue...'
 
-  local files=$(git fuzzy diff $REVIEW_UPSTREAM..HEAD)
-
-  if [ -n "$files" ]; then
-    vim -c "let g:gitgutter_diff_base = '$REVIEW_UPSTREAM'" $files
-  fi
+  nvim -c "DiffviewOpen $REVIEW_UPSTREAM..HEAD"
 }
 
 # ==================================================
 # Misc
 # ==================================================
 
-# Open any git object in a Vim (using :Gedit command)
+# Open any Git object read-only in Neovim.
 function gitvim() {
-  vim -c "Gedit $*"
+  git --no-pager show "$@" | nvim -R -
 }

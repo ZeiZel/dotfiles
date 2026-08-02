@@ -16,8 +16,6 @@ return {
 	-- change trouble config
 	{
 		"folke/trouble.nvim",
-		-- opts will be merged with the parent spec
-		opts = { use_diagnostic_signs = true },
 		cmd = "Trouble",
 		keys = {
 			{
@@ -26,7 +24,7 @@ return {
 				desc = "Diagnostics (Trouble)",
 			},
 			{
-				"<leader>qQ",
+				"<leader>qb",
 				"<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
 				desc = "Buffer Diagnostics (Trouble)",
 			},
@@ -36,7 +34,7 @@ return {
 				desc = "Symbols (Trouble)",
 			},
 			{
-				"<leader>cl",
+				"<leader>cL",
 				"<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
 				desc = "LSP Definitions / references / ... (Trouble)",
 			},
@@ -55,17 +53,7 @@ return {
 
 	{
 		"nvim-telescope/telescope.nvim",
-		keys = {
-			{
-				"<leader>fp",
-				function()
-					require("telescope.builtin").find_files({
-						cwd = require("lazy.core.config").options.root,
-					})
-				end,
-				desc = "Find Plugin File",
-			},
-		},
+		optional = true,
 		opts = {
 			defaults = {
 				layout_strategy = "horizontal",

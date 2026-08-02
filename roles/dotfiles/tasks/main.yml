@@ -8,12 +8,6 @@
     state: directory
     mode: "0755"
 
-- name: Create tmux resurrect directory
-  ansible.builtin.file:
-    path: "{{ config_dir }}/tmux/resurrect"
-    state: directory
-    mode: "0755"
-
 - name: Create AeroSpace config directory
   ansible.builtin.file:
     path: "{{ config_dir }}/aerospace"
@@ -29,27 +23,55 @@
     - "{{ dotfiles_home }}/.cache/atuin"
     - "{{ dotfiles_home }}/.cache/zoxide"
     - "{{ dotfiles_home }}/.cache/navi"
+    - "{{ dotfiles_home }}/.cache/broot"
+    - "{{ dotfiles_home }}/.cache/fzf"
+    - "{{ dotfiles_home }}/.cache/starship"
+    - "{{ dotfiles_home }}/.cache/zsh"
 
-# Run stow for symlinks
-- name: Run stow to create symlinks
+# Preview the Stow plan during an Ansible dry run. Using --stow here detects
+# additions and conflicts without the unlink/relink noise produced by --restow.
+- name: Preview stow links
   ansible.builtin.command:
-    cmd: stow --restow --adopt .
+    cmd: stow --simulate --stow --no-folding --verbose=1 .
     chdir: "{{ configs_path }}"
-  register: stow_result
-  changed_when: false
+  register: dotfiles_stow_preview
+  check_mode: false
+  changed_when: >-
+    'LINK:' in dotfiles_stow_preview.stdout
+    or
+    'LINK:' in dotfiles_stow_preview.stderr
+  when: ansible_check_mode
+
+# Restow removes links for deleted files and refreshes the complete managed
+# tree. It always unlinks/relinks existing entries, so the task is a real host
+# mutation even when the resulting link targets are unchanged.
+- name: Restow managed configuration
+  ansible.builtin.command:
+    cmd: stow --restow --no-folding .
+    chdir: "{{ configs_path }}"
+  changed_when: true
+  when: not ansible_check_mode
+
+- name: Ensure native Resterm config directory on macOS
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/Library/Application Support/resterm"
+    state: directory
+    mode: "0755"
+  when: ansible_facts['system'] == "Darwin"
+
+- name: Link Resterm bindings into native macOS config
+  ansible.builtin.file:
+    src: "{{ config_dir }}/resterm/bindings.toml"
+    dest: "{{ dotfiles_home }}/Library/Application Support/resterm/bindings.toml"
+    state: link
+    force: true
+  when: ansible_facts['system'] == "Darwin"
 
 # Additional symlinks (home directory)
 - name: Create .zshrc symlink in home
   ansible.builtin.file:
     src: "{{ config_dir }}/zsh/.zshrc"
     dest: "{{ dotfiles_home }}/.zshrc"
-    state: link
-    force: true
-
-- name: Create .tmux.conf symlink in home
-  ansible.builtin.file:
-    src: "{{ config_dir }}/tmux/tmux.conf"
-    dest: "{{ dotfiles_home }}/.tmux.conf"
     state: link
     force: true
 
@@ -67,9 +89,149 @@
     state: link
     force: true
 
-- name: Create AeroSpace config symlink
-  ansible.builtin.file:
-    src: "{{ configs_path }}/aerospace/aerospace.toml"
-    dest: "{{ config_dir }}/aerospace/aerospace.toml"
-    state: link
-    force: true
+- name: Inspect installed Herdr plugins
+  ansible.builtin.command:
+    argv:
+      - herdr
+      - plugin
+      - list
+      - --json
+  environment:
+    PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+  register: dotfiles_herdr_plugin_inventory
+  check_mode: false
+  changed_when: false
+
+- name: Select the installed reviewr plugin record
+  ansible.builtin.set_fact:
+    dotfiles_herdr_reviewr_plugins: >-
+      {{
+        (
+          (dotfiles_herdr_plugin_inventory.stdout | from_json).result.plugins
+          | selectattr('plugin_id', 'equalto', dotfiles_herdr_reviewr_id)
+          | list
+        )
+      }}
+
+- name: Remove a mismatched reviewr plugin version
+  ansible.builtin.command:
+    argv:
+      - herdr
+      - plugin
+      - uninstall
+      - "{{ dotfiles_herdr_reviewr_id }}"
+  environment:
+    PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+  when:
+    - dotfiles_herdr_reviewr_plugins | length > 0
+    - >-
+      (dotfiles_herdr_reviewr_plugins | first).version != dotfiles_herdr_reviewr_version
+      or
+      ((dotfiles_herdr_reviewr_plugins | first).source.requested_ref | default(''))
+      != dotfiles_herdr_reviewr_ref
+      or
+      ((dotfiles_herdr_reviewr_plugins | first).source.resolved_commit | default(''))
+      != dotfiles_herdr_reviewr_ref
+  changed_when: true
+
+- name: Install the pinned reviewr plugin
+  ansible.builtin.command:
+    argv:
+      - herdr
+      - plugin
+      - install
+      - "{{ dotfiles_herdr_reviewr_source }}"
+      - --ref
+      - "{{ dotfiles_herdr_reviewr_ref }}"
+      - --yes
+  environment:
+    PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+  when: >-
+    dotfiles_herdr_reviewr_plugins | length == 0
+    or
+    (dotfiles_herdr_reviewr_plugins | first).version != dotfiles_herdr_reviewr_version
+    or
+    ((dotfiles_herdr_reviewr_plugins | first).source.requested_ref | default(''))
+    != dotfiles_herdr_reviewr_ref
+    or
+    ((dotfiles_herdr_reviewr_plugins | first).source.resolved_commit | default(''))
+    != dotfiles_herdr_reviewr_ref
+  changed_when: true
+
+- name: Manage the Herdr user service on macOS
+  when: ansible_facts['system'] == "Darwin"
+  block:
+    - name: Inspect the Herdr user service
+      ansible.builtin.command:
+        argv:
+          - brew
+          - services
+          - info
+          - herdr
+          - --json
+      environment:
+        PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+      register: dotfiles_herdr_service
+      check_mode: false
+      changed_when: false
+
+    - name: Start Herdr now and at user login
+      ansible.builtin.command:
+        argv:
+          - brew
+          - services
+          - start
+          - herdr
+      environment:
+        PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+      when: >-
+        not (
+          (dotfiles_herdr_service.stdout | from_json | first).registered
+          and
+          (dotfiles_herdr_service.stdout | from_json | first).running
+        )
+      changed_when: true
+
+- name: Inspect Herdr agent integrations
+  ansible.builtin.command:
+    argv:
+      - herdr
+      - integration
+      - status
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+  register: dotfiles_herdr_integration_status
+  check_mode: false
+  changed_when: false
+
+- name: Locate supported local coding agents
+  ansible.builtin.command:
+    argv:
+      - which
+      - "{{ item }}"
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+  loop: "{{ dotfiles_herdr_integrations }}"
+  loop_control:
+    label: "{{ item }}"
+  register: dotfiles_herdr_agent_commands
+  check_mode: false
+  changed_when: false
+  failed_when: false
+
+- name: Install current Herdr integrations for available coding agents
+  ansible.builtin.command:
+    argv:
+      - herdr
+      - integration
+      - install
+      - "{{ item.item }}"
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+  loop: "{{ dotfiles_herdr_agent_commands.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when:
+    - item.rc == 0
+    - "(item.item ~ ': current') not in dotfiles_herdr_integration_status.stdout"
+  changed_when: true

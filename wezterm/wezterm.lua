@@ -2,7 +2,7 @@ local wezterm = require("wezterm")
 
 local config = wezterm.config_builder()
 
-function scheme_for_appearance(appearance)
+local function scheme_for_appearance(appearance)
 	if appearance:find("Dark") then
 		return "Catppuccin Mocha"
 	else
@@ -10,8 +10,8 @@ function scheme_for_appearance(appearance)
 	end
 end
 
-config.window_background_opacity = 0.5
-config.macos_window_background_blur = 30
+config.window_background_opacity = 0.96
+config.macos_window_background_blur = 0
 
 -- Font settings
 config.font = wezterm.font("JetBrainsMono Nerd Font")
@@ -50,45 +50,10 @@ config.inactive_pane_hsb = {
 -- config.enable_tab_bar = false
 config.use_fancy_tab_bar = false
 config.tab_bar_at_bottom = false
-config.status_update_interval = 1000
-
-config.color_scheme = scheme_for_appearance(wezterm.gui.get_appearance())
-
-wezterm.on("update-status", function(window, pane)
-	local basename = function(s)
-		return string.gsub(s, "(.*[/\\])(.*)", "%2")
-	end
-
-	-- Current working directory
-	local cwd = pane:get_current_working_dir()
-	if cwd then
-		if type(cwd) == "userdata" then
-			cwd = basename(cwd.file_path)
-		else
-			cwd = basename(cwd)
-		end
-	else
-		cwd = ""
-	end
-
-	-- Current command
-	local cmd = pane:get_foreground_process_name()
-	cmd = cmd and basename(cmd) or ""
-
-	-- Time
-	local time = wezterm.strftime("%H:%M")
-
-	-- Right status
-	window:set_right_status(wezterm.format({
-		{ Text = wezterm.nerdfonts.md_folder .. "  " .. cwd },
-		{ Text = " | " },
-		{ Foreground = { Color = "#e0af68" } },
-		{ Text = wezterm.nerdfonts.fa_code .. "  " .. cmd },
-		"ResetAttributes",
-		{ Text = " | " },
-		{ Text = wezterm.nerdfonts.md_clock .. "  " .. time },
-		{ Text = "  " },
-	}))
-end)
+local appearance = "Dark"
+if wezterm.gui then
+	appearance = wezterm.gui.get_appearance()
+end
+config.color_scheme = scheme_for_appearance(appearance)
 
 return config

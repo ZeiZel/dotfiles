@@ -4,8 +4,12 @@
 
 "$schema" = 'https://starship.rs/config-schema.json'
 palette = "catppuccin_mocha"
-add_newline = true
-command_timeout = 1000
+add_newline = false
+# Runtime modules execute only after their project marker is found. Keep their
+# synchronous work bounded so returning to a prompt after `clear`, `cd` or
+# `nvim` cannot wait on a slow local tool.
+command_timeout = 150
+scan_timeout = 20
 
 # ============================================
 # PROMPT FORMAT (spaceship-like)
@@ -103,6 +107,9 @@ am = "AM"
 am_or_rebase = "AM/REBASE"
 
 [git_status]
+# Git status is local-only; retain the full repository state in the prompt.
+# Starship's native implementation does not fetch remotes or contact a network.
+disabled = false
 style = "fg:red"
 format = '([$all_status$ahead_behind]($style) )'
 ahead = "⇡${count}"
@@ -126,7 +133,7 @@ format = '[$symbol$context]($style) '
 only_with_files = true
 detect_files = ['docker-compose.yml', 'docker-compose.yaml', 'Dockerfile', '.docker']
 detect_folders = []
-disabled = false
+disabled = true
 
 # ============================================
 # KUBERNETES
@@ -136,8 +143,8 @@ symbol = "󱃾 "
 style = "fg:blue"
 format = '[$symbol$context( \($namespace\))]($style) '
 disabled = false
-detect_files = ['k8s', 'kubernetes', 'Dockerfile', 'docker-compose.yml']
-detect_folders = ['k8s', 'kubernetes', '.kube']
+detect_files = ['Chart.yaml', 'helmfile.yaml', 'kustomization.yaml']
+detect_folders = ['k8s', 'kubernetes', 'helm']
 detect_extensions = []
 
 [kubernetes.context_aliases]

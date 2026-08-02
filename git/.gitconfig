@@ -89,7 +89,9 @@
   followTags = true
 
 [diff]
-  tool = nvim
+  # Git's built-in nvimdiff driver resolves `nvim` from PATH, so the same
+  # configuration works with Intel/Apple Silicon Homebrew and Linuxbrew.
+  tool = nvimdiff
   guitool = vscode
   submodule = log
   algorithm = patience
@@ -102,53 +104,30 @@
 [diff "bin"]
   textconv = hexdump -v -C
 
-[difftool "nvim"]
-  # by default, Git runs vimdiff in read only mode. Make it run in read-write mode
-  cmd = "nvim -f -d -c \"wincmd l\" -c 'cd \"$GIT_PREFIX\"' \"$LOCAL\" \"$REMOTE\""
-
-[difftool "diffmerge"]
-  cmd = "/usr/local/bin/diffmerge --nosplash \"$LOCAL\" \"$REMOTE\""
-
 [difftool "vscode"]
   cmd = "code -n -w -d \"$LOCAL\" \"$REMOTE\""
 
-[difftool "p4merge"]
-  cmd = "p4merge \"$LOCAL\" \"$REMOTE\""
-
-[difftool "kdiff3"]
-  cmd = "kdiff3 \"$LOCAL\" \"$REMOTE\""
-
 [merge]
-  # tool = vim_mergetool
-  tool = diffmerge
+  # LOCAL | writable MERGED | REMOTE is the familiar three-pane IDE layout.
+  # The BASE revision remains available as a loaded Neovim buffer.
+  tool = nvimdiff2
   guitool = vscode
-  # Standard conflict markers include only ours and theirs side
-  # Use "diff3" to include base ancestor version as well
-  # https://git-scm.com/docs/git-config#git-config-mergeconflictStyle
-  conflictStyle = diff3
+  # zdiff3 includes the common ancestor while removing duplicated context.
+  conflictStyle = zdiff3
 
 [mergetool]
   keepBackup = false
+  hideResolved = true
   prompt = false
-
-# Uses vim + samoshkin/vim-mergetool plugin
-[mergetool "vim_mergetool"]
-  cmd = vim -f -c "MergetoolStart" "$MERGED" "$BASE" "$LOCAL" "$REMOTE"
-  trustExitCode = true
-
-[mergetool "diffmerge"]
-  cmd = "/usr/local/bin/diffmerge --merge --result=\"$MERGED\" \"$LOCAL\" \"$BASE\" \"$REMOTE\""
-  trustExitCode = true
 
 [mergetool "vscode"]
   cmd = "code --wait --merge \"$REMOTE\" \"$LOCAL\" \"$BASE\" \"$MERGED\""
 
-[mergetool "p4merge"]
-  cmd = "p4merge \"$BASE\" \"$LOCAL\" \"$REMOTE\" \"$MERGED\""
-
-[mergetool "kdiff3"]
-  cmd = "kdiff3 \"$BASE\" \"$LOCAL\" \"$REMOTE\" -o \"$MERGED\""
-
 [include]
   path = ~/.gitconfig.local
 
+[filter "lfs"]
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true

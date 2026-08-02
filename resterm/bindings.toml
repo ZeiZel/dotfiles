@@ -1,0 +1,7 @@
+# Resterm 0.49.4 native key bindings.
+# These arrays replace the defaults for each action, so Ctrl+J is intentionally
+# absent from send_request (it is reserved for focus movement below).
+[bindings]
+cycle_focus_prev = ["shift+tab", "ctrl+h", "ctrl+k"]
+cycle_focus_next = ["tab", "ctrl+j", "ctrl+l"]
+send_request = ["ctrl+enter", "cmd+enter", "alt+enter", "ctrl+m"]

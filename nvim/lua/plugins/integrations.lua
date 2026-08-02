@@ -1,42 +1,34 @@
-return {
-	-- posting
-	{
-		"YarikYar/posting.nvim",
-		dependencies = { "akinsho/toggleterm.nvim" },
-		config = function()
-			require("posting").setup({
-				border = "curved", -- valid options are "single" | "double" | "shadow" | "curved"
-			})
-		end,
-		event = "BufRead",
-		keys = {
-			{
-				"<leader>lp",
-				function()
-					require("posting").open()
-				end,
-				desc = "Open Posting floating window",
-			},
+local function open_cli(argv, title)
+	local executable = argv[1]
+	if vim.fn.executable(executable) ~= 1 then
+		LazyVim.warn(
+			("`%s` is not installed or is not available in PATH. Run the dotfiles provisioning first."):format(
+				executable
+			),
+			{ title = title }
+		)
+		return
+	end
+
+	Snacks.terminal(argv, {
+		cwd = LazyVim.root.get(),
+		win = {
+			border = "rounded",
+			title = (" %s "):format(title),
 		},
-	},
-	-- lazydocker
+	})
+end
+
+return {
 	{
-		"mgierada/lazydocker.nvim",
-		dependencies = { "akinsho/toggleterm.nvim" },
-		config = function()
-			require("lazydocker").setup({
-				border = "curved", -- valid options are "single" | "double" | "shadow" | "curved"
-			})
+		"folke/snacks.nvim",
+		init = function()
+			vim.api.nvim_create_user_command("Lazydocker", function()
+				open_cli({ "lazydocker" }, "Lazydocker")
+			end, { desc = "Toggle Lazydocker for the project root" })
 		end,
-		event = "BufRead",
 		keys = {
-			{
-				"<leader>ld",
-				function()
-					require("lazydocker").open()
-				end,
-				desc = "Open Lazydocker floating window",
-			},
+			{ "<leader>ld", "<cmd>Lazydocker<cr>", desc = "Lazydocker" },
 		},
 	},
 }

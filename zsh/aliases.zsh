@@ -3,7 +3,7 @@
 # ============================================
 alias l="eza -l --icons --git -a --color=always --group-directories-first"
 alias lt="eza --tree --level=2 --long --icons --git --color=always"
-alias ls="eza -a --tree --level=1 --icons=always --color=always --group-directories-first"
+alias ls="eza --icons=auto --color=auto --group-directories-first"
 alias ll='eza -al --icons --color=always --group-directories-first'
 alias la='eza -a --color=always --group-directories-first'
 alias lta="eza --tree --level=3 --icons --git -a --color=always"
@@ -17,7 +17,12 @@ alias ld='lazydocker'
 alias div='dive'
 alias post='posting'
 alias hq='harlequin'
-alias trp='trip'
+if [[ "$OSTYPE" == darwin* ]]; then
+  # macOS can run Trippy without root or a setuid Homebrew binary.
+  alias trp='trip --unprivileged'
+else
+  alias trp='trip'
+fi
 alias ya='yazi'
 alias k9='k9s'
 
@@ -35,7 +40,7 @@ alias gco="git checkout"
 alias gb='git branch'
 alias gba='git branch -a'
 alias gadd='git add'
-alias gap='git add -p'  # ga is used by forgit (interactive add with preview)
+alias gap='git add -p'
 alias gcoall='git checkout -- .'
 alias gr='git remote'
 alias gre='git reset'
@@ -58,7 +63,6 @@ alias dps="docker ps"
 alias dpa="docker ps -a"
 alias dl="docker ps -l -q"
 alias dx="docker exec -it"
-alias dka="docker kill \$(docker ps -a -q)"
 alias di="docker images"
 alias drm="docker rm"
 alias drmi="docker rmi"
@@ -146,14 +150,13 @@ alias aws-whoami="aws sts get-caller-identity"
 alias aws-regions="aws ec2 describe-regions --output table"
 
 # ============================================
-# TMUX
+# HERDR
 # ============================================
-alias ta='tmux attach -t'
-alias ts='tmux new-session -s'
-alias tl='tmux list-sessions'
-alias tksv='tmux kill-server'
-alias tkss='tmux kill-session -t'
-alias tks='tmux kill-session'
+alias herd='herdr'
+alias herdrs='herdr status'
+alias herdrl='herdr session list'
+alias herdrr='herdr server reload-config'
+alias reviewr='herdr plugin action invoke open --plugin persiyanov.reviewr'
 
 # ============================================
 # NODE.JS / NPM / PNPM
@@ -205,9 +208,10 @@ alias -- -="cd -"
 # SYSTEM UTILITIES - MODERN REPLACEMENTS
 # ============================================
 
-# bat - better cat with syntax highlighting
-alias cat='bat --theme="Catppuccin Mocha"'
-alias catn='bat --plain'  # No line numbers, no git
+# Keep standard commands standard; explicit aliases avoid breaking familiar
+# flags inside interactive helpers.
+alias bcat='bat --theme="Catppuccin Mocha"'
+alias catn='bat --plain'
 
 # Better grep with colors
 alias grep='grep --color=auto'
@@ -215,21 +219,21 @@ alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 
 # diff with delta (git-delta)
-alias diff='delta'
+alias ddiff='delta'
 
 # ip with colors (Linux only)
 [[ "$OSTYPE" == "linux-gnu"* ]] && alias ip='ip --color=auto'
 
 # Modern disk utilities
-alias df='duf'                          # Better df
-alias du='dust'                         # Better du
+alias dufree='duf'                      # Better df
+alias dusage='dust'                     # Better du
 alias duh='dust -d 1'                   # Disk usage here (1 level)
 
 # Free memory (Linux only)
 [[ "$OSTYPE" == "linux-gnu"* ]] && alias free='free -h'
 
 # Process viewing
-alias ps='procs'                        # Better ps
+alias pss='procs'                       # Better ps
 alias pst='procs --tree'                # Process tree
 alias psa='procs --sortd cpu'           # Sort by CPU
 
@@ -237,7 +241,7 @@ alias psa='procs --sortd cpu'           # Sort by CPU
 alias ports='netstat -tulanp 2>/dev/null || lsof -i -P -n | grep LISTEN'
 alias myip='curl -s ifconfig.me'
 alias localip="ipconfig getifaddr en0 2>/dev/null || ip route get 1 | awk '{print \$7}'"
-alias ping='gping'                      # Ping with graph
+alias gpingg='gping'                    # Ping with graph
 
 # System info
 alias path='echo -e ${PATH//:/\\n}'
@@ -279,8 +283,8 @@ alias mkdir='mkdir -pv'
 # ============================================
 alias zshrc='${EDITOR:-nvim} ~/.zshrc'
 alias nvimrc='${EDITOR:-nvim} ~/.config/nvim/init.lua'
-alias tmuxrc='${EDITOR:-nvim} ~/.config/tmux/tmux.conf'
-alias dotfiles='cd ~/dotfiles && ${EDITOR:-nvim} .'
+alias herdrc='${EDITOR:-nvim} ~/.config/herdr/config.toml'
+alias dotfiles='cd -- "$DOTFILES_DIR" && ${EDITOR:-nvim} .'
 
 # ============================================
 # HTTPIE / API TESTING
@@ -317,8 +321,7 @@ alias jl='jless'
 alias dft='difft'
 alias gdft='GIT_EXTERNAL_DIFF=difft git diff'
 
-# broot - interactive tree
-alias br='broot'
+# broot - interactive tree (`br` is the generated cd-aware shell function)
 alias brs='broot --sizes'               # With sizes
 alias brg='broot --git-status'          # With git status
 
@@ -340,34 +343,3 @@ alias bw='sudo bandwhich'
 
 # lnav - log navigator
 alias logs='lnav'
-
-# ============================================
-# FORGIT (FZF + GIT)
-# ============================================
-# forgit auto-creates these aliases:
-# ga   -> forgit::add (interactive git add)
-# glo  -> forgit::log (interactive git log)
-# gd   -> forgit::diff (interactive git diff)
-# grh  -> forgit::reset::head (interactive reset HEAD)
-# gcf  -> forgit::checkout::file (interactive checkout file)
-# gcb  -> forgit::checkout::branch (interactive checkout branch)
-# gbd  -> forgit::branch::delete (interactive branch delete)
-# gct  -> forgit::checkout::tag (interactive checkout tag)
-# gco  -> forgit::checkout::commit (interactive checkout commit)
-# grc  -> forgit::revert::commit (interactive revert)
-# gss  -> forgit::stash::show (interactive stash show)
-# gsp  -> forgit::stash::push (interactive stash push)
-# gclean -> forgit::clean (interactive clean)
-# gcp  -> forgit::cherry::pick (interactive cherry-pick)
-# grb  -> forgit::rebase (interactive rebase)
-# gbl  -> forgit::blame (interactive blame)
-# gfu  -> forgit::fixup (interactive fixup)
-
-# Additional forgit config
-export FORGIT_FZF_DEFAULT_OPTS="
-  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
-  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
-  --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
-  --height=80%
-  --preview-window=right:60%
-"

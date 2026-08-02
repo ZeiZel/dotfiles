@@ -1,71 +1,18 @@
--- Keymaps are automatically loaded on the VeryLazy event
--- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
--- Add any additional keymaps here
-
 local map = vim.keymap.set
 
--- Leader
-vim.g.mapleader = " "
+map("i", "jj", "<Esc>", { desc = "Exit insert mode" })
+map("n", "<leader>w", "<cmd>write<cr>", { desc = "Save file" })
 
--- INSERT --
+map("n", "<C-h>", "<C-w>h", { desc = "Go to left window" })
+map("n", "<C-j>", "<C-w>j", { desc = "Go to lower window" })
+map("n", "<C-k>", "<C-w>k", { desc = "Go to upper window" })
+map("n", "<C-l>", "<C-w>l", { desc = "Go to right window" })
 
-map("i", "jj", "<Esc>")
+map("n", "|", "<cmd>vsplit<cr>", { desc = "Vertical split" })
+map("n", "\\", "<cmd>split<cr>", { desc = "Horizontal split" })
 
--- NORMAL --
+map("n", "<Tab>", "<cmd>BufferLineCycleNext<cr>", { desc = "Next buffer" })
+map("n", "<S-Tab>", "<cmd>BufferLineCyclePrev<cr>", { desc = "Previous buffer" })
 
-map("n", "<S-Up>", '<cmd>lua MiniMove.move_line("up")<cr>', { desc = "Move - line up" })
-map("n", "<S-Down>", '<cmd>lua MiniMove.move_line("down")<cr>', { desc = "Move - line down" })
-map("n", "<S-Left>", '<cmd>lua MiniMove.move_line("left")<cr>', { desc = "Move - line left" })
-map("n", "<S-Right>", '<cmd>lua MiniMove.move_line("right")<cr>', { desc = "Move - line right" })
-map("n", "<S-k>", '<cmd>lua MiniMove.move_line("up")<cr>', { desc = "Move - line up" })
-map("n", "<S-j>", '<cmd>lua MiniMove.move_line("down")<cr>', { desc = "Move - line down" })
-map("n", "<S-h>", '<cmd>lua MiniMove.move_line("left")<cr>', { desc = "Move - line left" })
-map("n", "<S-l>", '<cmd>lua MiniMove.move_line("right")<cr>', { desc = "Move - line right" })
-
--- Buffers
-map("n", "<leader>w", ":w<CR>")
-
--- Navigation
-map("n", "<c-k>", ":wincmd k<CR>")
-map("n", "<c-j>", ":wincmd j<CR>")
-map("n", "<c-h>", ":wincmd h<CR>")
-map("n", "<c-l>", ":wincmd l<CR>")
-
--- Splits
-map("n", "|", ":vsplit<CR>")
-map("n", "\\", ":split<CR>")
-
--- Tabs
-map("n", "<Tab>", ":BufferLineCycleNext<CR>")
-map("n", "<s-Tab>", ":BufferLineCyclePrev<CR>")
-
--- VISUAL --
-
-map("v", "<S-Up>", '<cmd>lua MiniMove.move_selection("up")<cr>', { desc = "Move - selection up" })
-map("v", "<S-Down>", '<cmd>lua MiniMove.move_selection("down")<cr>', { desc = "Move - selection down" })
-map("v", "<S-Left>", '<cmd>lua MiniMove.move_selection("left")<cr>', { desc = "Move - selection left" })
-map("v", "<S-Right>", '<cmd>lua MiniMove.move_selection("right")<cr>', { desc = "Move - selection right" })
-map("v", "<S-k>", '<cmd>lua MiniMove.move_selection("up")<cr>', { desc = "Move - selection up" })
-map("v", "<S-j>", '<cmd>lua MiniMove.move_selection("down")<cr>', { desc = "Move - selection down" })
-map("v", "<S-h>", '<cmd>lua MiniMove.move_selection("left")<cr>', { desc = "Move - selection left" })
-map("v", "<S-l>", '<cmd>lua MiniMove.move_selection("right")<cr>', { desc = "Move - selection right" })
-
--- PLUGINS --
-
--- DBEE
-map("n", "<leader>db", ":Dbee open<CR>")
-
--- lsp
-map({ "n", "v" }, "<leader>la", "<cmd>Lspsaga code_action<CR>", { desc = "Lsp Code action" })
-map({ "n", "v" }, "<leader>lh", "<cmd>Lspsaga hover_doc<CR>", { desc = "Lsp Documentation" })
-map({ "n", "v" }, "<leader>ld", "<cmd>Lspsaga show_cursor_diagnostics<CR>", { desc = "Lsp cursor diagnostics" })
-
--- Telescope
-map("n", "<leader>fn", ":Telescope notify<CR>")
-map("n", "<leader>fp", ":Telescope projects<CR>")
-
--- Tagbar
-map("n", "<leader>fs", ":Tagbar<CR>")
-
--- MD Preview
-map("n", "<leader>mp", ":MarkdownPreview<CR>")
+-- LazyVim already provides LSP, diagnostics, symbols, test and picker mappings.
+-- Keeping those defaults prevents mappings to commands from absent plugins.

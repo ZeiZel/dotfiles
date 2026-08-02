@@ -14,6 +14,7 @@ linux_system_packages_debian:
   - curl
   - file
   - git
+  - jq
   - procps
   - zsh
   - stow
@@ -24,6 +25,7 @@ linux_system_packages_redhat:
   - curl
   - file
   - git
+  - jq
   - procps-ng
   - zsh
   - stow

@@ -29,7 +29,7 @@ return {
 			Snacks.toggle({
 				name = "Render Markdown",
 				get = function()
-					return require("render-markdown.state").enabled
+					return require("render-markdown").get()
 				end,
 				set = function(enabled)
 					local m = require("render-markdown")

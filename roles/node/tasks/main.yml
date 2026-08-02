@@ -2,37 +2,67 @@
 # Node.js and npm packages installation
 
 - name: Install nvm
-  ansible.builtin.shell:
-    cmd: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{{ nvm_version }}/install.sh | bash
-    creates: '{{ ansible_facts.env.HOME }}/.nvm/nvm.sh'
-  register: nvm_status
+  ansible.builtin.git:
+    repo: https://github.com/nvm-sh/nvm.git
+    dest: "{{ ansible_facts['env']['HOME'] }}/.nvm"
+    version: "{{ node_nvm_version }}"
+    depth: 1
+    update: true
 
-- name: Install node lts
+- name: Install or update Node LTS
   ansible.builtin.shell:
     cmd: |
       export NVM_DIR="{{ ansible_facts.env.HOME }}/.nvm"
       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
       nvm install --lts
-      nvm alias default node
     executable: /bin/bash
-  args:
-    creates: '{{ ansible_facts.env.HOME }}/.nvm/versions/node'
+  register: node_lts_install
+  changed_when: >-
+    'is already installed' not in
+    (node_lts_install.stdout + node_lts_install.stderr)
 
-- name: Install global npm packages (without claude)
+- name: Use the current Node LTS release as the default
+  ansible.builtin.copy:
+    dest: "{{ ansible_facts['env']['HOME'] }}/.nvm/alias/default"
+    content: "lts/*\n"
+    mode: "0644"
+
+- name: Resolve the default Node LTS executable
   ansible.builtin.shell:
     cmd: |
       export NVM_DIR="{{ ansible_facts.env.HOME }}/.nvm"
       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-      npm install -g @beads/bd @gastown/gt nx@latest @nestjs/cli@latest @angular/cli@latest repomix@latest
+      nvm which default
     executable: /bin/bash
-  register: npm_global_install
-  changed_when: "'added' in npm_global_install.stdout"
+  register: node_default_executable
+  changed_when: false
+
+- name: Install pinned global npm developer tools
+  community.general.npm:
+    name: "{{ item.name }}"
+    version: "{{ item.version }}"
+    global: true
+    state: present
+    executable: "{{ node_default_executable.stdout | dirname }}/npm"
+  environment:
+    PATH: "{{ node_default_executable.stdout | dirname }}:{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+  loop: "{{ node_npm_global_packages }}"
+  loop_control:
+    label: "{{ item.name }}@{{ item.version }}"
 
 # AI pair programming tools
-- name: Install aider via uv (AI pair programming)
-  ansible.builtin.shell:
-    cmd: uv tool install aider-chat
-    executable: /bin/bash
-  register: aider_install
-  changed_when: "'Installed' in aider_install.stdout or 'installed' in aider_install.stderr"
-  failed_when: false
+- name: Inspect uv-managed tools
+  ansible.builtin.command:
+    cmd: "{{ homebrew_bin }}/uv tool list"
+  environment:
+    PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+  register: node_uv_tools
+  changed_when: false
+
+- name: Install aider via uv
+  ansible.builtin.command:
+    cmd: "{{ homebrew_bin }}/uv tool install aider-chat"
+  environment:
+    PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+  when: node_uv_tools.stdout is not search('(?m)^aider-chat\s')
+  changed_when: true

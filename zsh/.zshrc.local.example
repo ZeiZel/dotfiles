@@ -1,0 +1,13 @@
+# ============================================
+# LOCAL CONFIGURATION EXAMPLE
+# Copy only the settings you need to ~/.zshrc.local.
+# ============================================
+
+# Example: machine-specific paths
+# export WORK_PROJECT_DIR="$HOME/projects/work"
+
+# Example: open a plain shell instead of Herdr in new terminal windows
+# export ZSH_HERDR_AUTOSTART=0
+
+# Example: machine-specific aliases
+# alias vpn-connect='sudo openconnect vpn.example.com'

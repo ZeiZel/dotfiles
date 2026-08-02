@@ -1,3 +1,39 @@
 ---
-# All variables defined in group_vars/
-# brewfile_path -> group_vars/all.yml
+# `mas list` can block on Spotlight on recent macOS releases, so App Store apps
+# are checked by their application bundle and installed explicitly.
+homebrew_mas_apps:
+  - name: Amphetamine
+    id: 937984704
+    app_path: /Applications/Amphetamine.app
+
+# A clean host installs these through Brewfile casks. On an existing host, an
+# application bundle may predate Homebrew ownership; skip that cask rather than
+# overwrite or stop a running application during routine provisioning.
+homebrew_cask_apps:
+  - name: AeroSpace
+    cask: nikitabobko/tap/aerospace
+    app_path: /Applications/AeroSpace.app
+  - name: Docker Desktop
+    cask: docker-desktop
+    app_path: /Applications/Docker.app
+  - name: Maccy
+    cask: maccy
+    app_path: /Applications/Maccy.app
+  - name: Flameshot
+    cask: flameshot
+    app_path: /Applications/Flameshot.app
+  - name: ChatGPT
+    cask: chatgpt
+    app_path: /Applications/ChatGPT.app
+  - name: Claude
+    cask: claude
+    app_path: /Applications/Claude.app
+  - name: Mos
+    cask: mos
+    app_path: /Applications/Mos.app
+  - name: Visual Studio Code
+    cask: visual-studio-code
+    app_path: /Applications/Visual Studio Code.app
+  - name: JetBrains Toolbox
+    cask: jetbrains-toolbox
+    app_path: /Applications/JetBrains Toolbox.app

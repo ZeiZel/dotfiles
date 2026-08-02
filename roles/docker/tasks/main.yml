@@ -18,16 +18,6 @@
         path: /Applications/Docker.app
       register: docker_app
 
-    - name: Install Docker Desktop via Homebrew Cask
-      community.general.homebrew_cask:
-        name: docker
-        state: present
-      environment:
-        PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
-      when: docker_installed.rc != 0 and not docker_app.stat.exists
-      register: docker_install_result
-      ignore_errors: true
-
     - name: Docker installation skipped (already installed)
       ansible.builtin.debug:
         msg: "Docker is already installed (version: {{ docker_installed.stdout | default('Docker.app found') }})"
@@ -42,23 +32,18 @@
       environment:
         PATH: /usr/local/bin:/opt/homebrew/bin:{{ ansible_facts['env']['PATH'] }}
 
-    - name: Notify user to start Docker Desktop
+    - name: Notify user to start or repair Docker Desktop
       ansible.builtin.debug:
         msg: >
-          Docker Desktop has been installed. Please start Docker Desktop
-          from Applications to complete the setup. No sudo or docker group
-          configuration is needed on macOS.
-      when: docker_check.rc != 0 and not docker_app.stat.exists
+          Docker Desktop is declared in Brewfile. Start it from Applications
+          to complete setup, or rerun the Homebrew role if Docker.app is
+          missing. No docker group configuration is needed on macOS.
+      when: docker_check.rc != 0
 
 - name: Installing Docker on Linux
   become: true
-  when: ansible_facts['os_family'] != "Darwin"
+  when: ansible_facts['distribution'] in ["Ubuntu", "Debian"]
   block:
-    - name: Add universe repo
-      ansible.builtin.apt_repository:
-        repo: deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}
-          universe
-        state: present
     - name: Installing additional packages
       ansible.builtin.apt:
         name:
@@ -67,6 +52,7 @@
           - curl
           - gnupg
           - lsb-release
+          - python3-debian
           - python3-pip
         update_cache: true
         cache_valid_time: 86400
@@ -75,21 +61,33 @@
         path: /etc/apt/keyrings
         state: directory
         mode: '0755'
-    - name: Add Docker key
+    - name: Add Docker signing key
       ansible.builtin.get_url:
-        url: https://download.docker.com/linux/ubuntu/gpg
+        url: "https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}/gpg"
         dest: /etc/apt/keyrings/docker.asc
         mode: '0644'
         force: true
-    - name: Installing stable Docker
-      ansible.builtin.apt_repository:
-        repo: >
-          deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc]
-          https://download.docker.com/linux/ubuntu
-          {{ ansible_distribution_release }} stable
+
+    - name: Configure the stable Docker repository
+      ansible.builtin.deb822_repository:
+        name: docker
+        types:
+          - deb
+        uris:
+          - "https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}"
+        suites:
+          - "{{ ansible_facts['distribution_release'] }}"
+        components:
+          - stable
+        architectures:
+          - >-
+            {{ docker_debian_architectures.get(
+              ansible_facts['architecture'],
+              ansible_facts['architecture']
+            ) }}
+        signed_by: /etc/apt/keyrings/docker.asc
         state: present
-        update_cache: true
-        filename: docker
+
     - name: Installing Docker-ce and Docker Compose Plugin
       ansible.builtin.apt:
         name:
@@ -109,7 +107,7 @@
 
 - name: Setting additional packages python (Linux only)
   become: true
-  when: ansible_facts['os_family'] != "Darwin"
+  when: ansible_facts['distribution'] in ["Ubuntu", "Debian"]
   block:
     - name: Install pip packages for Ansible Docker modules
       ansible.builtin.pip:
@@ -118,23 +116,25 @@
 
 - name: Docker post-install (Linux only)
   become: true
-  when: ansible_facts['os_family'] != "Darwin"
+  when: ansible_facts['distribution'] in ["Ubuntu", "Debian"]
   block:
     - name: Adding user in Docker group
       ansible.builtin.user:
         name: '{{ dotfiles_user }}'
         groups: docker
         append: true
-    - name: Check needs in reboot
-      ansible.builtin.stat:
-        path: /var/run/reboot-required
-      register: reboot_required_file
-    - name: Reboot
-      ansible.builtin.reboot:
-        msg: Reboot initiated by Ansible for Docker installation
-        connect_timeout: 5
-        reboot_timeout: 300
-        pre_reboot_delay: 0
-        post_reboot_delay: 30
-        test_command: uptime
-      when: reboot_required_file.stat.exists | default(false)
+    - name: Explain Docker group activation
+      ansible.builtin.debug:
+        msg: >-
+          Docker group membership is configured. Log out and back in before
+          running Docker without sudo; the playbook never reboots the host.
+
+- name: Report unsupported Linux Docker distribution
+  ansible.builtin.debug:
+    msg: >-
+      Automatic Docker Engine installation currently supports Ubuntu and
+      Debian only. Install Docker for {{ ansible_facts['distribution'] }}
+      using the vendor instructions.
+  when:
+    - ansible_facts['os_family'] != "Darwin"
+    - ansible_facts['distribution'] not in ["Ubuntu", "Debian"]

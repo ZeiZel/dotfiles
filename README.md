@@ -1,19 +1,32 @@
 # Dotfiles
 
-Personal dotfiles for macOS/Linux with Zsh, Tmux, Neovim, and modern CLI tools. Fully automated setup via Ansible.
+<!-- markdownlint-disable MD013 -->
+
+Personal dotfiles for macOS/Linux with Zsh, Herdr, Neovim, and modern CLI
+tools. Fully automated setup via Ansible.
+
+AI agents must read [AGENTS.md](AGENTS.md) before changing the repository. It
+defines architecture, ownership boundaries, host-mutation safety and the
+required validation matrix.
+
+The complete terminal-IDE design is in
+[docs/NEOVIM_IDE_PLAN.md](docs/NEOVIM_IDE_PLAN.md). The short daily reference
+for Neovim, Zsh, Herdr, Lazygit and Git is
+[docs/CHEATSHEET.md](docs/CHEATSHEET.md).
 
 ## Quick Install
 
 ```bash
-sh -c "$(curl -fsSL https://github.com/ZeiZel/dotfiles/raw/master/install.sh)"
+sh -c "$(curl -fsSL https://github.com/ZeiZel/dotfiles/raw/main/install.sh)"
 ```
 
 ### AI-only install
 
-To install only the AI tooling (Qdrant, MCP servers, Claude Code config) without the full dotfiles setup:
+To install only the AI tooling (Qdrant, MCP servers, Claude Code config)
+without the full dotfiles setup:
 
 ```bash
-sh -c "$(curl -fsSL https://github.com/ZeiZel/dotfiles/raw/master/setup-ai.sh)"
+sh -c "$(curl -fsSL https://github.com/ZeiZel/dotfiles/raw/main/setup-ai.sh)"
 ```
 
 Requires Ansible and Docker to be installed first (run `install.sh` if not).
@@ -21,14 +34,10 @@ Requires Ansible and Docker to be installed first (run `install.sh` if not).
 ### Post-install
 
 ```bash
-# Neovim: install plugins
-nvim  # Run :Lazy install and :MasonInstall
+# Neovim: Lazy and Mason reconcile declared plugins and editor tools
+nvim
 
-# Tmux: install plugins (inside tmux)
-# Press: Ctrl+A then I
-
-# Broot: initialize
-broot --install
+# Herdr, reviewr, agent integrations and Broot are provisioned automatically.
 ```
 
 ---
@@ -38,9 +47,9 @@ broot --install
 | Category        | Tool                                                      |
 | --------------- | --------------------------------------------------------- |
 | Terminal        | [Ghostty](https://ghostty.org/)                           |
-| Shell           | Zsh + [Zinit](https://github.com/zdharma-continuum/zinit) |
+| Shell           | Zsh + versioned Homebrew plugins                          |
 | Prompt          | [Starship](https://starship.rs/)                          |
-| Multiplexer     | [Tmux](https://github.com/tmux/tmux) + TPM                |
+| Workspace       | [Herdr](https://herdr.dev/) + reviewr                     |
 | Editor          | [Neovim](https://neovim.io/)                              |
 | File Manager    | [Yazi](https://yazi-rs.github.io/)                        |
 | History         | [Atuin](https://atuin.sh/)                                |
@@ -52,21 +61,24 @@ broot --install
 
 ## Directory Structure
 
-```
+```text
 dotfiles/
 ├── zsh/                  # Zsh configuration
 │   ├── .zshrc           # Entry point
 │   ├── aliases.zsh      # 370+ aliases
 │   ├── functions.zsh    # Helper functions
-│   ├── plugins.zsh      # Zinit plugin config
+│   ├── plugins.zsh      # Homebrew-managed Zsh plugins
 │   ├── env.zsh          # Environment variables
 │   ├── fzf.zsh          # FZF configuration
 │   ├── init.zsh         # Tool initialization
 │   ├── kbd.zsh          # Key bindings
 │   ├── options.zsh      # Shell options
 │   ├── theme.zsh        # Catppuccin colors
-│   └── tmux-auto.zsh    # Auto-start tmux
-├── tmux/                 # Tmux configuration
+│   └── herdr-auto.zsh   # Default terminal-to-Herdr handoff
+├── herdr/                # Primary terminal workspace configuration
+│   ├── config.toml      # Prefix, panes, UI and Lazygit popup
+│   └── plugins/         # Declarative reviewr configuration
+├── tmux/                 # Legacy fallback; retained but not provisioned
 │   ├── tmux.conf        # Main config
 │   ├── tmux.binds.conf  # Key bindings
 │   ├── tmux.options.conf
@@ -81,7 +93,7 @@ dotfiles/
 ├── git/                  # Git configuration
 ├── Brewfile              # Homebrew packages
 ├── all.yml               # Ansible playbook
-└── tasks/                # Ansible tasks
+└── roles/                # Ansible provisioning roles
 ```
 
 ---
@@ -114,30 +126,80 @@ These modern tools replace classic Unix utilities with better UX:
 | `xh`         | `xget`, `xpost` | Fast HTTPie alternative (Rust) |
 | `jless`      | `jl`            | Interactive JSON viewer        |
 | `difftastic` | `dft`           | Structural diff (AST-aware)    |
+| `ast-grep`   | `sg`            | Structural search and rewrite  |
 | `broot`      | `br`            | Interactive tree navigator     |
-| `navi`       | `nv`, `Ctrl+G`  | Interactive cheatsheets        |
+| `navi`       | `nav`, `Ctrl+G` | Interactive cheatsheets        |
 | `bandwhich`  | `bw`            | Network bandwidth monitor      |
 | `lnav`       | `logs`          | Log file navigator             |
 | `hyperfine`  | `bench`         | CLI benchmarking               |
 | `tokei`      | `loc`           | Code statistics                |
 | `glow`       | `mdp`           | Markdown preview               |
-| `gping`      | `ping`          | Ping with graph                |
+| `gping`      | `gpingg`        | Ping with graph                |
 
 ---
 
 ## TUI Applications
 
-| App                                                       | Alias      | Description           |
-| --------------------------------------------------------- | ---------- | --------------------- |
-| [lazygit](https://github.com/jesseduffield/lazygit)       | `lg`       | Git TUI               |
-| [lazydocker](https://github.com/jesseduffield/lazydocker) | `ld`       | Docker TUI            |
-| [btop](https://github.com/aristocratos/btop)              | `bt`       | Resource monitor      |
-| [k9s](https://k9scli.io/)                                 | `k9`       | Kubernetes TUI        |
-| [yazi](https://yazi-rs.github.io/)                        | `ya`, `yy` | File manager          |
-| [dive](https://github.com/wagoodman/dive)                 | `div`      | Docker image analyzer |
-| [posting](https://github.com/darrenburns/posting)         | `post`     | HTTP client TUI       |
-| [harlequin](https://harlequin.sh/)                        | `hq`       | SQL TUI               |
-| [trippy](https://github.com/fujiapple852/trippy)          | `tr`       | Network diagnostic    |
+| App | Alias | Description |
+| --- | --- | --- |
+| [lazygit](https://github.com/jesseduffield/lazygit) | `lg` | Git TUI |
+| [lazydocker](https://github.com/jesseduffield/lazydocker) | `ld` | Docker TUI |
+| [btop](https://github.com/aristocratos/btop) | `bt` | Resource monitor |
+| [k9s](https://k9scli.io/) | `k9` | Kubernetes TUI |
+| [yazi](https://yazi-rs.github.io/) | `ya`, `yy` | File manager |
+| [dive](https://github.com/wagoodman/dive) | `div` | Docker image analyzer |
+| [posting](https://github.com/darrenburns/posting) | `post` | HTTP client TUI |
+| [resterm](https://github.com/unkn0wn-root/resterm) | `dev rest` | Vim-oriented REST client TUI |
+| [harlequin](https://harlequin.sh/) | `hq` | SQL TUI |
+| [trippy](https://github.com/fujiapple852/trippy) | `trp` | Network diagnostic (`--unprivileged` on macOS) |
+
+Resterm key overrides live in [`resterm/bindings.toml`](resterm/bindings.toml)
+and are linked into Resterm's native macOS config directory at
+`~/Library/Application Support/resterm/bindings.toml` by the dotfiles role.
+On Linux, Stow places the file at `~/.config/resterm/bindings.toml`. Both direct
+`resterm` and `dev rest` therefore load the same tracked bindings while
+preserving Resterm's native macOS history database. `Tab` / `Shift+Tab` keep
+their native focus cycling and also expose `Ctrl+J` / `Ctrl+L` for next and
+`Ctrl+H` / `Ctrl+K` for previous focus. Request sending remains on
+`Ctrl+Enter`, `Cmd+Enter`, `Alt+Enter` and `Ctrl+M`; the default `Ctrl+J`
+send binding is removed so it is not ambiguous with focus movement.
+
+These focus bindings are a previous/next approximation for the current
+horizontal pane order, not true directional left/right/up/down actions. In the
+request editor they are intentionally swallowed by insert mode; press `Esc`
+first to return to normal mode, then use the focus binding.
+
+---
+
+## Development lifecycle CLI
+
+The `dev` shell function is the single entrypoint for interactive development
+tools: `dev ide`, `dev rest`, `dev db`, `dev docker`, `dev git`, and
+`dev agent codex|claude`. Each subcommand forwards additional arguments to the
+selected program and returns its exit status.
+
+`Brewfile` also provisions commands used outside Neovim and available to
+asynchronous editor tasks:
+
+| Command | Responsibility |
+| --- | --- |
+| `httpyac`, `posting` | Scriptable `.http` requests and an interactive API client |
+| `harlequin` | DuckDB, SQLite, PostgreSQL, MySQL and ODBC database client |
+| `uv` | Reproducible Python environments, tools and dependency resolution |
+| `cargo-nextest` | Fast Rust test execution |
+| `kubeconform` | Kubernetes and rendered Helm manifest validation |
+| `gitleaks` | Secret detection in Git history and the working tree |
+| `trivy` | Repository, dependency, IaC and container vulnerability scanning |
+
+## Git conflict workflow
+
+`git mergetool` opens Neovim with `LOCAL`, writable `MERGED`, and `REMOTE`
+columns. Save and quit all panes with `:wqa` after resolving the center buffer;
+use `:cq`
+to abort. `git difftool` uses Git's portable `nvimdiff` driver, while
+`git mergetool --gui` and `git difftool --gui` remain explicit Visual Studio
+Code fallbacks. Git uses `zdiff3` conflict markers so the common ancestor is
+available even before the merge tool opens.
 
 ---
 
@@ -148,7 +210,7 @@ These modern tools replace classic Unix utilities with better UX:
 | Alias | Command                          |
 | ----- | -------------------------------- |
 | `l`   | Detailed list with icons and git |
-| `ls`  | Tree level 1 with icons          |
+| `ls`  | Fast list with icons             |
 | `ll`  | Long list all files              |
 | `la`  | All files                        |
 | `lt`  | Tree level 2                     |
@@ -167,7 +229,7 @@ These modern tools replace classic Unix utilities with better UX:
 | `gb`    | `git branch`           | List branches           |
 | `gba`   | `git branch -a`        | All branches            |
 | `gadd`  | `git add`              | Stage files             |
-| `ga`    | `git add -p`           | Interactive staging     |
+| `gap`   | `git add -p`           | Interactive staging     |
 | `gdiff` | `git diff`             | Show diff               |
 | `glog`  | Pretty log graph       | Visual commit history   |
 | `grb`   | `git rebase`           | Rebase                  |
@@ -177,22 +239,6 @@ These modern tools replace classic Unix utilities with better UX:
 | `gshl`  | `git stash list`       | List stashes            |
 | `grs`   | `git restore --staged` | Unstage files           |
 | `gcp`   | `git cherry-pick`      | Cherry-pick             |
-
-### Forgit (Interactive Git with FZF)
-
-| Alias    | Description                 |
-| -------- | --------------------------- |
-| `ga`     | Interactive `git add`       |
-| `glo`    | Interactive `git log`       |
-| `gd`     | Interactive `git diff`      |
-| `gcb`    | Interactive checkout branch |
-| `gbd`    | Interactive delete branch   |
-| `gss`    | Interactive stash show      |
-| `gsp`    | Interactive stash push      |
-| `grb`    | Interactive rebase          |
-| `gbl`    | Interactive blame           |
-| `gclean` | Interactive clean           |
-| `gfu`    | Interactive fixup           |
 
 ### Docker
 
@@ -311,30 +357,29 @@ These modern tools replace classic Unix utilities with better UX:
 | `ngb` | `ng build`    |
 | `ngs` | `ng serve`    |
 
-### Tmux
+### Herdr
 
-| Alias  | Command                |
-| ------ | ---------------------- |
-| `ta`   | `tmux attach -t`       |
-| `ts`   | `tmux new-session -s`  |
-| `tl`   | `tmux list-sessions`   |
-| `tks`  | `tmux kill-session`    |
-| `tkss` | `tmux kill-session -t` |
-| `tksv` | `tmux kill-server`     |
+| Alias     | Command                                                       |
+| --------- | ------------------------------------------------------------- |
+| `herd`    | `herdr`                                                       |
+| `herdrs`  | `herdr status`                                                |
+| `herdrl`  | `herdr session list`                                          |
+| `herdrr`  | `herdr server reload-config`                                  |
+| `reviewr` | `herdr plugin action invoke open --plugin persiyanov.reviewr` |
 
 ### System Utilities
 
 | Alias     | Command             | Description              |
 | --------- | ------------------- | ------------------------ |
-| `cat`     | `bat`               | With syntax highlighting |
-| `df`      | `duf`               | Disk free                |
-| `du`      | `dust`              | Disk usage               |
+| `bcat`    | `bat`               | With syntax highlighting |
+| `dufree`  | `duf`               | Disk free                |
+| `dusage`  | `dust`              | Disk usage               |
 | `duh`     | `dust -d 1`         | Current dir usage        |
-| `ps`      | `procs`             | Process list             |
+| `pss`     | `procs`             | Process list             |
 | `pst`     | `procs --tree`      | Process tree             |
 | `psa`     | `procs --sortd cpu` | Sort by CPU              |
-| `ping`    | `gping`             | With graph               |
-| `diff`    | `delta`             | Better diff              |
+| `gpingg`  | `gping`             | With graph               |
+| `ddiff`   | `delta`             | Better diff              |
 | `ports`   | -                   | Show listening ports     |
 | `myip`    | -                   | External IP              |
 | `localip` | -                   | Local IP                 |
@@ -382,7 +427,7 @@ These modern tools replace classic Unix utilities with better UX:
 | ---------- | ------------------ |
 | `zshrc`    | ~/.zshrc           |
 | `nvimrc`   | Neovim config      |
-| `tmuxrc`   | Tmux config        |
+| `herdrc`   | Herdr config       |
 | `dotfiles` | Dotfiles directory |
 
 ### Claude Code
@@ -406,114 +451,62 @@ These modern tools replace classic Unix utilities with better UX:
 
 ## Functions
 
-| Function  | Description                 | Usage                              |
-| --------- | --------------------------- | ---------------------------------- |
-| `yy`      | Yazi with cd integration    | `yy` (exit yazi into selected dir) |
-| `fcd`     | FZF directory navigator     | `fcd`                              |
-| `fv`      | FZF file opener (nvim)      | `fv`                               |
-| `tm`      | FZF tmux session launcher   | `tm` or `tm session-name`          |
-| `mkcd`    | Create and enter directory  | `mkcd new-project`                 |
-| `extract` | Universal archive extractor | `extract file.tar.gz`              |
-| `nvims`   | Neovim config switcher      | `nvims`                            |
-| `htt`     | HTTPyac with pretty output  | `htt request.http`                 |
+| Function  | Description                          | Usage                              |
+| --------- | ------------------------------------ | ---------------------------------- |
+| `yy`      | Yazi with cd integration             | `yy` (exit yazi into selected dir) |
+| `fcd`     | FZF directory navigator              | `fcd`                              |
+| `fv`      | FZF file opener (nvim)               | `fv`                               |
+| `hsm`     | Herdr session launcher (plain shell) | `hsm` or `hsm session-name`        |
+| `mkcd`    | Create and enter directory           | `mkcd new-project`                 |
+| `extract` | Universal archive extractor          | `extract file.tar.gz`              |
+| `nvims`   | Neovim config switcher               | `nvims`                            |
+| `htt`     | HTTPyac with pretty output           | `htt request.http`                 |
 
 ---
 
-## Tmux Configuration
+## Herdr Configuration
 
-### Prefix: `Ctrl+A`
+Herdr is the default terminal workspace layer and uses the former Tmux prefix:
+press `Ctrl+A`, release it, then press the action key. Press `Ctrl+A` twice to
+send a literal `Ctrl+A` to Zsh, FZF, Neovim or another pane application.
 
-### Session Management
+| Key after prefix | Action                                      |
+| ---------------- | ------------------------------------------- |
+| `g`              | Full-terminal Lazygit popup in the pane cwd |
+| `Shift+R`        | Toggle reviewr over the active tab          |
+| `f`              | Session navigator                           |
+| `w`              | Workspace picker                            |
+| `c`              | New tab                                     |
+| `n` / `p`        | Next / previous tab                         |
+| `1..9`           | Switch tab                                  |
+| `v` / `-`        | Split right / down                          |
+| `h/j/k/l`        | Focus the neighboring pane                  |
+| `z`              | Zoom the focused pane                       |
+| `x`              | Close the focused pane                      |
+| `b`              | Toggle the agent/sidebar rail               |
+| `[`              | Enter copy mode                             |
+| `q`              | Detach; keep panes and agents running       |
 
-| Key | Action                         |
-| --- | ------------------------------ |
-| `s` | Choose session (tree view)     |
-| `C` | New session                    |
-| `X` | Kill session (with confirm)    |
-| `o` | SessionX (FZF session manager) |
+On macOS, the Herdr user service starts at login. Linux starts the server on
+demand when Zsh hands the terminal to Herdr. It restores workspace layout and
+keeps live processes running while clients detach. Pane-history persistence
+stays disabled because terminal history may contain credentials or private
+output. Official Codex, Claude and Hermes hooks are installed only when those
+commands exist, so Herdr can identify and resume their sessions.
 
-### Pane Management
+Reviewr is pinned by Ansible and opens manually to avoid changing new-worktree
+layouts. It reviews uncommitted, branch and last-agent-turn diffs, can send
+line comments back to the active agent, and reads PR/MR data through an
+already-authenticated `gh`, `glab` or `az`. It is a community plugin and runs
+with the current user's permissions; update its pinned version only after
+reviewing its manifest and installer.
 
-| Key            | Action                             |
-| -------------- | ---------------------------------- |
-| `\|` or `\`    | Split horizontal                   |
-| `-` or `_`     | Split vertical                     |
-| `h/j/k/l`      | Navigate panes (vim-style)         |
-| `H/J/K/L`      | Resize panes (5 units)             |
-| `Alt+h/j/k/l`  | Resize panes (1 unit)              |
-| `m` or `z`     | Zoom pane                          |
-| `Ctrl+h/j/k/l` | Navigate (with vim-tmux-navigator) |
+### Legacy Tmux
 
-### Window Management
-
-| Key      | Action            |
-| -------- | ----------------- |
-| `c`      | New window        |
-| `Ctrl+H` | Previous window   |
-| `Ctrl+L` | Next window       |
-| `Tab`    | Last window       |
-| `<`      | Swap window left  |
-| `>`      | Swap window right |
-| `0-9`    | Select window     |
-
-### Popup Windows
-
-| Key | Opens              |
-| --- | ------------------ |
-| `g` | Lazygit            |
-| `b` | Btop               |
-| `y` | Yazi               |
-| `f` | FZF file finder    |
-| `n` | Notes (~/notes.md) |
-
-### Plugins
-
-| Key | Plugin                         |
-| --- | ------------------------------ |
-| `F` | tmux-fzf                       |
-| `T` | tmux-thumbs (copy hints)       |
-| `u` | tmux-fzf-url (open URLs)       |
-| `e` | Extrakto (search pane content) |
-
-### Copy Mode (vi-style)
-
-| Key      | Action              |
-| -------- | ------------------- |
-| `Enter`  | Enter copy mode     |
-| `v`      | Begin selection     |
-| `Ctrl+v` | Rectangle selection |
-| `y`      | Copy and exit       |
-| `Escape` | Cancel              |
-
-### Layouts
-
-| Key     | Layout                      |
-| ------- | --------------------------- |
-| `Alt+1` | Main horizontal             |
-| `Alt+2` | Main vertical               |
-| `Alt+3` | Tiled                       |
-| `Alt+4` | Even horizontal             |
-| `Alt+5` | Even vertical               |
-| `D`     | Dev layout (70/30 split)    |
-| `I`     | IDE layout (main + 2 right) |
-
-### Other
-
-| Key      | Action                   |
-| -------- | ------------------------ |
-| `r`      | Reload config            |
-| `S`      | Sync panes (type in all) |
-| `Ctrl+K` | Clear screen + history   |
-| `t`      | Toggle status bar        |
-| `I`      | Install plugins (TPM)    |
-| `U`      | Update plugins (TPM)     |
-
-### Session Persistence
-
-Sessions are automatically saved every 5 minutes and restored on tmux start.
-
-- Manual save: `prefix + Ctrl+s`
-- Manual restore: `prefix + Ctrl+r`
+`tmux/` remains in Git as a fallback and preserves the same `Ctrl+A` prefix,
+but Tmux and TPM are no longer provisioned or deployed. Existing host
+installations, sessions and resurrect data are deliberately left untouched
+during migration.
 
 ---
 
@@ -557,66 +550,52 @@ AeroSpace is installed via Homebrew only on macOS. The Ansible macOS role also d
 
 ## Zsh Plugins
 
-Managed by [Zinit](https://github.com/zdharma-continuum/zinit) with turbo mode (async loading):
+Installed as versioned Homebrew formulae and loaded synchronously in a fixed
+order. Shell startup never clones repositories or changes key bindings later:
 
-| Plugin                                                                                    | Description                |
-| ----------------------------------------------------------------------------------------- | -------------------------- |
-| [fast-syntax-highlighting](https://github.com/zdharma-continuum/fast-syntax-highlighting) | Syntax highlighting        |
-| [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions)                   | History-based suggestions  |
-| [zsh-completions](https://github.com/zsh-users/zsh-completions)                           | Additional completions     |
-| [fzf-tab](https://github.com/Aloxaf/fzf-tab)                                              | FZF-powered tab completion |
-| [zsh-autopair](https://github.com/hlissner/zsh-autopair)                                  | Auto-pair brackets         |
-| [zsh-sudo](https://github.com/hcgraf/zsh-sudo)                                            | Double-ESC for sudo        |
-| [zsh-you-should-use](https://github.com/MichaelAquilina/zsh-you-should-use)               | Alias reminders            |
-| [forgit](https://github.com/wfxr/forgit)                                                  | FZF + Git integration      |
-| [zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search) | History search             |
-
-### OMZ Snippets
-
-- git, extract, colored-man-pages, safe-paste
-- docker, docker-compose, kubectl, terraform
+| Plugin | Description |
+| --- | --- |
+| `zsh-syntax-highlighting` | Syntax highlighting |
+| `zsh-autosuggestions` | History-based suggestions |
+| `zsh-completions` | Additional completions |
+| `fzf-tab` | FZF-powered tab completion |
 
 ---
 
 ## Key Bindings (Zsh)
 
-| Key               | Action                     |
-| ----------------- | -------------------------- |
-| `jj`              | Exit insert mode (vi-mode) |
-| `Ctrl+R`          | History search (Atuin)     |
-| `Ctrl+G`          | Navi cheatsheets           |
-| `Ctrl+T`          | FZF file search            |
-| `Alt+C`           | FZF cd                     |
-| `Ctrl+A`          | Beginning of line          |
-| `Ctrl+E`          | End of line                |
-| `Ctrl+K`          | Kill to end of line        |
-| `Ctrl+U`          | Kill whole line            |
-| `Ctrl+W`          | Kill word backward         |
-| `Ctrl+Left/Right` | Word navigation            |
+| Key | Action |
+| --- | --- |
+| `Up` / `Down` | Previous / next Zsh history entry |
+| `Ctrl+R` | History search (Atuin) |
+| `Ctrl+G` | Navi cheatsheets |
+| `Ctrl+T` | FZF file search |
+| `Alt+C` | FZF cd |
+| `Ctrl+A` | Beginning of line outside Herdr; use `Ctrl+A Ctrl+A` inside |
+| `Ctrl+E` | End of line |
+| `Ctrl+K` | Kill to end of line |
+| `Ctrl+U` | Kill whole line |
+| `Ctrl+W` | Kill word backward |
+| `Ctrl+Left/Right` | Word navigation |
 
 ---
 
 ## Features
 
-### Auto-start Tmux
+### Herdr terminal handoff
 
-Terminal automatically attaches to existing tmux session or creates new one.
-
-**Disable temporarily:**
-
-```bash
-DISABLE_TMUX_AUTOSTART=1 zsh
-```
-
-**Disable permanently** (add to `~/.zshrc.local`):
+Normal terminal windows enter the persistent Herdr session automatically.
+Herdr-managed panes set `HERDR_ENV=1`, so their inner shell never attaches
+recursively. To open a plain shell, add this to `~/.zshrc.local`:
 
 ```bash
-export DISABLE_TMUX_AUTOSTART=1
+export ZSH_HERDR_AUTOSTART=0
 ```
 
-Skips auto-start for:
+Automatic handoff is skipped for:
 
 - SSH sessions
+- Existing Tmux and Herdr panes
 - VSCode integrated terminal
 - JetBrains IDEs
 - Non-interactive shells
@@ -644,12 +623,31 @@ NVM and completions are lazy-loaded for fast shell startup (~100ms).
 
 See [Brewfile](./Brewfile) for full list. Categories:
 
-- **Core**: bat, eza, fd, fzf, ripgrep, zoxide, tmux, neovim
+- **Core**: bat, eza, fd, fzf, ripgrep, zoxide, herdr, neovim
 - **Modern CLI**: dust, duf, procs, bottom, delta, xh, jless, broot, navi
 - **DevOps**: kubectl, helm, k9s, terraform, ansible, docker
 - **Git**: lazygit, gh, glab, delta
 - **Languages**: go, python, node (via nvm)
 - **Network**: trippy, mtr, nmap, doggo, bandwhich
+
+### macOS application ownership
+
+`Brewfile` owns Docker Desktop, Maccy, Flameshot, ChatGPT, Claude, Mos,
+Visual Studio Code and JetBrains Toolbox as Homebrew casks. Amphetamine is
+Mac App Store-only: `Brewfile` installs `mas`, then the Homebrew role checks
+`/Applications/Amphetamine.app` and runs `mas get 937984704` only when it is
+missing.
+
+The App Store GUI must already be signed in. `mas get` and several cask
+post-install steps require the administrator password, so run `install.sh` or
+the playbook from an interactive terminal with `-K`. The Homebrew role uses
+`brew bundle --no-upgrade`: it installs missing dependencies without
+unexpectedly replacing every outdated GUI application.
+
+Homebrew currently marks Flameshot as deprecated because its package does not
+pass Gatekeeper validation and plans to disable the cask on 2026-09-01. The
+configuration does not bypass Gatekeeper; reassess or replace this cask before
+that date.
 
 ---
 
@@ -662,7 +660,7 @@ Create `~/.zshrc.local` for machine-specific settings:
 ```bash
 # Example ~/.zshrc.local
 export GITHUB_TOKEN="..."
-export DISABLE_TMUX_AUTOSTART=1
+export ZSH_HERDR_AUTOSTART=0
 alias myalias='...'
 ```
 
@@ -672,7 +670,8 @@ Uses **Catppuccin Mocha** everywhere:
 
 - Zsh syntax highlighting
 - FZF
-- Tmux
+- Herdr and reviewr
+- Tmux (legacy fallback)
 - Bat
 - Delta
 - Lazygit
@@ -681,35 +680,64 @@ Uses **Catppuccin Mocha** everywhere:
 
 ## Troubleshooting
 
-### Tmux plugins not working
+### Herdr or reviewr not working
 
 ```bash
-# Inside tmux, press:
-# Ctrl+A then I (capital i)
-
-# Or manually:
-~/.config/tmux/plugins/tpm/bin/install_plugins
+herdr config check
+herdr status
+herdr plugin list --json
+herdr plugin action list --plugin persiyanov.reviewr
+brew services restart herdr
 ```
+
+`Ctrl+A`, then `?` shows the active Herdr keymap. A literal `Ctrl+A` must be
+sent as `Ctrl+A`, then `Ctrl+A`. Reviewr actions require a running Herdr
+server and an active workspace.
 
 ### Slow shell startup
 
-Check startup time:
+`zsh -i -c exit` has no TTY and intentionally takes the reduced, non-ZLE
+configuration path. Measure a real interactive shell through a pseudo-terminal:
 
 ```bash
-time zsh -i -c exit
+env ZSH_HERDR_AUTOSTART=0 \
+  script -q /dev/null /bin/zsh -i -c exit
+
+hyperfine --warmup 3 --runs 10 \
+  'env ZSH_HERDR_AUTOSTART=0 script -q /dev/null /bin/zsh -i -c exit'
 ```
 
-Should be under 200ms. If slow, check:
+This is an init-only measurement: it exercises interactive ZLE setup but exits
+before the first prompt. To include `precmd` hooks and one Starship prompt
+expansion, run it from a representative large dirty Git/monorepo:
+
+```bash
+env ZSH_HERDR_AUTOSTART=0 \
+  script -q /dev/null /bin/zsh -i -c \
+  'for hook in $precmd_functions; do "$hook"; done; print -P -- "$PROMPT" >/dev/null'
+
+hyperfine --warmup 3 --runs 10 \
+  'env ZSH_HERDR_AUTOSTART=0 script -q /dev/null /bin/zsh -i -c '\''for hook in $precmd_functions; do "$hook"; done; print -P -- "$PROMPT" >/dev/null'\'''
+```
+
+Warm init should normally remain below 200ms; prompt latency depends on the
+current repository and Starship modules. A clean cache can be slower once while
+`compinit` builds its dump; generated Atuin, Zoxide, Broot, Navi, FZF and
+Starship shims refresh in the background and do not block later prompts. If slow,
+check:
 
 - NVM auto-loading (should be lazy)
 - Broken completions
 
-### Zinit not loading
+### Completion security warning
 
 ```bash
-rm -rf ~/.local/share/zinit
-exec zsh
+autoload -Uz compaudit
+compaudit
 ```
+
+Do not bypass this check with `compinit -u`. Fix ownership or write
+permissions on every path reported by `compaudit`.
 
 ---
 

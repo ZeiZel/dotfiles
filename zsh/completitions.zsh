@@ -1,7 +1,92 @@
 # ============================================
-# ZSH COMPLETION STYLING
-# Note: compinit is handled by zinit in plugins.zsh
+# ZSH COMPLETION
 # ============================================
+
+# Homebrew and Bun ship native completion definitions. Adding their directories
+# to fpath lets one cached compinit own all completion setup.
+typeset -gU fpath FPATH
+if [[ -n "$HOMEBREW_PREFIX" ]]; then
+  [[ -d "$HOMEBREW_PREFIX/share/zsh-completions" ]] &&
+    fpath=("$HOMEBREW_PREFIX/share/zsh-completions" $fpath)
+  [[ -d "$HOMEBREW_PREFIX/share/zsh/site-functions" ]] &&
+    fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
+fi
+[[ -d "$BUN_INSTALL" ]] && fpath=("$BUN_INSTALL" $fpath)
+
+autoload -Uz compinit
+autoload -Uz _completion_loader
+_zcompdump_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+_zcompdump_file="$_zcompdump_dir/zcompdump-$ZSH_VERSION"
+[[ -d "$_zcompdump_dir" ]] || command mkdir -p "$_zcompdump_dir" 2>/dev/null
+
+if [[ -s "$_zcompdump_file" ]]; then
+  compinit -C -d "$_zcompdump_file"
+else
+  compinit -d "$_zcompdump_file"
+fi
+
+if [[ -s "$_zcompdump_file" &&
+      ( ! -s "$_zcompdump_file.zwc" || "$_zcompdump_file" -nt "$_zcompdump_file.zwc" ) ]]; then
+  zcompile "$_zcompdump_file"
+fi
+
+unset _zcompdump_dir _zcompdump_file
+
+# Completion for the unified development entrypoint.  Route names are kept
+# explicit so completion remains useful even when an optional target binary is
+# not installed.  Once a route is selected, hand the remaining words to that
+# command's native completer when one is available.
+function _dev() {
+  local route target completer
+  local -a routes=(ide rest db docker git agent)
+  local -a agents=(codex claude)
+
+  if (( CURRENT == 2 )); then
+    compadd -a routes
+    return
+  fi
+
+  route=${words[2]}
+  if [[ "$route" == agent && $CURRENT == 3 ]]; then
+    compadd -a agents
+    return
+  fi
+
+  case "$route" in
+    ide) target=nvim ;;
+    rest) target=resterm ;;
+    db) target=harlequin ;;
+    docker) target=lazydocker ;;
+    git) target=lazygit ;;
+    agent)
+      target=${words[3]}
+      [[ "$target" == codex || "$target" == claude ]] || return
+      ;;
+    *) return ;;
+  esac
+
+  # Load a completion definition lazily when the command provides one.
+  _completion_loader "$target" 2>/dev/null
+  completer="_${target}"
+  if (( $+functions[$completer] )); then
+    local -a saved_words=("${words[@]}")
+    local saved_current=$CURRENT
+    if [[ "$route" == agent ]]; then
+      words=("$target" "${words[@]:3}")
+      CURRENT=$((saved_current - 2))
+    else
+      words=("$target" "${words[@]:2}")
+      CURRENT=$((saved_current - 1))
+    fi
+    "$completer"
+    words=("${saved_words[@]}")
+    CURRENT=$saved_current
+  else
+    _message "arguments for $target"
+  fi
+}
+
+compdef _dev dev
 
 # ============================================
 # COMPLETION STYLING - CATPPUCCIN MOCHA
@@ -54,37 +139,13 @@ zstyle ':fzf-tab:complete:*:*' fzf-preview 'bat --color=always --style=numbers -
 # Switch group using `,` and `.`
 zstyle ':fzf-tab:*' switch-group ',' '.'
 
-# Use tmux popup if in tmux
-zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
-zstyle ':fzf-tab:*' popup-min-width 100
-zstyle ':fzf-tab:*' popup-pad 30 0
+# Use a Tmux popup only when a Tmux client exists.
+if [[ -n "$TMUX" ]]; then
+  zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
+  zstyle ':fzf-tab:*' popup-min-width 100
+  zstyle ':fzf-tab:*' popup-pad 30 0
+fi
 
 # FZF-tab bindings
 zstyle ':fzf-tab:*' fzf-bindings 'tab:accept'
 zstyle ':fzf-tab:*' accept-line enter
-
-# ============================================
-# LAZY-LOADED COMPLETIONS
-# Load completions only when needed
-# ============================================
-
-# Kubectl - lazy load
-kubectl() {
-  unfunction kubectl
-  source <(command kubectl completion zsh)
-  command kubectl "$@"
-}
-
-# Helm - lazy load
-helm() {
-  unfunction helm
-  source <(command helm completion zsh)
-  command helm "$@"
-}
-
-# gh CLI - lazy load
-gh() {
-  unfunction gh
-  eval "$(command gh completion -s zsh)"
-  command gh "$@"
-}

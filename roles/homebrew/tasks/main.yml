@@ -44,14 +44,61 @@
     - ansible_facts['os_family'] != "Darwin"
     - not (homebrew_linux.stat.exists | default(false))
 
-# Install packages via brew bundle
+- name: Check existing Homebrew-managed application bundles
+  ansible.builtin.stat:
+    path: "{{ item.app_path }}"
+  loop: "{{ homebrew_cask_apps }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: homebrew_cask_app_bundles
+  when: ansible_facts['os_family'] == "Darwin"
+
+- name: Select casks already satisfied by application bundles
+  ansible.builtin.set_fact:
+    homebrew_bundle_cask_skip: >-
+      {{
+        homebrew_cask_app_bundles.results
+        | selectattr('stat.exists')
+        | map(attribute='item.cask')
+        | join(' ')
+      }}
+  when: ansible_facts['os_family'] == "Darwin"
+
+# Install packages via brew bundle. Existing GUI application bundles are
+# treated as satisfied so a routine run never overwrites or stops them.
 - name: Run brew bundle
   ansible.builtin.command:
-    cmd: brew bundle --file={{ brewfile_path }}
+    cmd: brew bundle --no-upgrade --file={{ brewfile_path }}
   environment:
     PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
-  register: brew_bundle_result
-  changed_when: "'Installing' in brew_bundle_result.stdout"
+    HOMEBREW_BUNDLE_CASK_SKIP: "{{ homebrew_bundle_cask_skip | default('') }}"
+  register: homebrew_bundle_result
+  changed_when: >-
+    'Installing' in homebrew_bundle_result.stdout or
+    'Installing' in homebrew_bundle_result.stderr
+
+- name: Check Mac App Store application bundles
+  ansible.builtin.stat:
+    path: "{{ item.app_path }}"
+  loop: "{{ homebrew_mas_apps }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: homebrew_mas_app_bundles
+  when: ansible_facts['os_family'] == "Darwin"
+
+- name: Install missing Mac App Store applications
+  ansible.builtin.command:
+    cmd: "mas get {{ item.item.id }}"
+  environment:
+    PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+  become: true
+  loop: "{{ homebrew_mas_app_bundles.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - ansible_facts['os_family'] == "Darwin"
+    - not item.stat.exists
+  changed_when: true
 
 # Ensure stow is installed
 - name: Install stow via Homebrew
@@ -60,3 +107,13 @@
     state: present
   environment:
     PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+
+- name: Install the stable Rust toolchain
+  ansible.builtin.command:
+    cmd: rustup default stable
+  environment:
+    PATH: "{{ homebrew_prefix }}/opt/rustup/bin:{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
+  register: homebrew_rustup_default
+  changed_when: >-
+    'unchanged' not in
+    (homebrew_rustup_default.stdout + homebrew_rustup_default.stderr)

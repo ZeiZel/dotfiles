@@ -105,7 +105,7 @@ if [ ! -f "all.yml" ]; then
     if [ -d "$DOTFILES_DIR" ]; then
         echo "Directory $DOTFILES_DIR already exists, using it..."
         cd "$DOTFILES_DIR"
-        git pull origin master || true
+        git pull origin main || true
     else
         git clone "$REPO_URL" "$DOTFILES_DIR"
         cd "$DOTFILES_DIR"

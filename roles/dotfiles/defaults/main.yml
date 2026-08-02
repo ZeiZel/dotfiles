@@ -1,3 +1,10 @@
 ---
-# All variables defined in group_vars/
-# config_dir, configs_path -> group_vars/all.yml
+# Shared path variables are defined in group_vars/all.yml.
+dotfiles_herdr_reviewr_id: persiyanov.reviewr
+dotfiles_herdr_reviewr_source: persiyanov/herdr-reviewr
+dotfiles_herdr_reviewr_ref: "1068100ec5553f51f7527f60fb08055d7f2fd29e"
+dotfiles_herdr_reviewr_version: "0.26.2"
+dotfiles_herdr_integrations:
+  - codex
+  - claude
+  - hermes
