@@ -1,0 +1,71 @@
+#!/bin/sh
+# Apply the shared keyboard repeat policy in the active desktop session.
+set -eu
+
+delay='{{ keyboard_initial_repeat_delay_ms }}'
+interval='{{ keyboard_repeat_interval_ms }}'
+session=${XDG_SESSION_TYPE:-}
+desktop=${XDG_CURRENT_DESKTOP:-}${XDG_CURRENT_DESKTOP:+:}${XDG_SESSION_DESKTOP:-}
+
+case "$session" in
+  x11)
+    command -v xkbset >/dev/null 2>&1
+    command -v xset >/dev/null 2>&1
+    state=$(xset q | awk '/auto repeat delay:/ { print $4, $7; exit }')
+    expected_rate=$(awk -v ms="$interval" 'BEGIN { printf "%d", (1000 / ms) + 0.5 }')
+    if [ "$state" = "$delay $expected_rate" ]; then
+      printf '%s\n' ok
+      exit 0
+    fi
+    xkbset r rate "$delay" "$interval"
+    printf '%s\n' changed
+    exit 0
+    ;;
+  wayland)
+    case "$desktop" in
+      *GNOME*|*gnome*)
+        command -v gsettings >/dev/null 2>&1
+        current_delay=$(gsettings get org.gnome.desktop.peripherals.keyboard delay | sed "s/^uint32 //; s/'//g")
+        current_interval=$(gsettings get org.gnome.desktop.peripherals.keyboard repeat-interval | sed "s/^uint32 //; s/'//g")
+        if [ "$current_delay" = "$delay" ] && [ "$current_interval" = "$interval" ]; then
+          printf '%s\n' ok
+          exit 0
+        fi
+        gsettings set org.gnome.desktop.peripherals.keyboard delay "$delay"
+        gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval "$interval"
+        printf '%s\n' changed
+        exit 0
+        ;;
+      *KDE*|*kde*|*PLASMA*|*plasma*)
+        kwrite=''
+        kread=''
+        if command -v kwriteconfig6 >/dev/null 2>&1; then
+          kwrite=kwriteconfig6
+          kread=kreadconfig6
+        elif command -v kwriteconfig5 >/dev/null 2>&1; then
+          kwrite=kwriteconfig5
+          kread=kreadconfig5
+        fi
+        [ -n "$kwrite" ] && command -v "$kread" >/dev/null 2>&1
+        current_delay=$("$kread" --file kcminputrc --group Keyboard --key RepeatDelay --default '')
+        current_rate=$("$kread" --file kcminputrc --group Keyboard --key RepeatRate --default '')
+        if [ "$current_delay" = "$delay" ] && [ "$current_rate" = 50 ]; then
+          printf '%s\n' ok
+          exit 0
+        fi
+        "$kwrite" --file kcminputrc --group Keyboard --key RepeatDelay "$delay"
+          # Plasma stores repeat rate as repeats/second; 50 Hz is compositor-
+          # quantized, but is the closest persistent setting to 20 ms.
+        "$kwrite" --file kcminputrc --group Keyboard --key RepeatRate 50
+        printf '%s\n' changed
+        exit 0
+        ;;
+    esac
+    printf '%s\n' unsupported
+    exit 0
+    ;;
+  *)
+    printf '%s\n' unsupported
+    exit 0
+    ;;
+esac

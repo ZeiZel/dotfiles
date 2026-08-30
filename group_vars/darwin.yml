@@ -5,6 +5,13 @@ homebrew_prefix: "{{ '/opt/homebrew' if ansible_facts['architecture'] == 'arm64'
 homebrew_bin: "{{ homebrew_prefix }}/bin"
 
 # Keyboard settings
-macos_key_repeat: 1.0
-macos_initial_key_repeat: 10.0
+# NSGlobalDomain stores these values as ~16.7 ms ticks.  The live HID values
+# below retain the exact shared millisecond policy until the next login.
+macos_key_repeat: 1
+macos_initial_key_repeat: 9
+macos_hid_repeat_interval_ns: "{{ keyboard_repeat_interval_ms * 1000000 }}"
+macos_hid_initial_repeat_delay_ns: "{{ keyboard_initial_repeat_delay_ms * 1000000 }}"
+macos_keyboard_launch_agent_label: com.dotfiles.keyboard-repeat
+macos_keyboard_launch_agent_path: "{{ dotfiles_home }}/Library/LaunchAgents/{{ macos_keyboard_launch_agent_label }}.plist"
+macos_disable_press_and_hold: true
 macos_disable_desktop_icons: true

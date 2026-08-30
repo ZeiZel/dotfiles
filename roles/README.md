@@ -48,3 +48,9 @@ configuration and runtime data are retained without being deployed on a new
 host. Herdr must be installed by the preceding Homebrew role before reviewr or
 agent integrations are reconciled. Its login service is managed on macOS;
 Linux starts the server on demand through the Zsh handoff.
+
+Keyboard repeat policy is shared in `group_vars/all.yml` as a 20 ms interval
+and 150 ms initial delay. macOS persists the nearest native defaults ticks and
+reapplies exact nanosecond HID values at login. Linux applies the policy through
+X11 (`xkbset`) and GNOME/Plasma Wayland settings; unsupported generic Wayland
+sessions report a diagnostic and leave the desktop unchanged.

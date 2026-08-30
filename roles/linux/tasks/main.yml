@@ -16,6 +16,42 @@
     state: present
   when: ansible_facts['os_family'] == "RedHat"
 
+- name: Ensure keyboard repeat helper directory exists
+  ansible.builtin.file:
+    path: '{{ dotfiles_home }}/.local/bin'
+    state: directory
+    mode: '0755'
+
+- name: Install keyboard repeat session helper
+  ansible.builtin.template:
+    src: keyboard-repeat.sh.j2
+    dest: '{{ dotfiles_home }}/.local/bin/dotfiles-keyboard-repeat'
+    mode: '0755'
+
+- name: Ensure XDG autostart directory exists
+  ansible.builtin.file:
+    path: '{{ dotfiles_home }}/.config/autostart'
+    state: directory
+    mode: '0755'
+
+- name: Install keyboard repeat XDG autostart entry
+  ansible.builtin.template:
+    src: keyboard-repeat.desktop.j2
+    dest: '{{ dotfiles_home }}/.config/autostart/dotfiles-keyboard-repeat.desktop'
+    mode: '0644'
+
+- name: Apply keyboard repeat in the current graphical session
+  ansible.builtin.command:
+    cmd: '{{ dotfiles_home }}/.local/bin/dotfiles-keyboard-repeat'
+  register: linux_keyboard_repeat_apply
+  changed_when: linux_keyboard_repeat_apply.stdout | trim == 'changed'
+  failed_when: linux_keyboard_repeat_apply.rc != 0
+  when:
+    - ansible_facts['env'].get('XDG_SESSION_TYPE', '') in ['x11', 'wayland']
+    - >-
+      (ansible_facts['env'].get('DISPLAY', '') | length > 0) or
+      (ansible_facts['env'].get('WAYLAND_DISPLAY', '') | length > 0)
+
 - name: Add Homebrew to .bashrc
   ansible.builtin.blockinfile:
     path: '{{ dotfiles_home }}/.bashrc'
@@ -27,7 +63,7 @@
 - name: Get zsh path
   ansible.builtin.command:
     cmd: which zsh
-  register: zsh_path
+  register: linux_zsh_path
   changed_when: false
   environment:
     PATH: "{{ homebrew_bin }}:{{ ansible_facts['env']['PATH'] }}"
@@ -36,11 +72,11 @@
   become: true
   ansible.builtin.lineinfile:
     path: /etc/shells
-    line: '{{ zsh_path.stdout }}'
+    line: '{{ linux_zsh_path.stdout }}'
     state: present
 
 - name: Change default shell to zsh
   become: true
   ansible.builtin.user:
     name: '{{ dotfiles_user }}'
-    shell: '{{ zsh_path.stdout }}'
+    shell: '{{ linux_zsh_path.stdout }}'

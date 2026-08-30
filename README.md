@@ -40,6 +40,13 @@ nvim
 # Herdr, reviewr, agent integrations and Broot are provisioned automatically.
 ```
 
+Keyboard repeat is configured by Ansible on both platforms: the shared policy
+is a 20 ms repeat interval with a 150 ms initial delay. macOS writes native
+defaults and reapplies exact HID values through a per-user login LaunchAgent.
+Linux installs `xkbset` and applies the values from an XDG-autostart helper for
+X11, GNOME, and Plasma; unsupported generic Wayland sessions are reported
+without changing settings.
+
 ---
 
 ## Stack

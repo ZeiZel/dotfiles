@@ -6,6 +6,10 @@ dotfiles_home: "{{ ansible_facts['env']['HOME'] }}"
 dotfiles_dir: "{{ playbook_dir }}"
 config_dir: "{{ dotfiles_home }}/.config"
 
+# Shared keyboard repeat policy (milliseconds).
+keyboard_repeat_interval_ms: 20
+keyboard_initial_repeat_delay_ms: 150
+
 # Path to Brewfile
 brewfile_path: "{{ dotfiles_dir }}/Brewfile"
 

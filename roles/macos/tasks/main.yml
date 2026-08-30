@@ -11,6 +11,7 @@
         type: float
         value: '{{ macos_initial_key_repeat }}'
         check_type: false
+      tags: [keyboard-repeat]
 
     - name: Set keyboard key repeat rate
       community.general.osx_defaults:
@@ -19,6 +20,92 @@
         type: float
         value: '{{ macos_key_repeat }}'
         check_type: false
+      tags: [keyboard-repeat]
+
+    - name: Disable press-and-hold accent picker
+      community.general.osx_defaults:
+        domain: NSGlobalDomain
+        key: ApplePressAndHoldEnabled
+        type: bool
+        value: false
+        check_type: false
+      when: macos_disable_press_and_hold
+      tags: [keyboard-repeat]
+
+    - name: Read live macOS keyboard repeat interval
+      ansible.builtin.command:
+        argv:
+          - hidutil
+          - property
+          - --get
+          - HIDKeyRepeat
+      register: macos_hid_repeat_interval
+      changed_when: false
+      failed_when: false
+      tags: [keyboard-repeat]
+
+    - name: Read live macOS keyboard repeat delay
+      ansible.builtin.command:
+        argv:
+          - hidutil
+          - property
+          - --get
+          - HIDInitialKeyRepeat
+      register: macos_hid_repeat_delay
+      changed_when: false
+      failed_when: false
+      tags: [keyboard-repeat]
+
+    - name: Set live macOS keyboard repeat values
+      ansible.builtin.command:
+        argv:
+          - hidutil
+          - property
+          - --set
+          - >-
+            {{ {"HIDKeyRepeat": macos_hid_repeat_interval_ns | int,
+            "HIDInitialKeyRepeat": macos_hid_initial_repeat_delay_ns | int} | to_json }}
+      when:
+        - macos_hid_repeat_interval.stdout | trim != macos_hid_repeat_interval_ns | int | string
+          or macos_hid_repeat_delay.stdout | trim != macos_hid_initial_repeat_delay_ns | int | string
+      changed_when: true
+      tags: [keyboard-repeat]
+
+    - name: Ensure macOS keyboard LaunchAgents directory exists
+      ansible.builtin.file:
+        path: '{{ dotfiles_home }}/Library/LaunchAgents'
+        state: directory
+        mode: '0755'
+      tags: [keyboard-repeat]
+
+    - name: Persist macOS keyboard repeat values at login
+      ansible.builtin.template:
+        src: keyboard-repeat.plist.j2
+        dest: '{{ macos_keyboard_launch_agent_path }}'
+        mode: '0644'
+      tags: [keyboard-repeat]
+
+    - name: Check macOS keyboard repeat LaunchAgent
+      ansible.builtin.command:
+        argv:
+          - launchctl
+          - print
+          - 'gui/{{ ansible_facts["user_uid"] }}/{{ macos_keyboard_launch_agent_label }}'
+      register: macos_keyboard_agent
+      changed_when: false
+      failed_when: false
+      tags: [keyboard-repeat]
+
+    - name: Load macOS keyboard repeat LaunchAgent
+      ansible.builtin.command:
+        argv:
+          - launchctl
+          - bootstrap
+          - 'gui/{{ ansible_facts["user_uid"] }}'
+          - '{{ macos_keyboard_launch_agent_path }}'
+      when: macos_keyboard_agent.rc != 0
+      changed_when: true
+      tags: [keyboard-repeat]
 
     - name: Disable desktop icons
       community.general.osx_defaults:
