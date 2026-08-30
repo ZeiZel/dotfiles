@@ -25,6 +25,7 @@ else
 fi
 alias ya='yazi'
 alias k9='k9s'
+alias wm='workmux'
 
 # ============================================
 # GIT

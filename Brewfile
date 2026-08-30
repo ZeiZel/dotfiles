@@ -5,6 +5,7 @@ tap "jesseduffield/lazygit"
 tap "hashicorp/tap"
 tap "derailed/k9s"
 tap "nikitabobko/tap" if OS.mac?
+tap "raine/workmux"
 
 # ============================================
 # CORE UTILITIES
@@ -13,6 +14,8 @@ brew "stow"
 brew "bat"
 brew "btop"
 brew "herdr"
+brew "tmux"
+brew "raine/workmux/workmux"
 brew "yazi"
 brew "atuin"
 brew "zsh-autosuggestions"

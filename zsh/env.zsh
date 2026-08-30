@@ -44,6 +44,14 @@ path=(
   $path
 )
 
+# Optional local tool homes. Keep these in the shared environment owner so
+# both interactive and non-interactive shells see them without spawning
+# external commands. The later ~/.zshrc.local source may reorder or override
+# them for a particular machine.
+[[ -d "$HOME/.kimi-code/bin" ]] && path=("$HOME/.kimi-code/bin" $path)
+[[ -d "$HOME/.mimocode/bin" ]] && path=("$HOME/.mimocode/bin" $path)
+[[ -r "$HOME/.local/bin/env" ]] && source "$HOME/.local/bin/env"
+
 if [[ -n "$HOMEBREW_PREFIX" ]]; then
   export MANPATH="$HOMEBREW_PREFIX/share/man${MANPATH:+:$MANPATH}"
   export INFOPATH="$HOMEBREW_PREFIX/share/info${INFOPATH:+:$INFOPATH}"

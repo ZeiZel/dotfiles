@@ -20,7 +20,6 @@
 --ignore=docs$
 --ignore=logs$
 --ignore=nvim[.]log$
---ignore=tmux$
 --ignore=chezmoi$
 --ignore=nv$
 --ignore=wsl$

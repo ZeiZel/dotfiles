@@ -17,8 +17,9 @@ executing roles in dependency order:
 - `homebrew`: Homebrew installation, non-upgrading `Brewfile` application,
   safe skipping of already-present GUI bundles, App Store bundle checks/
   `mas get`, and Rust toolchain.
-- `dotfiles`: Stow deployment, pinned reviewr installation, Herdr service
-  startup and available Codex/Claude/Hermes integrations.
+- `dotfiles`: Tmux/Workmux Stow deployment, pinned TPM and reviewr
+  installation, Herdr service startup and available Codex/Claude/Hermes
+  integrations.
 - `git`: interactive identity collection and local identity cache.
 - `node`: pinned NVM, default Node LTS, pinned global developer tools and
   uv-managed Aider.
@@ -42,12 +43,11 @@ ANSIBLE_LOCAL_TEMP=/private/tmp/ansible-dotfiles-tmp \
 
 The `dotfiles` role previews `stow --stow` in check mode and applies
 `stow --restow --no-folding` during a real run; it never adopts host files into
-the repository. Existing conflicting targets stop the role and must be
-resolved explicitly. `.stowrc` excludes `tmux/`, so the legacy Tmux
-configuration and runtime data are retained without being deployed on a new
-host. Herdr must be installed by the preceding Homebrew role before reviewr or
-agent integrations are reconciled. Its login service is managed on macOS;
-Linux starts the server on demand through the Zsh handoff.
+the repository. Existing repository-owned tmux links are migrated safely
+before Stow; regular files and foreign links are preserved. Tmux and Workmux
+are deployed, and TPM/plugins are provisioned after Stow. Herdr must be
+installed by the preceding Homebrew role before reviewr or agent integrations
+are reconciled. Its login service remains managed on macOS for manual use.
 
 Keyboard repeat policy is shared in `group_vars/all.yml` as a 20 ms interval
 and 150 ms initial delay. macOS persists the nearest native defaults ticks and

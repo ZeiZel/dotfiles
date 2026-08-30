@@ -1,0 +1,73 @@
+// Zed settings
+//
+// The Ansible extension provides YAML highlighting with Jinja2 injections.
+// This is also the syntax used by rentverse's values.tpl.yaml templates.
+// Zed's current injections cover expressions in YAML nodes, not standalone
+// `{% ... %}` mapping directives; rendered output remains the validation path.
+{
+  "gutter": {
+    "folds": false
+  },
+  "diff_view_style": "split",
+  "icon_theme": "Zed (Default)",
+  "ui_font_family": "JetBrainsMono Nerd Font Mono",
+  "buffer_font_family": "JetBrainsMono Nerd Font Mono",
+  "project_panel": {
+    "hide_root": false,
+    "git_status_indicator": true,
+    "sticky_scroll": false,
+    "dock": "left",
+  },
+  "session": {
+    "trust_all_worktrees": true,
+  },
+  "agent_servers": {
+    "claude-acp": {
+      "favorite_config_option_values": {
+        "model": [
+          "opus[1m]"
+        ]
+      },
+      "default_config_options": {
+        "model": "opus[1m]"
+      },
+      "type": "registry"
+    },
+    "codex-acp": {
+      "type": "registry",
+    },
+  },
+  "base_keymap": "JetBrains",
+  // Keep JetBrains' non-modal shortcuts, and add Zed's Vim modal navigation.
+  "vim_mode": true,
+  "ui_font_size": 16,
+  "buffer_font_size": 16.0,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "Catppuccin Mocha (Blur) [Heavy]",
+  },
+  "auto_install_extensions": {
+    "ansible": true,
+  },
+  "file_types": {
+    "Ansible": ["*.tpl.yaml", "*.tpl.yml", "*.yaml.j2", "*.yml.j2"],
+  },
+  "languages": {
+    "Ansible": {
+      // The source is a Jinja template, not valid YAML until rendered.
+      // Validate the rendered output in CI instead of showing false errors here.
+      "enable_language_server": false,
+      "format_on_save": "off",
+    },
+    "Python": {
+      // Enable ty, disable basedpyright, and keep the other registered
+      // language servers available (ruff, pylsp, pyright).
+      "language_servers": [
+        "ty",
+        "!basedpyright",
+        "...",
+      ],
+    },
+  },
+}

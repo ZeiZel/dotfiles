@@ -2,7 +2,7 @@
 
 <!-- markdownlint-disable MD013 -->
 
-Personal dotfiles for macOS/Linux with Zsh, Herdr, Neovim, and modern CLI
+Personal dotfiles for macOS/Linux with Zsh, Tmux, Workmux, Herdr, Neovim, and modern CLI
 tools. Fully automated setup via Ansible.
 
 AI agents must read [AGENTS.md](AGENTS.md) before changing the repository. It
@@ -37,7 +37,7 @@ Requires Ansible and Docker to be installed first (run `install.sh` if not).
 # Neovim: Lazy and Mason reconcile declared plugins and editor tools
 nvim
 
-# Herdr, reviewr, agent integrations and Broot are provisioned automatically.
+# Tmux, Workmux, Herdr, reviewr, agent integrations and Broot are provisioned automatically.
 ```
 
 Keyboard repeat is configured by Ansible on both platforms: the shared policy
@@ -56,7 +56,8 @@ without changing settings.
 | Terminal        | [Ghostty](https://ghostty.org/)                           |
 | Shell           | Zsh + versioned Homebrew plugins                          |
 | Prompt          | [Starship](https://starship.rs/)                          |
-| Workspace       | [Herdr](https://herdr.dev/) + reviewr                     |
+| Workspace       | [Tmux](https://github.com/tmux/tmux) + [Workmux](https://github.com/raine/workmux) |
+| Optional UI     | [Herdr](https://herdr.dev/) + reviewr (manual)            |
 | Editor          | [Neovim](https://neovim.io/)                              |
 | File Manager    | [Yazi](https://yazi-rs.github.io/)                        |
 | History         | [Atuin](https://atuin.sh/)                                |
@@ -81,11 +82,12 @@ dotfiles/
 │   ├── kbd.zsh          # Key bindings
 │   ├── options.zsh      # Shell options
 │   ├── theme.zsh        # Catppuccin colors
-│   └── herdr-auto.zsh   # Default terminal-to-Herdr handoff
-├── herdr/                # Primary terminal workspace configuration
+│   ├── tmux-auto.zsh     # Default guarded terminal-to-Tmux handoff
+│   └── herdr-auto.zsh    # Retained legacy manual handoff (not sourced)
+├── herdr/                # Optional manual workspace configuration
 │   ├── config.toml      # Prefix, panes, UI and Lazygit popup
 │   └── plugins/         # Declarative reviewr configuration
-├── tmux/                 # Legacy fallback; retained but not provisioned
+├── tmux/                 # Tmux configuration and bindings
 │   ├── tmux.conf        # Main config
 │   ├── tmux.binds.conf  # Key bindings
 │   ├── tmux.options.conf
@@ -471,11 +473,11 @@ available even before the merge tool opens.
 
 ---
 
-## Herdr Configuration
+## Optional Herdr Configuration
 
-Herdr is the default terminal workspace layer and uses the former Tmux prefix:
-press `Ctrl+A`, release it, then press the action key. Press `Ctrl+A` twice to
-send a literal `Ctrl+A` to Zsh, FZF, Neovim or another pane application.
+Herdr remains available as an optional manual workspace UI and uses the same
+`Ctrl+A` prefix as Tmux. Tmux + Workmux are the default terminal workspace;
+press `Ctrl+A`, release it, then press the action key when using Herdr.
 
 | Key after prefix | Action                                      |
 | ---------------- | ------------------------------------------- |
@@ -508,12 +510,27 @@ already-authenticated `gh`, `glab` or `az`. It is a community plugin and runs
 with the current user's permissions; update its pinned version only after
 reviewing its manifest and installer.
 
-### Legacy Tmux
+### Tmux and Workmux
 
-`tmux/` remains in Git as a fallback and preserves the same `Ctrl+A` prefix,
-but Tmux and TPM are no longer provisioned or deployed. Existing host
-installations, sessions and resurrect data are deliberately left untouched
-during migration.
+Normal local interactive shells attach to the persistent Tmux `main` session.
+SSH, IDE, nested-Tmux, Herdr, non-TTY and `TERM=dumb` shells stay plain; set
+`ZSH_TMUX_AUTOSTART=0` in `~/.zshrc.local` for an explicit escape hatch.
+The inherited prefix remains `Ctrl+A`.
+
+Workmux is configured globally at `~/.config/workmux/config.yaml` with
+session-per-worktree mode and Codex as the agent. It deliberately has no
+automatic `.env` copies, dependency symlinks, install hooks or merge cleanup.
+Use `wm add feature-name`, `wm list`, `wm open feature-name`, and `wm merge`
+when you explicitly want those operations. `Prefix W` opens the Workmux
+worktrees dashboard from Tmux. `Prefix+w` opens a command menu: `w` opens the
+worktrees dashboard (where worktrees can be created and opened), `a` opens the
+agents dashboard, `d` opens the current diff dashboard, `s` toggles the
+session-scoped sidebar, `r` resurrects worktrees, `b` rebases the current
+worktree, `m` merges it, `c` closes it, and `?` opens Workmux documentation.
+Rebase, merge and close ask for confirmation and run in a popup rooted at the
+current pane. The optional Agents tab requires an explicit `workmux setup`
+(not run by provisioning because it changes Codex config).
+Herdr remains installed/configured for manual use.
 
 ---
 
@@ -589,14 +606,14 @@ order. Shell startup never clones repositories or changes key bindings later:
 
 ## Features
 
-### Herdr terminal handoff
+### Tmux terminal handoff
 
-Normal terminal windows enter the persistent Herdr session automatically.
-Herdr-managed panes set `HERDR_ENV=1`, so their inner shell never attaches
-recursively. To open a plain shell, add this to `~/.zshrc.local`:
+Normal local terminal windows enter the persistent Tmux `main` session
+automatically. Nested Tmux, Herdr-managed panes and other guarded contexts stay
+plain. To open a plain shell, add this to `~/.zshrc.local`:
 
 ```bash
-export ZSH_HERDR_AUTOSTART=0
+export ZSH_TMUX_AUTOSTART=0
 ```
 
 Automatic handoff is skipped for:
@@ -630,7 +647,7 @@ NVM and completions are lazy-loaded for fast shell startup (~100ms).
 
 See [Brewfile](./Brewfile) for full list. Categories:
 
-- **Core**: bat, eza, fd, fzf, ripgrep, zoxide, herdr, neovim
+- **Core**: bat, eza, fd, fzf, ripgrep, zoxide, tmux, workmux, neovim
 - **Modern CLI**: dust, duf, procs, bottom, delta, xh, jless, broot, navi
 - **DevOps**: kubectl, helm, k9s, terraform, ansible, docker
 - **Git**: lazygit, gh, glab, delta
@@ -667,7 +684,7 @@ Create `~/.zshrc.local` for machine-specific settings:
 ```bash
 # Example ~/.zshrc.local
 export GITHUB_TOKEN="..."
-export ZSH_HERDR_AUTOSTART=0
+export ZSH_TMUX_AUTOSTART=0
 alias myalias='...'
 ```
 
@@ -678,7 +695,7 @@ Uses **Catppuccin Mocha** everywhere:
 - Zsh syntax highlighting
 - FZF
 - Herdr and reviewr
-- Tmux (legacy fallback)
+- Tmux, Workmux and TPM
 - Bat
 - Delta
 - Lazygit
@@ -707,11 +724,11 @@ server and an active workspace.
 configuration path. Measure a real interactive shell through a pseudo-terminal:
 
 ```bash
-env ZSH_HERDR_AUTOSTART=0 \
+env ZSH_TMUX_AUTOSTART=0 \
   script -q /dev/null /bin/zsh -i -c exit
 
 hyperfine --warmup 3 --runs 10 \
-  'env ZSH_HERDR_AUTOSTART=0 script -q /dev/null /bin/zsh -i -c exit'
+  'env ZSH_TMUX_AUTOSTART=0 script -q /dev/null /bin/zsh -i -c exit'
 ```
 
 This is an init-only measurement: it exercises interactive ZLE setup but exits
@@ -719,12 +736,12 @@ before the first prompt. To include `precmd` hooks and one Starship prompt
 expansion, run it from a representative large dirty Git/monorepo:
 
 ```bash
-env ZSH_HERDR_AUTOSTART=0 \
+env ZSH_TMUX_AUTOSTART=0 \
   script -q /dev/null /bin/zsh -i -c \
   'for hook in $precmd_functions; do "$hook"; done; print -P -- "$PROMPT" >/dev/null'
 
 hyperfine --warmup 3 --runs 10 \
-  'env ZSH_HERDR_AUTOSTART=0 script -q /dev/null /bin/zsh -i -c '\''for hook in $precmd_functions; do "$hook"; done; print -P -- "$PROMPT" >/dev/null'\'''
+  'env ZSH_TMUX_AUTOSTART=0 script -q /dev/null /bin/zsh -i -c '\''for hook in $precmd_functions; do "$hook"; done; print -P -- "$PROMPT" >/dev/null'\'''
 ```
 
 Warm init should normally remain below 200ms; prompt latency depends on the

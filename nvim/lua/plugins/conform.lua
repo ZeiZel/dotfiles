@@ -65,6 +65,9 @@ return {
 				json = { "prettierd", "prettier", stop_after_first = true },
 				jsonc = { "prettierd", "prettier", stop_after_first = true },
 				yaml = { "prettierd", "prettier", stop_after_first = true },
+				-- Raw Jinja templates are not valid YAML until rendered.  Do not let
+				-- Prettier rewrite control blocks or environment placeholders.
+				["yaml.jinja"] = {},
 				["yaml.ghaction"] = { "prettierd", "prettier", stop_after_first = true },
 				javascript = { "prettierd", "prettier", stop_after_first = true },
 				typescript = { "prettierd", "prettier", stop_after_first = true },

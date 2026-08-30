@@ -52,8 +52,8 @@ contents. Local identity is cached outside the repository under
 | Daily key reference | `docs/CHEATSHEET.md` | Verified Neovim, shell, Herdr, Lazygit and Git workflows |
 | Shell | `zsh/` | Environment, aliases, plugins, widgets and startup behavior |
 | Git | `git/` | Global Git config, ignore rules and helpers |
-| Terminal/UI | `herdr/`, `ghostty/`, `wezterm/`, `starship/`, `aerospace/` | Active terminal/workspace configuration |
-| Legacy multiplexer | `tmux/` | Retained fallback; excluded from Stow and provisioning |
+| Terminal/UI | `tmux/`, `workmux/`, `herdr/`, `ghostty/`, `wezterm/`, `starship/`, `aerospace/` | Active terminal/workspace configuration |
+| Optional workspace UI | `herdr/` | Retained manual Herdr/reviewr configuration |
 | CLI applications | `atuin/`, `lazygit/`, `posting/`, `yazi/` | Application-native configuration |
 | Windows/WSL | `wsl/` | WSL-only helpers; do not assume macOS behavior |
 
@@ -89,11 +89,13 @@ order unless there is an explicit architectural reason to change it.
   Ubuntu/Debian. It must never reboot the host automatically.
 - `roles/dotfiles/tasks/main.yml` uses `stow --restow --no-folding`. Never add
   `--adopt`: host files must not overwrite repository sources.
-- Herdr is a Homebrew formula. The `dotfiles` role pins reviewr, starts its
-  user service on macOS and installs current integrations only for locally
-  available Codex, Claude and Hermes commands. Linux starts the server on
-  demand from the shell handoff. Tmux, TPM and Tmux plugins are not
-  provisioned.
+- Tmux and Workmux are Homebrew-managed and deployed through Stow. The Zsh
+  handoff enters Tmux only for normal local interactive terminals and guards
+  SSH, IDE, nested-Tmux, Herdr, dumb and non-TTY shells. TPM is provisioned at
+  its pinned commit after Stow and installs declared Tmux plugins. Herdr is
+  retained as an optional Homebrew-managed manual UI: the `dotfiles` role pins
+  reviewr, starts its user service on macOS and installs current integrations
+  only for locally available Codex, Claude and Hermes commands.
 
 ### Neovim
 
@@ -146,9 +148,9 @@ Read `zsh/README.md` before editing.
   update, or defer-load plugin repositories.
 - Emacs is the sole ZLE keymap. Up/Down own native history, while Atuin owns
   `Ctrl+R`.
-- `herdr-auto.zsh` runs last and enters Herdr by default only for normal local
+- `tmux-auto.zsh` runs last and enters Tmux by default only for normal local
   terminal windows. It must skip `HERDR_ENV=1`, Tmux, SSH, IDE, dumb and
-  non-interactive shells. `ZSH_HERDR_AUTOSTART=0` is the local escape hatch.
+  non-interactive shells. `ZSH_TMUX_AUTOSTART=0` is the local escape hatch.
 - Put personal or machine-local values in an untracked local override, never
   in tracked files.
 - Startup must remain silent, non-interactive and safe when optional commands

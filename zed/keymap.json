@@ -1,0 +1,101 @@
+[
+  // Keep normal typing untouched: modal/editor bindings are active only in Vim
+  // control mode, while the Dock binding covers terminal and side panels.
+  {
+    "context": "vim_mode == normal && !menu",
+    "bindings": {
+      "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-j": "workspace::ActivatePaneDown",
+      "ctrl-k": "workspace::ActivatePaneUp",
+      "ctrl-l": "workspace::ActivatePaneRight",
+      "tab": "pane::ActivateNextItem",
+      "shift-tab": "pane::ActivatePreviousItem",
+
+      "space w h": "workspace::ActivatePaneLeft",
+      "space w j": "workspace::ActivatePaneDown",
+      "space w k": "workspace::ActivatePaneUp",
+      "space w l": "workspace::ActivatePaneRight",
+      "|": "pane::SplitVertical",
+      "\\": "pane::SplitHorizontal",
+      "space w q": "pane::CloseActiveItem",
+      "space w o": "workspace::CloseInactiveTabsAndPanes",
+
+      "space e": "project_panel::ToggleFocus",
+      "space space": "file_finder::Toggle",
+      "space /": "project_search::ToggleFocus",
+      "space s b": "buffer_search::Deploy",
+      "space b": "tab_switcher::ToggleAll",
+      "space t": "terminal_panel::Toggle",
+      "ctrl-/": "terminal_panel::ToggleFocus",
+      "space x x": "diagnostics::Deploy",
+
+      "space w": "workspace::Save",
+      "space q": "pane::CloseActiveItem",
+      "space c a": "editor::ToggleCodeActions",
+      "space c r": "editor::Rename",
+      "space c f": "editor::Format",
+
+      "g d": "editor::GoToDefinition",
+      "g shift-d": "editor::GoToDeclaration",
+      "g i": "editor::GoToImplementation",
+      "g r": "editor::FindAllReferences",
+      "shift-k": "editor::Hover",
+      "[ d": "editor::GoToPreviousDiagnostic",
+      "] d": "editor::GoToDiagnostic",
+
+      "space g g": "git_panel::ToggleFocus",
+      "space g d": "git::Diff",
+      "space g b": "git::Blame",
+      "space g l": "editor::BlameHover",
+      "space g h": "git_graph::Open",
+      "space g s": "git::StageFile",
+      "space g u": "git::UnstageFile"
+    }
+  },
+  {
+    "context": "Dock && !Terminal",
+    "bindings": {
+      "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-j": "workspace::ActivatePaneDown",
+      "ctrl-k": "workspace::ActivatePaneUp",
+      "ctrl-l": "workspace::ActivatePaneRight"
+    }
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-j": "workspace::ActivatePaneDown",
+      "ctrl-k": "workspace::ActivatePaneUp",
+      "ctrl-l": "workspace::ActivatePaneRight"
+    }
+  },
+  {
+    "context": "Pane",
+    "bindings": {
+      "ctrl-pageup": "pane::ActivatePreviousItem",
+      "ctrl-pagedown": "pane::ActivateNextItem",
+      "ctrl-shift-pageup": "pane::SwapItemLeft",
+      "ctrl-shift-pagedown": "pane::SwapItemRight"
+    }
+  },
+  {
+    "context": "ProjectPanel && not_editing",
+    "bindings": {
+      "h": "project_panel::CollapseSelectedEntry",
+      "l": "project_panel::UnfoldDirectory",
+      "o": "project_panel::OpenPermanent",
+      "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-j": "workspace::ActivatePaneDown",
+      "ctrl-k": "workspace::ActivatePaneUp",
+      "ctrl-l": "workspace::ActivatePaneRight",
+      "v": "project_panel::OpenSplitVertical",
+      "shift-s": "project_panel::OpenSplitHorizontal",
+      "q": "project_panel::ToggleFocus",
+      "r": "project_panel::Rename",
+      "d": "project_panel::Trash",
+      "n": "project_panel::NewFile",
+      "shift-n": "project_panel::NewDirectory"
+    }
+  }
+]

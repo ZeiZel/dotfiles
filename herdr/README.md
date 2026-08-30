@@ -1,9 +1,9 @@
 # Herdr configuration
 
-Herdr is the primary terminal workspace manager. Homebrew installs Herdr, this
-directory owns its user configuration, and the `dotfiles` Ansible role installs
-the pinned reviewr plugin. The `tmux/` directory is retained only as a legacy
-fallback and is excluded from Stow.
+Herdr is an optional manual terminal workspace UI. Tmux + Workmux are the
+primary terminal workspace; Homebrew installs Herdr, this directory owns its
+user configuration, and the `dotfiles` Ansible role installs the pinned reviewr
+plugin. The Tmux configuration is deployed separately from `tmux/`.
 
 ## Daily workflow
 

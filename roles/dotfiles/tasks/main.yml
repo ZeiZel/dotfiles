@@ -28,11 +28,51 @@
     - "{{ dotfiles_home }}/.cache/starship"
     - "{{ dotfiles_home }}/.cache/zsh"
 
+# Remove only links that resolve to this repository's tmux files. Regular
+# files and links owned by another checkout are never removed before Stow.
+- name: Inspect existing tmux configuration entries
+  ansible.builtin.stat:
+    path: "{{ config_dir }}/tmux/{{ item }}"
+    follow: false
+  loop: "{{ dotfiles_tmux_config_files }}"
+  register: dotfiles_tmux_config_stats
+  changed_when: false
+
+- name: Resolve repository candidates among tmux symlinks
+  ansible.builtin.command:
+    argv:
+      - realpath
+      - "{{ config_dir }}/tmux/{{ item.item }}"
+  loop: "{{ dotfiles_tmux_config_stats.results }}"
+  when: item.stat.islnk | default(false)
+  register: dotfiles_tmux_config_realpaths
+  check_mode: false
+  changed_when: false
+  failed_when: false
+
+- name: Collect repository-owned tmux symlinks
+  ansible.builtin.set_fact:
+    dotfiles_owned_tmux_links: "{{ (dotfiles_owned_tmux_links | default([])) + [item.item.item] }}"
+  loop: "{{ dotfiles_tmux_config_realpaths.results | default([]) }}"
+  when:
+    - (item.rc | default(1)) == 0
+    - (item.stdout | default('')) == (configs_path ~ '/tmux/' ~ item.item.item)
+
+- name: Remove repository-owned tmux symlinks before Stow
+  ansible.builtin.file:
+    path: "{{ config_dir }}/tmux/{{ item }}"
+    state: absent
+  loop: "{{ dotfiles_owned_tmux_links | default([]) }}"
+
 # Preview the Stow plan during an Ansible dry run. Using --stow here detects
 # additions and conflicts without the unlink/relink noise produced by --restow.
+# In check mode the preceding file tasks are simulated, so omit only the tmux
+# package when an owned legacy link would otherwise still appear as a conflict.
 - name: Preview stow links
   ansible.builtin.command:
-    cmd: stow --simulate --stow --no-folding --verbose=1 .
+    cmd: >-
+      stow --simulate --stow --no-folding --verbose=1
+      {{ '--ignore=tmux' if (dotfiles_owned_tmux_links | default([]) | length > 0) else '' }} .
     chdir: "{{ configs_path }}"
   register: dotfiles_stow_preview
   check_mode: false
@@ -51,6 +91,29 @@
     chdir: "{{ configs_path }}"
   changed_when: true
   when: not ansible_check_mode
+
+# Install TPM after the config is deployed. The pinned commit makes fresh-host
+# provisioning reproducible, while existing plugin and resurrect data remain.
+- name: Provision pinned Tmux Plugin Manager
+  ansible.builtin.git:
+    repo: "{{ dotfiles_tmux_tpm_repo }}"
+    dest: "{{ dotfiles_tmux_tpm_path }}"
+    version: "{{ dotfiles_tmux_tpm_ref }}"
+    update: true
+  when: not ansible_check_mode
+
+- name: Install declared Tmux plugins through TPM
+  ansible.builtin.command:
+    argv:
+      - "{{ dotfiles_tmux_tpm_path }}/bin/install_plugins"
+  environment:
+    TMUX_PLUGIN_MANAGER_PATH: "{{ config_dir }}/tmux/plugins"
+  register: dotfiles_tmux_plugin_install
+  when: not ansible_check_mode
+  changed_when: >-
+    'Installing' in (dotfiles_tmux_plugin_install.stdout ~ dotfiles_tmux_plugin_install.stderr)
+    or 'Cloning' in (dotfiles_tmux_plugin_install.stdout ~ dotfiles_tmux_plugin_install.stderr)
+  failed_when: dotfiles_tmux_plugin_install.rc != 0
 
 - name: Ensure native Resterm config directory on macOS
   ansible.builtin.file:

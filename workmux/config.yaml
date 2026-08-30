@@ -1,0 +1,15 @@
+# Global Workmux defaults. Project-specific .workmux.yaml files may override
+# these values; this intentionally performs no file copies, symlinks, installs,
+# or lifecycle hooks in newly-created worktrees.
+mode: session
+agent: codex
+base_branch: auto
+merge_strategy: rebase
+merge_keep: true
+window_prefix: wm-
+status_format: false
+
+panes:
+  - command: <agent>
+    focus: true
+  - split: horizontal

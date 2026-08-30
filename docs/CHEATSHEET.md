@@ -19,7 +19,8 @@
 
 - Neovim: нажать `<Space>` и подождать WhichKey либо вызвать `<Space>sk`.
 - Lazygit: `?` в текущей панели.
-- Herdr: текущие bindings описаны в [`herdr/config.toml`](../herdr/config.toml).
+- Tmux: основной prefix — `Ctrl+A`; Workmux — в [`workmux/config.yaml`](../workmux/config.yaml).
+- Herdr: ручные bindings описаны в [`herdr/config.toml`](../herdr/config.toml).
 
 ## Ядро на каждый день
 
@@ -42,7 +43,8 @@
 | Компактный Git status справа | `<Space>gs` |
 | Git history файла | `<Space>gh` |
 | Git diff/conflicts | `<Space>gd` / `<Space>gm` |
-| Lazygit поверх Herdr | `Prefix`, затем `g` |
+| Lazygit popup в Tmux | `Prefix`, затем `g` |
+| Workmux dashboard | `Prefix`, затем `W` |
 | Terminal внутри Neovim | `Ctrl+/` |
 | История shell | `Ctrl+R` через Atuin |
 
@@ -69,6 +71,13 @@
 | Следующий / предыдущий yank | `[y` / `]y` | Действует |
 
 ### Файлы, buffers и поиск
+
+Snacks Explorer открывается слева: `<Space>fe` (и привычный remap
+`<Space>e`) всегда использует Git root репозитория. Для намеренной навигации
+от текущего каталога используйте `<Space>fE` или `<Space>E`; это единственный
+вариант, который следует за текущим working directory или вложенным проектом.
+Bufferline остаётся видимым даже при одном обычном buffer и скрывается только
+на стартовом `snacks_dashboard`.
 
 | Сценарий | Клавиши |
 | --- | --- |
@@ -342,6 +351,20 @@ Configured integrations:
 - `<Space>ld` — Lazydocker popup, если команда `lazydocker` доступна;
 - `:RemoteStart`, `:RemoteStop`, `:RemoteInfo` — remote-nvim по команде.
 
+### Helm и Kubernetes в Neovim
+
+Открытие Helm-шаблона или `values*.yaml` лениво подключает единственный
+`helm_ls`: completion, hover (`K`), definition (`gd`) и references (`gr`).
+`helm-ls.nvim` подсвечивает управляющие блоки и показывает line-local hints
+для `indent`/`nindent`; при найденном `Chart.yaml` экспериментально отображает
+текущие значения выражений через virtual text/conceal. Это не полноценный
+`helm template`: secrets, cluster lookups и произвольные функции не вычисляются.
+Для точного результата запускайте `helm template` явной задачей Overseer.
+
+`conceallevel=2` включён только для Helm buffers. Jinja YAML определяется по
+содержимому и намеренно не классифицируется как Helm. Hex-цвета и Tailwind
+utility colors подсвечиваются через ленивый `mini-hipatterns`.
+
 ### Posting
 
 Posting читает [`posting/config.yaml`](../posting/config.yaml) при запуске как
@@ -467,8 +490,8 @@ bindkey -e
 | Править Nvim / Herdr config | `nvimrc` / `herdrc` |
 | Интерактивная шпаргалка Navi | `nav` |
 
-Для plain shell без автоматического входа в Herdr установите
-`ZSH_HERDR_AUTOSTART=0` в untracked `~/.zshrc.local`.
+Для plain shell без автоматического входа в Tmux установите
+`ZSH_TMUX_AUTOSTART=0` в untracked `~/.zshrc.local`.
 
 ## Herdr
 
@@ -504,8 +527,36 @@ prefix, поэтому начало command line или FZF select-all полу�
 | Reload config | `herdrr` |
 | Открыть Reviewr вручную | `reviewr` |
 
-Tmux-конфигурация хранится как legacy fallback, но не является активным
-workspace manager.
+## Tmux и Workmux
+
+Обычный локальный интерактивный Zsh автоматически подключается к постоянной
+Tmux-сессии `main`. Вложенный Tmux, SSH, IDE, Herdr и non-TTY shells остаются
+обычным shell. Для отключения автозапуска добавьте
+`ZSH_TMUX_AUTOSTART=0` в `~/.zshrc.local`.
+
+| Сценарий | Команда/сочетание |
+| --- | --- |
+| Workmux menu | `Prefix`, затем `w`, затем command key |
+| Список/открытие worktrees | `Prefix W` или `Prefix w w` |
+| Создать worktree + Tmux session | `wm add BRANCH` |
+| Список worktrees | `wm list` |
+| Открыть существующий | `wm open BRANCH` |
+| Завершить слиянием | `wm merge` |
+| Новый split справа/вниз | `Prefix \|` / `Prefix -` |
+| Фокус pane | `Prefix h/j/k/l` |
+| Detach | `Prefix d` |
+
+Workmux не копирует `.env`, не линкует `node_modules`, не устанавливает
+зависимости и не удаляет worktree после merge автоматически. Agents tab и
+отслеживание Codex требуют явного `workmux setup`; он не выполняется
+автоматически, поскольку изменяет конфигурацию Codex.
+
+`Prefix+w` открывает меню Workmux. Внутри меню доступны `w` (worktrees
+dashboard — создание и открытие worktrees из TUI), `a` (agents dashboard),
+`d` (diff dashboard), `s` (session sidebar), `r` (resurrect), `b` (rebase),
+`m` (merge), `c` (close) и `?` (документация). Rebase, merge и close требуют
+подтверждения и запускаются в popup из текущей директории. `Prefix+W` сохранён
+как прямое открытие worktrees dashboard.
 
 ## Lazygit
 
@@ -602,6 +653,19 @@ Tracked override включает Signed-off-by в commit и выход по в�
 7. После resolution открыть global menu `m` и продолжить merge/rebase.
 
 ## Git в shell
+
+### Starship prompt
+
+В prompt постоянно отображаются локальные данные: время, длительность
+последней команды, ветка и состояние Git. Git появляется только внутри
+репозитория. В каталогах с Docker-файлом или compose-маркером показывается
+только непустой/переопределённый Docker context; Kubernetes показывает context,
+а Helm — установленную версию Helm (не context). Также отображаются версии
+обнаруженных инструментов (Node, Python, Go, Rust, .NET, Swift, Java, Lua,
+PHP, Ruby, Terraform, Buf и package manager). Сетевые запросы не выполняются.
+`command_timeout = 250ms` ограничивает отдельную внешнюю проверку модуля, а не
+весь prompt; если инструмент перегружен, соответствующий модуль исчезает до
+следующего prompt, а shell остаётся отзывчивым.
 
 Ниже перечислены только aliases из активного
 [`zsh/aliases.zsh`](../zsh/aliases.zsh). Файл `git/funcs.sh` не входит в

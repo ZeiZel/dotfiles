@@ -8,7 +8,7 @@ add_newline = false
 # Runtime modules execute only after their project marker is found. Keep their
 # synchronous work bounded so returning to a prompt after `clear`, `cd` or
 # `nvim` cannot wait on a slow local tool.
-command_timeout = 150
+command_timeout = 250
 scan_timeout = 20
 
 # ============================================
@@ -25,12 +25,16 @@ $git_state\
 $git_status\
 $docker_context\
 $kubernetes\
+$helm\
 $terraform\
 $aws\
 $nodejs\
 $python\
 $golang\
 $rust\
+$dotnet\
+$swift\
+$buf\
 $java\
 $lua\
 $php\
@@ -131,9 +135,9 @@ symbol = " "
 style = "fg:blue"
 format = '[$symbol$context]($style) '
 only_with_files = true
-detect_files = ['docker-compose.yml', 'docker-compose.yaml', 'Dockerfile', '.docker']
+detect_files = ['docker-compose.yml', 'docker-compose.yaml', 'compose.yml', 'compose.yaml', 'Dockerfile', '.docker']
 detect_folders = []
-disabled = true
+disabled = false
 
 # ============================================
 # KUBERNETES
@@ -143,13 +147,20 @@ symbol = "󱃾 "
 style = "fg:blue"
 format = '[$symbol$context( \($namespace\))]($style) '
 disabled = false
-detect_files = ['Chart.yaml', 'helmfile.yaml', 'kustomization.yaml']
+detect_files = ['Chart.yaml', 'Chart.yml', 'helmfile.yaml', 'helmfile.yml', 'kustomization.yaml']
 detect_folders = ['k8s', 'kubernetes', 'helm']
 detect_extensions = []
 
 [kubernetes.context_aliases]
 "dev.local.cluster.k8s" = "dev"
 ".*prod.*" = "PROD"
+
+[helm]
+symbol = "⎈ "
+style = "fg:blue"
+format = '[$symbol($version)]($style) '
+detect_files = ['Chart.yaml', 'Chart.yml', 'helmfile.yaml', 'helmfile.yml']
+disabled = false
 
 # ============================================
 # LANGUAGES & TOOLS
@@ -184,6 +195,28 @@ symbol = " "
 style = "fg:peach"
 format = '[$symbol($version)]($style) '
 detect_files = ['Cargo.toml']
+disabled = false
+
+[dotnet]
+symbol = "󰪮 "
+style = "fg:lavender"
+format = '[$symbol($version)]($style) '
+detect_files = ['*.csproj', '*.fsproj', '*.sln', '*.slnx', 'global.json']
+detect_folders = []
+disabled = false
+
+[swift]
+symbol = " "
+style = "fg:peach"
+format = '[$symbol($version)]($style) '
+detect_files = ['Package.swift', '*.xcodeproj', '*.xcworkspace']
+disabled = false
+
+[buf]
+symbol = "󰊕 "
+style = "fg:sky"
+format = '[$symbol($version)]($style) '
+detect_files = ['buf.yaml', 'buf.gen.yaml', 'buf.work.yaml']
 disabled = false
 
 [java]
@@ -246,8 +279,8 @@ disabled = false
 [cmd_duration]
 style = "fg:overlay1"
 format = '[󱎫 $duration]($style) '
-min_time = 2000
-show_milliseconds = false
+min_time = 0
+show_milliseconds = true
 
 [jobs]
 symbol = "󰒓 "

@@ -10,7 +10,7 @@ interactive shells load:
 4. aliases, functions and Starship;
 5. Homebrew-managed plugins;
 6. final Emacs key bindings;
-7. optional `~/.zshrc.local` and the normal terminal-to-Herdr handoff.
+7. optional `~/.zshrc.local` and the guarded terminal-to-Tmux handoff.
 
 Interactive commands without a TTY load only environment, options, aliases and
 functions and remain silent.
@@ -26,8 +26,9 @@ functions and remain silent.
 - `kbd.zsh`: key bindings.
 - `options.zsh`: shell options.
 - `theme.zsh`, `prompt.zsh`: presentation.
-- `herdr-auto.zsh`: default Herdr attachment with recursion, SSH and IDE
-  guards. Set `ZSH_HERDR_AUTOSTART=0` for a plain shell.
+- `tmux-auto.zsh`: default Tmux attachment with recursion, SSH and IDE guards.
+  Set `ZSH_TMUX_AUTOSTART=0` for a plain shell.
+- `herdr-auto.zsh`: retained legacy Herdr handoff; it is not sourced by `.zshrc`.
 - `completitions.zsh`: existing completion setup (filename is intentionally
   retained for compatibility).
 
@@ -44,10 +45,19 @@ is explicit because `EDITOR=nvim` would otherwise make Zsh choose vi mode.
 NVM is lazy-loaded; the default Node binary is placed on PATH without sourcing
 `nvm.sh`.
 
+Optional local tool homes (`$HOME/.kimi-code/bin` and
+`$HOME/.mimocode/bin`) are added only when present. `$HOME/.local/bin/env` is
+sourced only when readable; all three are handled by `env.zsh`, and the later
+untracked `~/.zshrc.local` can change their priority.
+
 Starship is initialized from a binary-invalidated cache, but its prompt data is
-always live. The prompt retains repository status and language/runtime context
-only in directories whose project markers match. Starship bounds directory
-scans to 20 ms and external version commands to 150 ms; it does not make
+always live. The prompt shows the current time, command duration (including
+milliseconds), repository state, Docker/Kubernetes indicators and the installed
+Helm version, plus detected language/tool versions only when project markers
+match. Git is shown only inside a repository; Docker is shown when a Docker
+file/compose marker is present and reflects a non-default or overridden context.
+Starship bounds each external module command to 250 ms (not the total prompt
+latency); it does not make
 network requests on startup or fetch Git remotes. Starship does not provide a
 supported asynchronous or transient-prompt implementation for Zsh, so this
 configuration deliberately avoids a custom background job that could race ZLE.
@@ -66,10 +76,10 @@ History preserves prior occurrences of commands. `HIST_IGNORE_ALL_DUPS` and
 duplicate entries and can look like history loss. Consecutive duplicates are
 still suppressed with `HIST_IGNORE_DUPS`.
 
-Herdr handoff runs last, after the local override. It replaces only the outer
-terminal shell; Herdr injects `HERDR_ENV=1` into panes, whose Zsh configuration
-then loads exactly once. Existing Tmux panes are never nested. Inside Herdr,
-send `Ctrl+A Ctrl+A` when ZLE should receive its normal beginning-of-line key.
+Tmux handoff runs last, after the local override. It replaces only the outer
+terminal shell and attaches to the persistent `main` session. Existing Tmux
+panes are never nested. Herdr stays installed and available manually through
+the `herd*` aliases.
 
 Validate changes with:
 

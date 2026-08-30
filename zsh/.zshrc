@@ -41,7 +41,8 @@ unfunction _source_generated_zsh_init 2>/dev/null
 # Machine-local settings are deliberately untracked.
 [[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 
-# Normal terminal windows enter Herdr after the shell configuration is ready.
-# Set ZSH_HERDR_AUTOSTART=0 in the local override for a plain-shell escape hatch.
-[[ -r "$ZSH_CONFIG_DIR/herdr-auto.zsh" ]] &&
-  source "$ZSH_CONFIG_DIR/herdr-auto.zsh"
+# Normal local terminal windows enter Tmux after the shell configuration is
+# ready. Herdr remains available through its explicit aliases/commands.
+# Set ZSH_TMUX_AUTOSTART=0 in the local override for a plain shell.
+[[ -r "$ZSH_CONFIG_DIR/tmux-auto.zsh" ]] &&
+  source "$ZSH_CONFIG_DIR/tmux-auto.zsh"

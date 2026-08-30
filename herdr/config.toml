@@ -1,5 +1,5 @@
-# Herdr is the primary terminal workspace manager. Tmux remains in this
-# repository only as a legacy fallback.
+# Herdr is an optional manual workspace UI. Tmux + Workmux are the primary
+# terminal workspace; this configuration remains available for explicit use.
 onboarding = false
 
 [theme]

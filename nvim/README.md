@@ -12,6 +12,31 @@ Each extra owns its language server, debugger and test adapter; Mason installs
 editor-managed binaries and Conform owns formatting. Check `:LspInfo`,
 `:Mason` and `:ConformInfo` before diagnosing a project-specific failure.
 
+### Helm and Kubernetes
+
+The Helm extra and `qvalentin/helm-ls.nvim` are loaded only when a Helm buffer
+is opened. `helm_ls` is the single Helm-specific language server for templates
+and `values*.yaml` files; a `yaml.helm-values` buffer may additionally attach
+`yamlls` for ordinary YAML structure. `helm_ls` supplies completion, hover,
+go-to-definition and references. `K`, `gd` and `gr` therefore work on Helm expressions and chart
+values as they do in code. Helm template actions are highlighted, and the
+current `indent`/`nindent` effect is shown as a line-local hint.
+
+When helm-ls can resolve a chart and its values, template expressions may show
+their current value as virtual text/concealed rendering. This is an
+experimental preview, not a full Helm render: it depends on a discoverable
+`Chart.yaml`, valid chart values and an installed `helm_ls` binary, and it does
+not evaluate runtime secrets, cluster lookups or arbitrary functions. Use an
+explicit project task (`helm template`, usually through Overseer) for the
+authoritative manifest. `conceallevel=2` is enabled for Helm template buffers;
+Jinja YAML remains excluded from Helm detection. These LSP features depend on a
+discoverable `Chart.yaml` root, the installed `helm_ls` binary and the Helm
+Tree-sitter parser.
+
+The `mini-hipatterns` extra restores inline previews for hex colors and
+Tailwind utility colors in supported source files. It is event-loaded and
+does not add work to an empty Neovim startup.
+
 ## Core keymaps
 
 `<leader>` is `<Space>`. The complete cross-tool reference lives in
@@ -26,13 +51,26 @@ often while coding:
 | Hover / signature help | `K` / `gK` |
 | Quick fix / rename / format | `<leader>ca` / `<leader>cr` / `<leader>cf` |
 | Next/previous diagnostic | `]d` / `[d` |
-| Explorer | `<leader>e` |
+| Explorer (Git/project root) | `<leader>fe` / `<leader>e` |
+| Explorer (current working directory) | `<leader>E` / `<leader>fE` |
 | Next/previous buffer | `Tab` / `Shift+Tab` |
 | Save / quit all | `<leader>w` / `<leader>qq` |
 | Window navigation | `Ctrl+h/j/k/l` |
 | Terminal | `Ctrl+/` |
 | Git status / compact status | `<leader>gg` / `<leader>gs` |
 | Run task / nearest test | `<leader>oo` / `<leader>tr` |
+
+Terminal motion animations (`neoscroll.nvim` and `smear-cursor.nvim`) activate
+automatically after the first normal local TUI file buffer. Neoscroll is the
+only smooth-scroll owner; Snacks' scroll animation is disabled to avoid
+competing viewport updates. Neoscroll smooths
+the standard viewport mappings (`<C-u>`, `<C-d>`, `<C-b>`, `<C-f>`, `<C-y>`,
+`<C-e>`, `zt`, `zz`, `zb`) without replacing arrow or `j`/`k` navigation.
+Smear Cursor is disabled for Neovide, SSH, special buffers and files larger
+than 1 MiB; it is also suspended in Visual/Select mode to keep rapid `V` +
+`j`/`k` movement responsive, then re-enabled when returning to Normal/Insert
+mode or an eligible file. Use `:SmearCursorToggle` for a manual temporary
+toggle.
 
 ## Git workflow
 
@@ -60,7 +98,12 @@ often while coding:
 In Neogit, press `?` to see actions for the current view. The rebase editor
 uses `p/r/e/s/f/d` for pick, reword, edit, squash, fixup and drop.
 
-The Snacks Explorer remains on the left. The SQL extra's DBUI opens on the
+The Snacks Explorer remains on the left. `<leader>fe` (and its `<leader>e`
+remap) always opens it at the repository Git root, even when the active file is
+inside a monorepo application such as `apps/sublease`; `<leader>fE` and
+`<leader>E` deliberately retain current-working-directory behavior. Reopening
+the root mapping therefore does not follow an LSP or test subproject root.
+The SQL extra's DBUI opens on the
 right; from an editor buffer, use `Ctrl+L` to enter it and `Ctrl+H` to leave it.
 DBUI's `Ctrl+J`/`Ctrl+K` are restored to window navigation, while its sibling
 navigation remains available through the view's own mappings.
@@ -203,6 +246,17 @@ confirmation before a task mutates a cluster, database or remote environment.
 
 ### Diagnostics and formatting
 
+YAML files containing Jinja control blocks (`{% if %}`, `{% for %}`, `{% endif %}`
+and related tags) are detected from their contents, not their filename, and use
+the `yaml.jinja` filetype. This prevents `helm_ls` and `yamlls` from reporting
+false YAML errors against the unrendered template. The filetype uses the normal
+YAML syntax base plus a small Jinja overlay for `{% ... %}`, `{{ ... }}` and
+`{# ... #}` blocks; it deliberately does not register the standalone Jinja
+Tree-sitter parser, because that parser would replace (rather than combine with)
+YAML parsing. Render the template with the project's normal Jinja2/`envsubst`
+task before running YAML or Helm validation. Ordinary YAML and Helm files keep
+their existing language servers and formatters.
+
 - SQL completion remains owned by the SQL omnifunc and LazyVim Dadbod/Blink;
   Neovim's packaged SQL omni mappings are disabled so insert-mode arrow keys
   retain native cursor movement.
@@ -233,6 +287,8 @@ New IDE integrations must stay lazy by command, mapping or narrow filetype.
 Avoid broad `BufReadPre` hooks for task, REST, coverage and refactoring tools.
 Use `:Lazy profile` to audit regressions; an empty startup should leave
 Telescope, Overseer, Neotest, DAP, Kulala, refactoring and coverage unloaded.
+Bufferline remains visible for every normal file/tool buffer, including a
+single-buffer project; only the Snacks dashboard hides the tabline.
 
 ## Sessions
 

@@ -8,3 +8,12 @@ dotfiles_herdr_integrations:
   - codex
   - claude
   - hermes
+dotfiles_tmux_tpm_repo: https://github.com/tmux-plugins/tpm.git
+dotfiles_tmux_tpm_ref: "e261deb1b47614eed3400089ce7197dc68acc4eb"
+dotfiles_tmux_tpm_path: "{{ config_dir }}/tmux/plugins/tpm"
+dotfiles_tmux_config_files:
+  - tmux.conf
+  - tmux.binds.conf
+  - tmux.options.conf
+  - tmux.plugins.conf
+  - tmux.theme.conf
