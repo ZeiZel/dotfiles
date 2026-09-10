@@ -330,11 +330,99 @@ return {
 			auto_reload = true,
 		},
 	},
+	-- AI coding agents. Sidekick runs the official CLIs in an editor-owned
+	-- terminal, so each agent authenticates with its own subscription login and
+	-- no key or buffer content is stored here. Herdr remains the workspace-level
+	-- agent surface; this is the buffer-level bridge.
+	{
+		"folke/sidekick.nvim",
+		lazy = true,
+		opts = {
+			-- Next Edit Suggestions need the Copilot language server, which this
+			-- host does not provision. Enabling it would start a client that can
+			-- never attach, so it follows the binary instead of a static value.
+			nes = { enabled = vim.fn.executable("copilot-language-server") == 1 },
+			cli = {
+				win = { layout = "right" },
+				-- Agent sessions can outlive Neovim inside the default Tmux
+				-- workspace. Opt in per host: outside a multiplexer this silently
+				-- falls back to an editor-owned terminal.
+				mux = { backend = "tmux", enabled = false },
+			},
+		},
+		keys = {
+			{
+				"<leader>aa",
+				function()
+					require("sidekick.cli").toggle()
+				end,
+				mode = { "n", "x" },
+				desc = "Toggle agent terminal",
+			},
+			{
+				"<leader>ac",
+				function()
+					require("sidekick.cli").toggle({ name = "claude", focus = true })
+				end,
+				mode = { "n", "x" },
+				desc = "Claude Code",
+			},
+			{
+				"<leader>ax",
+				function()
+					require("sidekick.cli").toggle({ name = "codex", focus = true })
+				end,
+				mode = { "n", "x" },
+				desc = "Codex",
+			},
+			{
+				"<leader>as",
+				function()
+					require("sidekick.cli").select({ filter = { installed = true } })
+				end,
+				mode = { "n", "x" },
+				desc = "Select agent",
+			},
+			{
+				"<leader>ap",
+				function()
+					require("sidekick.cli").prompt()
+				end,
+				mode = { "n", "x" },
+				desc = "Agent prompt library",
+			},
+			{
+				"<leader>at",
+				function()
+					require("sidekick.cli").send({ msg = "{this}" })
+				end,
+				mode = { "n", "x" },
+				desc = "Send this symbol to the agent",
+			},
+			{
+				"<leader>af",
+				function()
+					require("sidekick.cli").send({ msg = "{file}" })
+				end,
+				desc = "Send this file to the agent",
+			},
+			{
+				"<leader>av",
+				function()
+					require("sidekick.cli").send({ msg = "{selection}" })
+				end,
+				mode = "x",
+				desc = "Send the selection to the agent",
+			},
+		},
+	},
+
 	{
 		"folke/which-key.nvim",
 		optional = true,
 		opts = {
 			spec = {
+				{ "<leader>a", group = "ai agents" },
 				{ "<leader>o", group = "tasks" },
 				{ "<leader>r", group = "refactor" },
 				{ "<leader>R", group = "REST" },

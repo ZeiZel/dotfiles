@@ -19,7 +19,7 @@ executing roles in dependency order:
   `mas get`, and Rust toolchain.
 - `dotfiles`: Tmux/Workmux Stow deployment, pinned TPM and reviewr
   installation, Herdr service startup and available Codex/Claude/Hermes
-  integrations.
+  integrations. Zsh selects Tmux/Workmux by default; Herdr remains optional.
 - `git`: interactive identity collection and local identity cache.
 - `node`: pinned NVM, default Node LTS, pinned global developer tools and
   uv-managed Aider.
@@ -45,9 +45,11 @@ The `dotfiles` role previews `stow --stow` in check mode and applies
 `stow --restow --no-folding` during a real run; it never adopts host files into
 the repository. Existing repository-owned tmux links are migrated safely
 before Stow; regular files and foreign links are preserved. Tmux and Workmux
-are deployed, and TPM/plugins are provisioned after Stow. Herdr must be
+are deployed, and TPM/plugins are provisioned after Stow. Tmux is the default
+Zsh multiplexer. Herdr is the optional alternative backend and must still be
 installed by the preceding Homebrew role before reviewr or agent integrations
-are reconciled. Its login service remains managed on macOS for manual use.
+are reconciled. Its login service remains managed on macOS so the optional
+workspace stays ready to attach.
 
 Keyboard repeat policy is shared in `group_vars/all.yml` as a 20 ms interval
 and 150 ms initial delay. macOS persists the nearest native defaults ticks and

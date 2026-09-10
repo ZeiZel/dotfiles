@@ -5,6 +5,11 @@
 // Zed's current injections cover expressions in YAML nodes, not standalone
 // `{% ... %}` mapping directives; rendered output remains the validation path.
 {
+  "agent_ui_font_size": 16.0,
+  "markdown_preview_font_size": 16.0,
+  "terminal": {
+    "font_size": 14.0
+  },
   "gutter": {
     "folds": false
   },
@@ -17,6 +22,9 @@
     "git_status_indicator": true,
     "sticky_scroll": false,
     "dock": "left",
+    // Show every directory as its own row instead of collapsing a chain of
+    // single-child directories into "deploy/nginx".
+    "auto_fold_dirs": false,
   },
   "session": {
     "trust_all_worktrees": true,
@@ -40,7 +48,7 @@
   "base_keymap": "JetBrains",
   // Keep JetBrains' non-modal shortcuts, and add Zed's Vim modal navigation.
   "vim_mode": true,
-  "ui_font_size": 16,
+  "ui_font_size": 16.0,
   "buffer_font_size": 16.0,
   "theme": {
     "mode": "system",

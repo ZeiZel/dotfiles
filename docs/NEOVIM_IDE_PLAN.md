@@ -207,9 +207,14 @@ profile или остаётся внешним инструментом Herdr.
 | Inspections/intentions/quick fixes | LSP diagnostics/actions + nvim-lint + explicit repository tasks | высокий для известных toolchains |
 | Safe rename/file move | LSP rename и workspace file operations | высокий для одного language, частичный cross-language |
 | Extract/inline/change signature | refactoring.nvim + language LSP actions | частичный, зависит от parser/LSP |
+| Breadcrumbs/navigation bar | dropbar (`winbar`) | высокий |
+| Multiple carets/column selection | multicursor.nvim | высокий |
+| Project view с git status и состоянием дерева | Snacks explorer + workspace snapshot | высокий |
+| Recent projects | Snacks projects picker + persistence | высокий |
 | Structural search/replace | ast-grep/project CLI + GrugFar | высокий для поддержанных syntax patterns |
 | Run configurations | Overseer templates + project task files | высокий |
 | Services/processes | Overseer task list + Herdr panes | высокий без GUI service graph |
+| Docked tool windows | edgy edges | высокий |
 | Unit test runner | Neotest + language adapters | высокий |
 | Debugger | nvim-dap + DAP UI + project launch profiles | высокий, кроме IDE-specific runtime views |
 | Coverage | language report producer + один viewer | высокий после fixture validation |
@@ -225,7 +230,7 @@ profile или остаётся внешним инструментом Herdr.
 | CI status/log/lint | local validation + explicit `gh`/`glab` tasks | высокий без постоянного polling |
 | Remote/Dev Containers | Herdr/SSH + remote-nvim + opt-in DevPod | частичный относительно Gateway |
 | Notebooks/data science | opt-in Quarto/Otter/Molten/Jupyter | частичный |
-| AI actions | Herdr Codex/Claude/Hermes; optional editor context bridge | высокий как agent workflow, без native IDE debugger control |
+| AI actions | Herdr Codex/Claude/Hermes + sidekick.nvim как buffer-level bridge | высокий как agent workflow, без native IDE debugger control |
 | Rider designers/game editor integration | внешний Rider/Visual Studio/engine editor | внешняя поверхность |
 
 ## Матрица владения
@@ -246,7 +251,16 @@ profile или остаётся внешним инструментом Herdr.
 | Diffs/conflicts/history | Diffview | [`git.lua`](../nvim/lua/plugins/git.lua) | второй merge UI внутри Neovim |
 | Buffer hunks | Gitsigns | [`git.lua`](../nvim/lua/plugins/git.lua) | второй gutter/hunk owner |
 | Picker/explorer/terminal | Snacks | LazyVim + local overrides | новый основной Telescope/Toggleterm слой |
+| Statusline/tabline/project header | lualine и bufferline | [`ui.lua`](../nvim/lua/plugins/ui.lua) | второй statusline или winbar-компонент |
+| Breadcrumbs (`winbar`) | dropbar | [`ui.lua`](../nvim/lua/plugins/ui.lua) | Trouble symbols в statusline, barbecue, navic |
+| Индикатор code action | nvim-lightbulb | [`ui.lua`](../nvim/lua/plugins/ui.lua) | второй lightbulb или собственный CursorHold-запрос |
+| Мультикурсор | multicursor.nvim | [`movements.lua`](../nvim/lua/plugins/movements.lua) | Hydra-based multicursors, vim-visual-multi |
 | Sessions | persistence.nvim | LazyVim util spec | auto-session и другие restorers |
+| Состояние панелей | workspace snapshot | [`session.lua`](../nvim/lua/plugins/session.lua) | второй restorer дерева или project state |
+| Расположение tool windows | edgy | [`ui.lua`](../nvim/lua/plugins/ui.lua) | ручной `wincmd`-менеджмент панелей в других spec |
+| Messages/cmdline/LSP progress | noice + Snacks notifier | [`ui.lua`](../nvim/lua/plugins/ui.lua) | второй `vim.notify` owner, nvim-notify |
+| Colour scheme | catppuccin | [`init.lua`](../nvim/lua/plugins/init.lua) | второй colorscheme spec, ручной `nvim_set_hl` |
+| In-editor AI | sidekick.nvim | [`ide.lua`](../nvim/lua/plugins/ide.lua) | второй editor-side AI слой, свой multiplexer |
 | REST collections | Kulala, целевой | `.http` filetype spec | второй in-editor collection runner |
 | Exploratory API TUI | Posting, опционально | external command | хранение `.http` collections |
 | SQL editor | Dadbod | LazyVim SQL extra | параллельный in-editor DB client |
@@ -261,6 +275,11 @@ profile или остаётся внешним инструментом Herdr.
 | --- | --- | --- |
 | Colorscheme/core options/keymaps | startup, только лёгкий код | допускается loaded |
 | Statusline, notifications, cosmetic UI | `VeryLazy` | не должен задерживать first screen |
+| Breadcrumbs (dropbar) | `LazyFile` | winbar пуст, symbol-запросов нет |
+| Edgy | `VeryLazy` | окна не перемещаются, edgebar не создан |
+| Индикатор code action | `LspAttach` | нет `CursorHold` code action запросов |
+| Мультикурсор | его mapping | не загружается на `VeryLazy` |
+| Sidekick (AI CLI) | его mapping | ни один agent process не запущен |
 | LSP client | matching filetype и root | не стартует process |
 | Treesitter parser | matching buffer | не загружает чужие parsers |
 | Formatter/linter | format/save/lint event подходящего filetype | не запускает binary |

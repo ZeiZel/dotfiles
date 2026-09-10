@@ -9,7 +9,9 @@ theme = "Catppuccin Mocha"
 font-family = "JetBrainsMono Nerd Font"
 font-size = 15
 font-thicken = true
-adjust-cell-height = 15%
+# Wider line gap: text breathes and the current-line band reads as a band
+# rather than as a solid stripe. Applies to every terminal app, not just Neovim.
+adjust-cell-height = 28%
 
 # Window
 window-decoration = true
@@ -25,8 +27,10 @@ background-blur = false
 unfocused-split-opacity = 0.9
 
 # Cursor
+# Neovim overrides shape and blink cadence through 'guicursor' while it runs;
+# this is the cadence for the shell and every other terminal program.
 cursor-style = block
-cursor-style-blink = false
+cursor-style-blink = true
 shell-integration-features = cursor,no-sudo,title,path
 
 # Mouse

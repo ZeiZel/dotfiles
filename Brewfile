@@ -90,6 +90,8 @@ brew "curl"
 brew "nano"
 brew "less"
 brew "thefuck"
+# Preferred backend for Herdr's system notifications; falls back to osascript.
+brew "terminal-notifier" if OS.mac?
 
 # ============================================
 # GIT & VERSION CONTROL

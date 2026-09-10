@@ -21,16 +21,22 @@ return {
 									vim.api.nvim_buf_is_valid(buffer)
 									and vim.bo[buffer].filetype == "NeogitStatus"
 								then
-									vim.api.nvim_set_current_win(window)
-									vim.cmd("wincmd L")
-									vim.api.nvim_win_set_width(window, 42)
+									-- Tag only this window: edgy docks the tagged
+									-- status on the right edge and leaves the
+									-- full-tab status from `<leader>gg` alone.
+									vim.w[window].dotfiles_git_panel = true
+									if not package.loaded["edgy"] then
+										vim.api.nvim_set_current_win(window)
+										vim.cmd("wincmd L")
+										vim.api.nvim_win_set_width(window, 46)
+									end
 									break
 								end
 							end
 						end
 					end)
 				end,
-				desc = "Git status (compact right split)",
+				desc = "Git status (docked right panel)",
 			},
 			{ "<leader>gc", "<cmd>Neogit commit<cr>", desc = "Git commit" },
 			{ "<leader>gl", "<cmd>Neogit log<cr>", desc = "Git log / graph" },

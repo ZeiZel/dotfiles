@@ -6,8 +6,28 @@
 # Example: machine-specific paths
 # export WORK_PROJECT_DIR="$HOME/projects/work"
 
-# Example: open a plain shell instead of Herdr in new terminal windows
+# Canonical terminal multiplexer: tmux (default), herdr, or none.
+# export ZSH_MULTIPLEXER=herdr
+# export ZSH_MULTIPLEXER=none
+
+# Legacy per-backend kill switches remain available as secondary controls.
 # export ZSH_HERDR_AUTOSTART=0
+# export ZSH_TMUX_AUTOSTART=0
+
+# Scheduling priority. Automatic clamping of build-shaped commands is on by
+# default; setting this to 0 keeps heavy, idle, calm and boost usable by hand.
+# export PRIORITY_AUTO=0
+
+# QoS clamp applied by heavy and by the automatic wrappers. `background` also
+# throttles disk IO, which slows IO-bound builds more than it protects the editor.
+# export PRIORITY_HEAVY_CLAMP=background
+
+# Sustained CPU share, in percent, above which hogs and calm consider a process.
+# export PRIORITY_HOG_THRESHOLD=40
+
+# Extra binaries to wrap. This file is sourced after priority.zsh, so the
+# wrappers have to be regenerated afterwards.
+# PRIORITY_WRAP+=(bazel sbt); priority-rewrap
 
 # Example: machine-specific aliases
 # alias vpn-connect='sudo openconnect vpn.example.com'

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>{{ macos_tmux_launch_agent_label }}</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>{{ macos_tmux_boot_script_path }}</string>
+  </array>
+  <!-- launchd hands a job a minimal PATH. The continuum and resurrect scripts
+       invoke `tmux` unqualified, so without the Homebrew prefix here the
+       server starts and the restore silently does nothing. -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>{{ homebrew_bin }}:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <!-- No KeepAlive: `tmux start-server` daemonizes and returns, so launchd
+       would read the immediate exit as a crash and restart it forever. A
+       server killed on purpose should also stay dead until the next login or
+       the next terminal window. -->
+</dict>
+</plist>

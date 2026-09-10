@@ -54,6 +54,8 @@ often while coding:
 | Explorer (Git/project root) | `<leader>fe` / `<leader>e` |
 | Explorer (current working directory) | `<leader>E` / `<leader>fE` |
 | Next/previous buffer | `Tab` / `Shift+Tab` |
+| Cursor at next occurrence (multicursor) | `<C-n>` |
+| Breadcrumb pick mode | `<leader>cb` |
 | Save / quit all | `<leader>w` / `<leader>qq` |
 | Window navigation | `Ctrl+h/j/k/l` |
 | Terminal | `Ctrl+/` |
@@ -72,12 +74,243 @@ than 1 MiB; it is also suspended in Visual/Select mode to keep rapid `V` +
 mode or an eligible file. Use `:SmearCursorToggle` for a manual temporary
 toggle.
 
+## IDE chrome
+
+The editor carries the same permanent context an IDE window does: which
+project, which branch, where in the file, and what tooling is attached. All of
+it is presentation; the behaviour still belongs to the owning plugin.
+
+**Project header.** The tab row shows ` <project>    <branch>` above the
+explorer sidebar, and the terminal/window title is set to
+`project — ⎇ branch — file`. The project name is the Git root basename.
+The statusline repeats it and appends the sub-root when a language server
+resolved a nested project, so a monorepo reads as `repo/package` rather than
+just `package`.
+
+**Breadcrumbs.** `dropbar.nvim` owns `winbar` and is the single owner of that
+line. It shows `directory › file › symbol` from the file path plus LSP
+document symbols, falling back to Tree-sitter when no server answers. The
+trail is interactive: `<leader>cb` opens the pick mode, each component expands
+into a menu, and clicking a component with the mouse jumps to it. Breadcrumbs
+are skipped for special buffers, diff windows and files above 1 MiB. Because
+dropbar owns the trail, LazyVim's Trouble symbol component is disabled in the
+statusline (`vim.g.trouble_lualine = false`) instead of printing it twice.
+
+**Statusline.** One global statusline (`laststatus=3`) with, left to right:
+mode, branch and diff counters, six clickable panel buttons, project label,
+diagnostics, path, Overseer task counts, Conform formatters, attached language
+servers, indentation contract, encoding and line ending when they are not
+UTF-8/LF, filetype, scroll progress, cursor position and the clock. The panel
+buttons are explorer, Git, problems, tests, tasks and terminal; a mouse click
+opens the corresponding panel, and each has a keyboard equivalent below.
+
+**Code action indicator.** `nvim-lightbulb` marks a line where the language
+server offers a refactor or quick fix with `󰌵` at the end of the line, the
+equivalent of the IDE lightbulb. It requests code actions on `CursorHold`
+only, and `<leader>uB` toggles it. `<leader>ca` still applies the action.
+
+**Whitespace.** Tabs, trailing spaces and non-breaking spaces are rendered as
+`→`, `·` and `␣`.
+
+| Action | Mapping |
+| --- | --- |
+| Breadcrumb pick mode | `<leader>cb` |
+| Symbols outline (right split) | `<leader>cs` |
+| Problems panel | `<leader>qq` |
+| Buffer problems | `<leader>qb` |
+| Task list | `<leader>ow` |
+| Toggle the code action indicator | `<leader>uB` |
+
+## Docked panels
+
+`edgy.nvim` turns the ad-hoc splits that tool windows open into fixed edges, so
+a panel always appears in the same place at the same size instead of wherever
+the last `:split` happened to land.
+
+| Edge | Contents | Default size |
+| --- | --- | --- |
+| Left | Explorer (project view), Neotest summary | 40 columns |
+| Right | Neogit panel, Dadbod, right-side Trouble, Grug Far | 46 columns |
+| Bottom | Trouble, quickfix, Overseer, Neotest, terminal, help | 14 rows |
+
+The explorer sidebar is a picker: its input and list are floats anchored to one
+real split whose filetype is `snacks_layout_box`, and that split is what edgy
+docks. Its edgy title bar is suppressed, because the picker draws its own title
+and the anchored floats are positioned against the full box height. Edge
+animation is disabled: it redraws on a timer and cannot move those anchored
+floats, so the sidebar would tear while opening.
+
+Only the `<leader>gs` Neogit panel is docked. `<leader>gg` opens Neogit as a
+full tab page and must keep the whole width, so the docked view matches on a
+window variable set by the `<leader>gs` mapping rather than on the filetype
+alone.
+
+| Action | Mapping |
+| --- | --- |
+| Toggle all edges | `<leader>ue` |
+| Jump to a panel | `<leader>uE` |
+| Close / hide the focused panel | `q` / `<C-q>` |
+| Close the whole edge | `Q` |
+| Next / previous panel on the edge | `]w` / `[w` |
+| Resize the focused panel | `<C-Left>` `<C-Right>` `<C-Up>` `<C-Down>` |
+| Reset panel sizes | `<C-w>=` |
+
+`q`, `Q`, `]w`, `[w` and the `<C-w>` resize keys are buffer-local to panel
+windows and never shadow a normal editing mapping.
+
+## Messages and notifications
+
+Noice owns the message UI, and the Snacks notifier renders the toasts noice
+routes to `vim.notify`; nothing else may take over `vim.notify`.
+
+Hover and signature help are drawn with the same rounded frame as the rest of
+the floating UI, `<leader>cr` previews the rename live in the cmdline, and LSP
+server progress is one small bottom-right spinner rather than a stack of
+toasts. Routine editor chatter — write confirmations, undo line counts, yank
+counts, search wrap messages — is demoted to that unobtrusive corner view, and
+search counts, "No information available" and diagnostic progress are dropped
+entirely. Anything not on those lists still gets a real toast, so a genuine
+warning is never silently swallowed.
+
+| Action | Mapping |
+| --- | --- |
+| Notification history | `<leader>n` |
+| Dismiss all notifications | `<leader>un` |
+| Last message / full history | `<leader>snl` / `<leader>snh` |
+| All messages / dismiss | `<leader>sna` / `<leader>snd` |
+
+## Multiple cursors
+
+`jake-stewart/multicursor.nvim` is the only multiple-cursor owner; it replaced
+the Hydra-based `multicursors.nvim`, which loaded eagerly on `VeryLazy`. The
+new plugin loads on its first mapping.
+
+Every extra cursor is a real Vim cursor with its own registers and its own
+position, and each of them replays what you type. There is no separate
+"multicursor mode" with a reduced command set: operators, text objects, counts,
+macros, `.`, Insert mode and undo all behave the way they do with one cursor,
+which is the difference from the block-selection workflow of `Ctrl+V`.
+
+The usual flow is: put the cursor on a word, press `<C-n>` once per further
+occurrence you want (or `<leader>ma` for all of them), edit as usual, then
+press `<Esc>` to collapse back to one cursor.
+
+| Action | Mapping (Normal and Visual) |
+| --- | --- |
+| Cursor at the next occurrence | `<C-n>` or `<leader>mn` |
+| Cursor at the previous occurrence | `<leader>mN` |
+| Skip this occurrence, take the next/previous | `<leader>mx` / `<leader>mX` |
+| Cursor at every occurrence in the buffer | `<leader>ma` |
+| Cursor one line below / above | `<leader>mj` / `<leader>mk` |
+| Skip a line below / above | `<leader>mJ` / `<leader>mK` |
+| Toggle a cursor at this position | `<leader>mt` |
+| Clear all cursors | `<leader>mc` |
+| Restore the cursors just cleared | `<leader>mr` |
+| Align cursor columns | `<leader>mg` |
+| Toggle a cursor under the pointer | `Ctrl` + left click |
+
+Visual-mode sources, for turning one selection into many cursors:
+
+| Action | Mapping |
+| --- | --- |
+| Split the selection by a pattern | `<leader>mp` |
+| Cursor at each pattern match inside the selection | `<leader>mm` |
+| Insert / append at each selection | `<leader>mI` / `<leader>mA` |
+| Rotate the selection contents | `<leader>mT` |
+
+While cursors exist, four extra keys are bound buffer-locally and disappear
+with the last cursor: `<C-n>` adds the next occurrence, `<C-p>` skips one,
+`<C-Left>` / `<C-Right>` move the main cursor between them, and `<Esc>` clears
+the set. A first `<Esc>` after `mt` disabled the cursors re-enables them.
+
+## AI agents
+
+`sidekick.nvim` runs the official agent CLIs in an editor-owned terminal. Each
+CLI authenticates with its own subscription login, so no API key, token or
+buffer content is stored in this repository. Herdr stays the workspace-level
+agent surface; this is the buffer-level bridge that can hand the agent the
+symbol, file or selection under the cursor.
+
+`claude`, `codex` and `opencode` are present on this host and are detected
+automatically; `<leader>as` lists only installed tools.
+
+Copilot Next Edit Suggestions are disabled, because
+`copilot-language-server` is not provisioned here. The spec follows the binary
+rather than a fixed value, so the feature turns itself on if that server is
+ever installed — enabling it otherwise would start a client that can never
+attach.
+
+Agent terminals can outlive Neovim inside the default Tmux workspace, but that
+is opt-in: set `cli.mux.enabled = true` in the spec. Outside a multiplexer it
+falls back to an editor-owned terminal.
+
+| Action | Mapping |
+| --- | --- |
+| Toggle the agent terminal | `<leader>aa` |
+| Claude Code / Codex | `<leader>ac` / `<leader>ax` |
+| Pick an installed agent | `<leader>as` |
+| Prompt library | `<leader>ap` |
+| Send the symbol under the cursor | `<leader>at` |
+| Send the whole file | `<leader>af` |
+| Send the Visual selection | `<leader>av` |
+
+## Appearance
+
+The terminal runs Catppuccin Mocha, so the editor runs the same palette:
+with a transparent editor background the two would otherwise disagree on every
+uncovered cell. `catppuccin-mocha` is the colour scheme, with the integrations
+for this stack enabled (Snacks, noice, dropbar, Neogit, Diffview, Gitsigns,
+Trouble, Overseer, Neotest, Dadbod, Mason, blink.cmp, which-key, DAP).
+
+Three highlights are overridden deliberately:
+
+- `CursorLine` is pink warmed with the rose accent, blended into the base at
+  22%, so the current line reads as a pink tint of the theme rather than as a
+  grey stripe. Blending a surface instead only lifts brightness and comes out
+  neutral, and pink alone lands back on violet because Mocha's base is
+  blue-heavy. The sign and fold columns share the band, so the line reads as
+  one strip.
+- `Visual` is lavender blended into the base at 22%, which keeps the selected
+  text legible instead of inverting it.
+- `Whitespace` and `NonText` are dimmed, so the tab and trailing-space hints
+  stay readable without competing with the code.
+
+Panels show the terminal background, exactly like the editor. Catppuccin keeps
+floats opaque on purpose, and the explorer sidebar, the docked panels and the
+Snacks terminal all resolve to `NormalFloat` by default, which is what darkened
+them. `EdgyNormal`, `SnacksNormalNC`, `SnacksPickerList` and
+`SnacksPickerInput` are therefore linked to `Normal` instead. Floating pickers
+stay readable over code because they keep their own opaque `SnacksPickerBox`
+float underneath, and the completion menu keeps its own background.
+
+Linking rather than clearing the background is deliberate: a highlight group
+whose only attribute is `bg = "NONE"` counts as undefined, and edgy's
+`default` link back to `NormalFloat` would then win and repaint the panel.
+
+Ghostty carries the typography: `JetBrainsMono Nerd Font` at 15 with
+`adjust-cell-height = 28%` for the wider line gap. That gap applies to every
+terminal program, not only Neovim.
+
+Floats that do not ask for their own frame get a rounded one
+(`winborder = "rounded"`); Snacks, noice, dropbar and smear-cursor pass an
+explicit border and are unaffected.
+
+**Cursor.** `guicursor` sets a block in Normal, a thin bar in Insert, and a
+VS Code-like blink cadence in every mode; the terminal renders the blink
+natively. Motion between positions is animated by smear-cursor, which now
+renders at sub-cell resolution using Unicode 16 legacy computing symbols —
+Ghostty draws those itself, no font coverage needed. That is what makes the
+cursor visibly stretch and contract along the Y axis while moving between
+lines instead of snapping cell by cell. A terminal grid cannot reproduce
+VS Code's expanding blink itself; this is the closest a cell-based renderer
+gets. `:SmearCursorToggle` turns the motion off.
+
 ## Git workflow
 
 | Mapping | Action |
 | --- | --- |
 | `<leader>gg` | Open Neogit status |
-| `<leader>gs` | Open compact Neogit status in a right split (width 42) |
+| `<leader>gs` | Open the Neogit status panel docked to the right edge |
 | `<leader>gc` | Commit staged changes |
 | `<leader>gl` | Open commit log and graph |
 | `<leader>gb` | Branch actions |
@@ -124,6 +357,18 @@ current hunk from ours/theirs. Press `g?` for the complete local mapping list.
 - Conform: formatting, with LSP used only as fallback.
 - nvim-lint: CLI linters that are not already provided by an LSP.
 - Treesitter: syntax parsers.
+- dropbar: the `winbar` breadcrumb trail, and nothing else writes to `winbar`.
+- lualine: the single global statusline; bufferline owns the tab row.
+- multicursor.nvim: multiple cursors.
+- nvim-lightbulb: the code action indicator; code actions themselves stay with
+  the LSP client.
+- persistence.nvim plus the workspace state file: session and panel restore.
+- edgy: where a tool window is docked and how large it is.
+- catppuccin: the palette and every syntax/plugin highlight.
+- sidekick.nvim: the in-editor AI agent terminal; Herdr keeps the
+  workspace-level agents.
+- noice: the message, cmdline and LSP progress UI; the Snacks notifier renders
+  the resulting toasts.
 
 This separation is intentional: do not configure a second TypeScript, Go,
 Rust or C# client in a custom plugin file.
@@ -288,7 +533,8 @@ Avoid broad `BufReadPre` hooks for task, REST, coverage and refactoring tools.
 Use `:Lazy profile` to audit regressions; an empty startup should leave
 Telescope, Overseer, Neotest, DAP, Kulala, refactoring and coverage unloaded.
 Bufferline remains visible for every normal file/tool buffer, including a
-single-buffer project; only the Snacks dashboard hides the tabline.
+single-buffer project; only the Snacks dashboard hides the tabline, which also
+hides the project header it carries.
 
 ## Sessions
 
@@ -311,12 +557,50 @@ directory, cursor/view state and folds. Transient terminal, DBUI, Neogit,
 Overseer and running DAP processes are not portable session state and may need
 to be recreated manually.
 
+### Panel state
+
+A `mksession` file cannot describe the Snacks explorer, because that panel is a
+picker over scratch buffers: restoring it verbatim would produce empty splits.
+Two things therefore happen around the session file.
+
+Before `mksession` runs, panel windows are closed, so the session holds editor
+windows only. The directories expanded in the explorer and the fact that the
+panel was open are written to a JSON snapshot in
+`$XDG_STATE_HOME/nvim/workspace/`, keyed by the same cwd-and-branch name
+persistence uses for the session itself. The snapshot is written from
+`PersistenceSavePost`, so a session persistence declined to save never
+overwrites a good snapshot.
+
+After the session loads, the expanded directories are replayed into the
+explorer tree and the panel is reopened, then focus is handed straight back to
+the editor from the picker's `on_show` callback, leaving the cursor in the
+restored editor window.
+
+The hand-back deliberately does not use `focus = false`. Snacks resolves a
+later `picker:focus()` as `self.opts.focus or "input"`, so a stored `false`
+would send every subsequent jump into the panel to the search prompt instead of
+to the file list. Entering the restored panel therefore lands on the file tree
+in Normal mode; press `i` in the list when you actually want the search box.
+
+Directories that no longer exist are skipped. Nothing else about a panel is
+restored: Trouble, Overseer, Neogit and terminals are reopened by their own
+mappings.
+
+Because sessions are keyed by branch, each branch keeps its own window layout
+and its own expanded tree.
+
 | Mapping | Action |
 | --- | --- |
 | `<leader>qs` | Restore the current directory's session |
 | `<leader>qS` | Select a saved session |
 | `<leader>ql` | Restore the last session |
+| `<leader>qw` | Save the session and panel state now, without leaving |
 | `<leader>qd` | Do not save the current session |
+| `<leader>qp` | Recent projects (same picker as `<leader>fp`) |
+
+`<leader>qp` and `<leader>fp` list recently used projects from
+`~/projects`, `~/dev` and the project roots of recent files, and opening one
+loads that project's session.
 
 Recommended daily flow:
 
@@ -349,6 +633,11 @@ directory containing their direct marker.
   markers; both adapters must not claim one file.
 - Coverage only displays an existing report. Generation belongs to an explicit
   project task and never runs from a buffer event.
+- Breadcrumbs load with the first real file (`LazyFile`), the code action
+  indicator with the first `LspAttach`, and multiple cursors only from their
+  own mapping. An empty startup loads none of them.
+- The statusline recomputes Conform formatters once per filetype and reads the
+  attached LSP clients on redraw; nothing there starts a process.
 
 ## Troubleshooting and honest gaps
 

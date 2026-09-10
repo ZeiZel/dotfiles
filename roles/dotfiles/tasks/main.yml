@@ -115,6 +115,111 @@
     or 'Cloning' in (dotfiles_tmux_plugin_install.stdout ~ dotfiles_tmux_plugin_install.stderr)
   failed_when: dotfiles_tmux_plugin_install.rc != 0
 
+# tmux-agent-sidebar ships a Rust binary rather than shell scripts. Left alone
+# its plugin hook opens an interactive install menu in a new Tmux window, which
+# a provisioning run must never depend on, so the released binary is fetched
+# explicitly with the wizard's non-interactive action.
+- name: Detect tmux-agent-sidebar binary
+  ansible.builtin.stat:
+    path: "{{ dotfiles_tmux_agent_sidebar_path }}/bin/tmux-agent-sidebar"
+  register: dotfiles_tmux_agent_sidebar_binary
+
+- name: Install tmux-agent-sidebar binary
+  ansible.builtin.command:
+    argv:
+      - bash
+      - "{{ dotfiles_tmux_agent_sidebar_path }}/install-wizard.sh"
+      - download-binary
+  register: dotfiles_tmux_agent_sidebar_install
+  when:
+    - not ansible_check_mode
+    - not dotfiles_tmux_agent_sidebar_binary.stat.exists
+  changed_when: dotfiles_tmux_agent_sidebar_install.rc == 0
+  failed_when: dotfiles_tmux_agent_sidebar_install.rc != 0
+
+# The sidebar only sees an agent that reports to it through hooks, and both
+# agents document that wiring as something the user does by hand once. Doing it
+# here means a reinstalled config never leaves a sidebar that silently shows
+# nothing. Both integrations are skipped when their CLI is absent.
+- name: Detect Claude Code CLI
+  ansible.builtin.command:
+    argv: [which, claude]
+  register: dotfiles_claude_cli
+  changed_when: false
+  failed_when: false
+  tags: [agent-sidebar]
+
+- name: Read Claude Code marketplaces
+  ansible.builtin.command:
+    argv: [claude, plugin, marketplace, list]
+  register: dotfiles_claude_marketplaces
+  changed_when: false
+  failed_when: false
+  when: dotfiles_claude_cli.rc == 0
+  tags: [agent-sidebar]
+
+- name: Register the sidebar marketplace with Claude Code
+  ansible.builtin.command:
+    argv:
+      - claude
+      - plugin
+      - marketplace
+      - add
+      - "{{ dotfiles_tmux_agent_sidebar_path }}"
+  when:
+    - dotfiles_claude_cli.rc == 0
+    - dotfiles_claude_marketplaces.stdout is defined
+    - "'hiroppy' not in dotfiles_claude_marketplaces.stdout"
+  changed_when: true
+  tags: [agent-sidebar]
+
+- name: Read installed Claude Code plugins
+  ansible.builtin.command:
+    argv: [claude, plugin, list]
+  register: dotfiles_claude_plugins
+  changed_when: false
+  failed_when: false
+  when: dotfiles_claude_cli.rc == 0
+  tags: [agent-sidebar]
+
+- name: Install the sidebar plugin into Claude Code
+  ansible.builtin.command:
+    argv:
+      - claude
+      - plugin
+      - install
+      - tmux-agent-sidebar@hiroppy
+      - --yes
+  when:
+    - dotfiles_claude_cli.rc == 0
+    - dotfiles_claude_plugins.stdout is defined
+    - "'tmux-agent-sidebar@hiroppy' not in dotfiles_claude_plugins.stdout"
+  changed_when: true
+  tags: [agent-sidebar]
+
+- name: Detect Codex CLI
+  ansible.builtin.command:
+    argv: [which, codex]
+  register: dotfiles_codex_cli
+  changed_when: false
+  failed_when: false
+  tags: [agent-sidebar]
+
+# `tmux-agent-sidebar setup codex` only prints its hook definitions, so the
+# merge into the user's ~/.codex/hooks.json happens in the helper script.
+- name: Wire the sidebar into Codex hooks
+  ansible.builtin.command:
+    argv:
+      - "{{ role_path }}/files/configure-codex-sidebar.py"
+      - "{{ dotfiles_tmux_agent_sidebar_path }}/bin/tmux-agent-sidebar"
+  register: dotfiles_codex_sidebar
+  when:
+    - not ansible_check_mode
+    - dotfiles_codex_cli.rc == 0
+  # Exact match: "CHANGED" is a substring of "UNCHANGED".
+  changed_when: dotfiles_codex_sidebar.stdout | default('') | trim == 'CHANGED'
+  tags: [agent-sidebar]
+
 - name: Ensure native Resterm config directory on macOS
   ansible.builtin.file:
     path: "{{ dotfiles_home }}/Library/Application Support/resterm"

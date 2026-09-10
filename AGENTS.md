@@ -53,7 +53,7 @@ contents. Local identity is cached outside the repository under
 | Shell | `zsh/` | Environment, aliases, plugins, widgets and startup behavior |
 | Git | `git/` | Global Git config, ignore rules and helpers |
 | Terminal/UI | `tmux/`, `workmux/`, `herdr/`, `ghostty/`, `wezterm/`, `starship/`, `aerospace/` | Active terminal/workspace configuration |
-| Optional workspace UI | `herdr/` | Retained manual Herdr/reviewr configuration |
+| Workspace UI | `herdr/` | Optional Herdr/reviewr configuration; Tmux/Workmux are the default |
 | CLI applications | `atuin/`, `lazygit/`, `posting/`, `yazi/` | Application-native configuration |
 | Windows/WSL | `wsl/` | WSL-only helpers; do not assume macOS behavior |
 
@@ -89,11 +89,12 @@ order unless there is an explicit architectural reason to change it.
   Ubuntu/Debian. It must never reboot the host automatically.
 - `roles/dotfiles/tasks/main.yml` uses `stow --restow --no-folding`. Never add
   `--adopt`: host files must not overwrite repository sources.
-- Tmux and Workmux are Homebrew-managed and deployed through Stow. The Zsh
-  handoff enters Tmux only for normal local interactive terminals and guards
-  SSH, IDE, nested-Tmux, Herdr, dumb and non-TTY shells. TPM is provisioned at
-  its pinned commit after Stow and installs declared Tmux plugins. Herdr is
-  retained as an optional Homebrew-managed manual UI: the `dotfiles` role pins
+- Tmux and Workmux are Homebrew-managed and deployed through Stow. Tmux is
+  the default Zsh multiplexer; `ZSH_MULTIPLEXER=herdr` selects Herdr and
+  `ZSH_MULTIPLEXER=none` selects a plain shell. All backends guard SSH, IDE,
+  nested, dumb and non-TTY shells. TPM is provisioned at its pinned commit
+  after Stow and installs declared Tmux plugins. Herdr is
+  Homebrew-managed: the `dotfiles` role pins
   reviewr, starts its user service on macOS and installs current integrations
   only for locally available Codex, Claude and Hermes commands.
 
@@ -125,6 +126,48 @@ Read `nvim/README.md` before editing.
 - `persistence.nvim` is the sole session owner; restoration is deliberately
   manual. Remote, Posting and Lazydocker integrations load only on their
   commands or mappings.
+- `lua/plugins/session.lua` also owns the workspace snapshot in
+  `stdpath("state")/workspace/`: explorer expansion and the "panel was open"
+  flag, keyed by the same cwd+branch name persistence uses. It is written from
+  `PersistenceSavePost` only, so a declined session never erases it, and panel
+  windows are closed from `PersistenceSavePre` so session files hold editor
+  windows only. Do not add a second session or project-state restorer.
+- `lua/plugins/ui.lua` owns the IDE chrome: bufferline offsets and project
+  header, the single lualine statusline, dropbar breadcrumbs and the
+  nvim-lightbulb code action indicator. `winbar` belongs to dropbar alone;
+  `vim.g.trouble_lualine` stays false so the symbol trail is not duplicated in
+  the statusline. Statusline components must stay allocation-light and must
+  never start a process.
+- `multicursor.nvim` in `lua/plugins/movements.lua` is the sole multiple-cursor
+  owner and must load from its mappings, never from `VeryLazy`.
+- `edgy.nvim` (selected in `lazyvim.json`, configured in `lua/plugins/ui.lua`)
+  owns where a tool window is docked and how large it is. The Snacks explorer
+  is docked through its `snacks_layout_box` split, with the edgy winbar and
+  edge animation disabled: the picker's input and list are floats anchored to
+  that split, and an animated resize cannot move them. Only the `<leader>gs`
+  Neogit window is docked, matched on the `dotfiles_git_panel` window variable
+  so the full-tab `<leader>gg` status keeps the whole width. Overseer's list
+  and its output window must be docked together; docking only one leaves the
+  other floating in the editor area.
+- `catppuccin` in `lua/plugins/init.lua` is the only colour scheme owner and
+  must stay aligned with the Ghostty theme; the editor background is
+  transparent, so a mismatch is visible in every uncovered cell. Override
+  highlights through `custom_highlights`, never with a stray `nvim_set_hl`.
+  Panels must resolve to `Normal`, not `NormalFloat`: link them, because a
+  group whose only attribute is `bg = "NONE"` counts as undefined and edgy's
+  `default` link back to `NormalFloat` then wins. Floating pickers and the
+  completion menu keep their opaque background and must stay readable over
+  code. When checking a highlight, resolve the link chain with `:hi <group>`;
+  `nvim_get_hl(0, { link = false })` returns the group's own definition, which
+  is empty for a pure link and reads as a false "NONE".
+- `sidekick.nvim` in `lua/plugins/ide.lua` is the only in-editor AI surface. It
+  must stay mapping-lazy, must never store a key or send a buffer on its own,
+  and Copilot NES stays gated on `copilot-language-server` being executable.
+  Herdr keeps the workspace-level Codex/Claude/Hermes integrations.
+- noice owns the message, cmdline and LSP progress UI, and the Snacks notifier
+  renders the toasts it routes to `vim.notify`. Nothing else may replace
+  `vim.notify`. Route new message noise to the `mini` view or skip it
+  explicitly; never silence a whole event class.
 - Keep `lazy-lock.json` synchronized when plugin resolution changes.
 - Heavy IDE plugins must have an explicit command, mapping, narrow filetype or
   language-extra trigger. Do not use broad `BufReadPre`/`BufEnter` hooks for
@@ -148,13 +191,24 @@ Read `zsh/README.md` before editing.
   update, or defer-load plugin repositories.
 - Emacs is the sole ZLE keymap. Up/Down own native history, while Atuin owns
   `Ctrl+R`.
-- `tmux-auto.zsh` runs last and enters Tmux by default only for normal local
-  terminal windows. It must skip `HERDR_ENV=1`, Tmux, SSH, IDE, dumb and
-  non-interactive shells. `ZSH_TMUX_AUTOSTART=0` is the local escape hatch.
+- `multiplexer-auto.zsh` runs last, after `~/.zshrc.local`, and dispatches
+  `ZSH_MULTIPLEXER` (`tmux` default, `herdr`, or `none`). Invalid values fail
+  safe to a plain shell. Backend scripts must skip any nonempty `HERDR_ENV`,
+  Tmux, SSH, IDE, dumb and non-interactive shells. Legacy
+  `ZSH_HERDR_AUTOSTART=0` and `ZSH_TMUX_AUTOSTART=0` remain secondary kill
+  switches.
+- `priority.zsh` owns macOS scheduling policy and is the only place that calls
+  `taskpolicy`. It may only demote: a negative `renice` needs root and an
+  interactive shell already holds the highest class it can reach, so `boost`
+  undoes a demotion rather than granting one. Never add Docker, Minikube,
+  `hyperfine` or `git` to `PRIORITY_WRAP`; the first two do their work outside
+  the clamped process, clamping the third invalidates benchmarks, and the
+  fourth is short and interactive.
 - Put personal or machine-local values in an untracked local override, never
   in tracked files.
 - Startup must remain silent, non-interactive and safe when optional commands
-  are missing.
+  are missing. A sourced module must end with a statement that succeeds, or
+  `zsh -ic` automation reads the nonzero status as a startup failure.
 
 ### Application configuration
 
@@ -170,8 +224,42 @@ Read `herdr/README.md` before editing.
 
 - `herdr/config.toml` owns prefix, workspace, pane, UI and custom-command
   behavior. Keep the inherited Tmux prefix `Ctrl+A`.
+- `tmux/tmux.plugins.conf` owns session persistence. tmux-resurrect saves and
+  tmux-continuum schedules; `exit-empty off` in `tmux.options.conf` keeps the
+  server alive with no sessions so the autostart can hand a cold server to
+  continuum before creating anything. Never let `zsh/tmux-auto.zsh` create
+  session `main` on a cold server ahead of the restore: restoring on top of an
+  existing target session leaves duplicate panes in the windows rebuilt last.
+  Keep `@continuum-boot` off, because its macOS implementation launches
+  Terminal.app, iTerm, kitty or Alacritty and has no Ghostty strategy; the
+  `com.dotfiles.tmux-server` LaunchAgent in `roles/macos` starts the server
+  headless at login instead and runs `tmux/tmux-server-boot.sh`. That plist
+  must keep the Homebrew prefix in `EnvironmentVariables.PATH`: continuum and
+  resurrect call `tmux` unqualified, and under launchd's minimal PATH the
+  restore fails silently. It must stay free of `KeepAlive`, because
+  `tmux start-server` daemonizes and returns.
+- `roles/dotfiles` also registers the sidebar with the agents that report to
+  it: `claude plugin marketplace add` plus `claude plugin install`, and
+  `files/configure-codex-sidebar.py` for Codex. Both are guarded by a `which`
+  probe so a host without that CLI is skipped. The Codex helper edits files the
+  user owns, so it must stay a merge that preserves unknown hooks, matches
+  entries by command, and writes a `.bak` first. `tmux-agent-sidebar setup
+  codex` only prints its hooks; it never writes them.
+- `tmux/tmux.binds.conf` owns the canonical key map, and Herdr mirrors it key
+  for key. Both workspaces share `Ctrl+A`, so a binding change in one requires
+  the matching change in the other, in the same commit, with the Tmux binding
+  named in the Herdr comment.
+  Record any binding Herdr cannot express under "Deliberate gaps" in
+  `herdr/README.md`.
 - `Ctrl+A`, then `g` owns the full-terminal Lazygit popup. Move any default
   action that would consume `prefix+g` before changing this mapping.
+- `herdr config check` only detects conflicts between explicitly configured
+  keys. Every action therefore stays listed in `config.toml`, including values
+  that match the Herdr default.
+- Background agent notifications use `[ui.toast] delivery = "system"`, backed
+  by the macOS-only `terminal-notifier` in the Brewfile with an `osascript`
+  fallback. Delivery still depends on host notification permission, which is
+  user state and must not be changed silently.
 - Reviewr user settings live only in
   `herdr/plugins/config/persiyanov.reviewr/config.toml`; its executable
   checkout and plugin registry are runtime state under `~/.config/herdr`.

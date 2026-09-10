@@ -1,5 +1,5 @@
-# Herdr is an optional manual workspace UI. Tmux + Workmux are the primary
-# terminal workspace; this configuration remains available for explicit use.
+# Herdr is the optional workspace for normal local interactive shells; Tmux +
+# Workmux are the default backend. Select Herdr with ZSH_MULTIPLEXER=herdr.
 onboarding = false
 
 [theme]
@@ -15,32 +15,168 @@ channel = "stable"
 version_check = true
 manifest_check = true
 
+# ============================================
+# KEY BINDINGS — mirrored from tmux/tmux.binds.conf
+# ============================================
+# Herdr and Tmux share the Ctrl+A prefix, so they must also share the keys that
+# follow it. Every binding below is annotated with the Tmux binding it mirrors.
+# Terminology map: Tmux session -> Herdr workspace ("space"), Tmux window ->
+# Herdr tab, Tmux pane -> Herdr pane.
+#
+# Herdr accepts exactly one key per action, so Tmux aliases (`\` next to `|`,
+# `_` next to `-`, `p` next to `Ctrl+h`) are not reproduced. Actions with no
+# Tmux counterpart are parked on Alt chords so the plain letters stay free for
+# Tmux muscle memory.
 [keys]
-# Keep the long-standing Tmux muscle memory. Press Ctrl+A twice to send a
-# literal Ctrl+A to the program in the focused pane.
+# Press Ctrl+A twice to send a literal Ctrl+A to the program in the focused pane.
 prefix = "ctrl+a"
 
-# Ctrl+A, g is reserved for Lazygit below, so keep the session navigator on f.
-goto = "prefix+f"
-reload_config = "prefix+alt+r"
-previous_workspace = "prefix+left"
-next_workspace = "prefix+right"
+# --- Spaces / Tmux sessions ---------------------------------------------
+goto = "prefix+s"                       # tmux: s      choose-tree navigator
+workspace_picker = "prefix+shift+s"     # no tmux twin (fuzzy space picker)
+new_workspace = "prefix+shift+c"        # tmux: C      new-session
+rename_workspace = "prefix+$"           # tmux: $      rename-session
+close_workspace = "prefix+shift+x"      # tmux: X      kill-session
+previous_workspace = "prefix+("         # tmux: (      switch-client -p
+next_workspace = "prefix+)"             # tmux: )      switch-client -n
+
+# --- Worktrees / Tmux Workmux popups ------------------------------------
+open_worktree = "prefix+w"              # tmux: w      workmux command menu
+new_worktree = "prefix+shift+w"         # tmux: W      workmux worktrees dashboard
+remove_worktree = "prefix+shift+d"      # tmux: w -> c workmux close worktree
+
+# --- Tabs / Tmux windows ------------------------------------------------
+new_tab = "prefix+c"                    # tmux: c      new-window
+rename_tab = "prefix+comma"             # tmux: ,      rename-window
+close_tab = "prefix+&"                  # tmux: &      kill-window
+previous_tab = "prefix+ctrl+h"          # tmux: C-h    previous-window
+next_tab = "prefix+ctrl+l"              # tmux: C-l    next-window
+switch_tab = "prefix+1..9"              # tmux: 1..9   select-window
+
+# --- Panes --------------------------------------------------------------
+split_vertical = "prefix+|"             # tmux: |      split-window -h
+split_horizontal = "prefix+minus"       # tmux: -      split-window -v
+focus_pane_left = "prefix+h"            # tmux: h      select-pane -L
+focus_pane_down = "prefix+j"            # tmux: j      select-pane -D
+focus_pane_up = "prefix+k"              # tmux: k      select-pane -U
+focus_pane_right = "prefix+l"           # tmux: l      select-pane -R
+cycle_pane_next = "prefix+o"            # tmux: o      select-pane -t :.+
+cycle_pane_previous = "prefix+shift+o"  # tmux: o      select-pane -t :.-
+last_pane = "prefix+;"                  # tmux: ;      last-pane
+close_pane = "prefix+x"                 # tmux: x      kill-pane
+zoom = "prefix+z"                       # tmux: z      resize-pane -Z
+rename_pane = "prefix+shift+p"          # no tmux twin
+edit_scrollback = "prefix+["            # tmux: [      copy-mode
+resize_mode = "prefix+alt+r"            # no tmux twin (one-shot resize is Prefix Shift+HJKL below)
+
+# --- Session / UI -------------------------------------------------------
+detach = "prefix+d"                     # tmux: d      detach-client
+help = "prefix+?"                       # tmux: ?      list-keys
+reload_config = "prefix+r"              # tmux: r      source-file
+toggle_sidebar = "prefix+t"             # tmux: t      set-option status
+settings = "prefix+alt+s"               # no tmux twin
+open_notification_target = "prefix+alt+o"  # no tmux twin
+
+# ============================================
+# POPUPS — mirrored from the Tmux display-popup bindings
+# ============================================
+# The Homebrew launch service inherits macOS's minimal PATH. Keep these commands
+# portable across Apple Silicon, Intel macOS and Linuxbrew.
 
 [[keys.command]]
-key = "prefix+g"
+key = "prefix+g"                        # tmux: g      lazygit popup
 type = "popup"
-# The Homebrew launch service inherits macOS's minimal PATH. Keep this command
-# portable across Apple Silicon, Intel macOS and Linuxbrew.
 command = 'export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; exec lazygit'
 description = "Lazygit"
 width = "100%"
 height = "100%"
 
 [[keys.command]]
+key = "prefix+b"                        # tmux: b      btop popup
+type = "popup"
+command = 'export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; exec btop'
+description = "Btop"
+width = "90%"
+height = "90%"
+
+[[keys.command]]
+key = "prefix+y"                        # tmux: y      yazi popup
+type = "popup"
+command = 'export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; exec yazi'
+description = "Yazi"
+width = "90%"
+height = "90%"
+
+[[keys.command]]
+key = "prefix+f"                        # tmux: f      fzf file finder popup
+type = "popup"
+command = '''export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; file=$(fd --type f --hidden --follow --exclude .git | fzf --preview 'bat --color=always {}'); [ -n "$file" ] && exec "${EDITOR:-nvim}" "$file"'''
+description = "Find file"
+width = "80%"
+height = "60%"
+
+[[keys.command]]
+key = "prefix+n"                        # tmux: n      notes scratchpad popup
+type = "popup"
+command = 'export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; exec "${EDITOR:-nvim}" ~/notes.md'
+description = "Notes"
+width = "80%"
+height = "80%"
+
+[[keys.command]]
 key = "prefix+shift+r"
 type = "plugin_action"
 command = "persiyanov.reviewr.toggle"
 description = "Toggle reviewr"
+
+# ============================================
+# PANE GEOMETRY — Tmux bindings Herdr has no action for
+# ============================================
+# These run the Herdr CLI detached. Without HERDR_PANE_ID in their environment
+# the CLI targets the UI-focused pane, which is exactly what a keybinding wants.
+# Herdr resizes by ratio, so 0.05 stands in for Tmux's 5 cells.
+
+[[keys.command]]
+key = "prefix+shift+h"                  # tmux: H      resize-pane -L 5
+type = "shell"
+command = 'export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; exec herdr pane resize --direction left --amount 0.05'
+description = "Resize pane left"
+
+[[keys.command]]
+key = "prefix+shift+j"                  # tmux: J      resize-pane -D 5
+type = "shell"
+command = 'export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; exec herdr pane resize --direction down --amount 0.05'
+description = "Resize pane down"
+
+[[keys.command]]
+key = "prefix+shift+k"                  # tmux: K      resize-pane -U 5
+type = "shell"
+command = 'export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; exec herdr pane resize --direction up --amount 0.05'
+description = "Resize pane up"
+
+[[keys.command]]
+key = "prefix+shift+l"                  # tmux: L      resize-pane -R 5
+type = "shell"
+command = 'export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; exec herdr pane resize --direction right --amount 0.05'
+description = "Resize pane right"
+
+[[keys.command]]
+key = "prefix+{"                        # tmux: {      swap-pane -U
+type = "shell"
+command = 'export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; exec herdr pane swap --direction left'
+description = "Swap pane with the one on the left"
+
+[[keys.command]]
+key = "prefix+}"                        # tmux: }      swap-pane -D
+type = "shell"
+command = 'export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; exec herdr pane swap --direction right'
+description = "Swap pane with the one on the right"
+
+[[keys.command]]
+key = "prefix+!"                        # tmux: !      break-pane
+type = "shell"
+command = '''export PATH="/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:$PATH"; pane=$(herdr pane current | jq -r .result.pane.pane_id); [ -n "$pane" ] && exec herdr pane move "$pane" --new-tab --focus'''
+description = "Break pane into a new tab"
 
 [ui]
 sidebar_width = 28
@@ -74,8 +210,13 @@ rows = [
   ["branch", "git_status"],
 ]
 
+# Background agent notifications go to the macOS notification centre instead of
+# staying inside the terminal. Herdr shells out to terminal-notifier when it is
+# installed (clicking the banner then activates the host terminal) and falls
+# back to `osascript -e 'display notification'`. Jump to the pane that raised
+# the notification with Prefix Alt+O.
 [ui.toast]
-delivery = "herdr"
+delivery = "system"
 delay_seconds = 2
 
 [ui.sound]

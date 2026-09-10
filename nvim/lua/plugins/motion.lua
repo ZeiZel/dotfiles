@@ -105,12 +105,22 @@ return {
 		lazy = true,
 		opts = {
 			enabled = true,
+			-- Ghostty draws Unicode 16 legacy computing symbols itself, so the
+			-- smear can be rendered at sub-cell resolution. That is what makes
+			-- the cursor visibly stretch and contract along the Y axis while
+			-- moving between lines instead of snapping cell by cell.
+			legacy_computing_symbols_support = true,
+			legacy_computing_symbols_support_vertical_bars = true,
 			-- Restrained values preserve terminal responsiveness while still
 			-- providing a visible cursor trail on normal-sized source files.
 			stiffness = 0.8,
 			trailing_stiffness = 0.5,
 			damping = 0.95,
 			distance_stop_animating = 0.5,
+			-- The README's companion value for legacy symbols: the vertical bar
+			-- keeps animating far closer to its target, which is where the
+			-- stretch is actually visible.
+			distance_stop_animating_vertical_bar = 0.1,
 			smear_between_buffers = false,
 			smear_between_neighbor_lines = true,
 			scroll_buffer_space = true,

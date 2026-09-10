@@ -14,4 +14,11 @@ macos_hid_initial_repeat_delay_ns: "{{ keyboard_initial_repeat_delay_ms * 100000
 macos_keyboard_launch_agent_label: com.dotfiles.keyboard-repeat
 macos_keyboard_launch_agent_path: "{{ dotfiles_home }}/Library/LaunchAgents/{{ macos_keyboard_launch_agent_label }}.plist"
 macos_disable_press_and_hold: true
+
+# Headless Tmux server at login. Replaces @continuum-boot, whose macOS support
+# launches a GUI terminal and has no Ghostty strategy.
+macos_tmux_server_autostart: true
+macos_tmux_launch_agent_label: com.dotfiles.tmux-server
+macos_tmux_launch_agent_path: "{{ dotfiles_home }}/Library/LaunchAgents/{{ macos_tmux_launch_agent_label }}.plist"
+macos_tmux_boot_script_path: "{{ dotfiles_home }}/.config/tmux/tmux-server-boot.sh"
 macos_disable_desktop_icons: true

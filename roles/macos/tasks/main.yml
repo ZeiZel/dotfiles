@@ -107,6 +107,52 @@
       changed_when: true
       tags: [keyboard-repeat]
 
+    # A headless Tmux server at login, so sessions are restored and waiting
+    # before the first terminal window opens. tmux-continuum's own boot support
+    # is not used: it launches Terminal.app, iTerm, kitty or Alacritty and has
+    # no Ghostty strategy.
+    - name: Ensure Tmux server LaunchAgent directory exists
+      ansible.builtin.file:
+        path: '{{ dotfiles_home }}/Library/LaunchAgents'
+        state: directory
+        mode: '0755'
+      when: macos_tmux_server_autostart
+      tags: [tmux-server]
+
+    - name: Start a headless Tmux server at login
+      ansible.builtin.template:
+        src: tmux-server.plist.j2
+        dest: '{{ macos_tmux_launch_agent_path }}'
+        mode: '0644'
+      when: macos_tmux_server_autostart
+      tags: [tmux-server]
+
+    - name: Check Tmux server LaunchAgent
+      ansible.builtin.command:
+        argv:
+          - launchctl
+          - print
+          - 'gui/{{ ansible_facts["user_uid"] }}/{{ macos_tmux_launch_agent_label }}'
+      register: macos_tmux_agent
+      changed_when: false
+      failed_when: false
+      when: macos_tmux_server_autostart
+      tags: [tmux-server]
+
+    - name: Load Tmux server LaunchAgent
+      ansible.builtin.command:
+        argv:
+          - launchctl
+          - bootstrap
+          - 'gui/{{ ansible_facts["user_uid"] }}'
+          - '{{ macos_tmux_launch_agent_path }}'
+      when:
+        - macos_tmux_server_autostart
+        - macos_tmux_agent.rc is defined
+        - macos_tmux_agent.rc != 0
+      changed_when: true
+      tags: [tmux-server]
+
     - name: Disable desktop icons
       community.general.osx_defaults:
         domain: com.apple.finder

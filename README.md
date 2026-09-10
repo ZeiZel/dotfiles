@@ -56,8 +56,7 @@ without changing settings.
 | Terminal        | [Ghostty](https://ghostty.org/)                           |
 | Shell           | Zsh + versioned Homebrew plugins                          |
 | Prompt          | [Starship](https://starship.rs/)                          |
-| Workspace       | [Tmux](https://github.com/tmux/tmux) + [Workmux](https://github.com/raine/workmux) |
-| Optional UI     | [Herdr](https://herdr.dev/) + reviewr (manual)            |
+| Workspace       | Tmux + Workmux (default), or [Herdr](https://herdr.dev/) |
 | Editor          | [Neovim](https://neovim.io/)                              |
 | File Manager    | [Yazi](https://yazi-rs.github.io/)                        |
 | History         | [Atuin](https://atuin.sh/)                                |
@@ -82,9 +81,10 @@ dotfiles/
 │   ├── kbd.zsh          # Key bindings
 │   ├── options.zsh      # Shell options
 │   ├── theme.zsh        # Catppuccin colors
-│   ├── tmux-auto.zsh     # Default guarded terminal-to-Tmux handoff
-│   └── herdr-auto.zsh    # Retained legacy manual handoff (not sourced)
-├── herdr/                # Optional manual workspace configuration
+│   ├── multiplexer-auto.zsh # ZSH_MULTIPLEXER dispatcher
+│   ├── herdr-auto.zsh    # Guarded Herdr handoff
+│   └── tmux-auto.zsh     # Guarded Tmux handoff
+├── herdr/                # Optional workspace configuration
 │   ├── config.toml      # Prefix, panes, UI and Lazygit popup
 │   └── plugins/         # Declarative reviewr configuration
 ├── tmux/                 # Tmux configuration and bindings
@@ -473,28 +473,36 @@ available even before the merge tool opens.
 
 ---
 
-## Optional Herdr Configuration
+## Herdr Configuration
 
-Herdr remains available as an optional manual workspace UI and uses the same
-`Ctrl+A` prefix as Tmux. Tmux + Workmux are the default terminal workspace;
-press `Ctrl+A`, release it, then press the action key when using Herdr.
+Herdr is the optional workspace for normal local interactive shells, selected
+with `ZSH_MULTIPLEXER=herdr`. It shares the `Ctrl+A` prefix with Tmux and
+mirrors the Tmux key map, so one set of muscle memory drives both backends.
+Press `Ctrl+A`, release it, then press the action key.
 
-| Key after prefix | Action                                      |
-| ---------------- | ------------------------------------------- |
-| `g`              | Full-terminal Lazygit popup in the pane cwd |
-| `Shift+R`        | Toggle reviewr over the active tab          |
-| `f`              | Session navigator                           |
-| `w`              | Workspace picker                            |
-| `c`              | New tab                                     |
-| `n` / `p`        | Next / previous tab                         |
-| `1..9`           | Switch tab                                  |
-| `v` / `-`        | Split right / down                          |
-| `h/j/k/l`        | Focus the neighboring pane                  |
-| `z`              | Zoom the focused pane                       |
-| `x`              | Close the focused pane                      |
-| `b`              | Toggle the agent/sidebar rail               |
-| `[`              | Enter copy mode                             |
-| `q`              | Detach; keep panes and agents running       |
+| Key after prefix | Action                                      | Tmux |
+| ---------------- | ------------------------------------------- | ---- |
+| `\|` / `-`       | Split right / down                          | same |
+| `h/j/k/l`        | Focus the neighboring pane                  | same |
+| `Shift+H/J/K/L`  | Resize the focused pane by 5 %              | same |
+| `z` / `x`        | Zoom / close the focused pane               | same |
+| `c` / `,` / `&`  | New / rename / close tab                    | same |
+| `Ctrl+H` / `Ctrl+L` | Previous / next tab                      | same |
+| `1..9`           | Switch tab                                  | same |
+| `Shift+C` / `$` / `Shift+X` | New / rename / close space       | `C` / `$` / `X` |
+| `s`              | Space navigator                             | `s` (choose-tree) |
+| `[`              | Open the scrollback in `$EDITOR`            | `[` (copy-mode) |
+| `d`              | Detach; keep panes and agents running       | `d` |
+| `r` / `t`        | Reload config / toggle the sidebar          | `r` / `t` |
+| `g`              | Full-terminal Lazygit popup in the pane cwd | `g` |
+| `Shift+R`        | Toggle reviewr over the active tab          | —    |
+
+The complete map, including the Tmux bindings Herdr cannot express, is in
+[`herdr/README.md`](herdr/README.md).
+
+Background agent notifications go to the macOS notification centre
+(`[ui.toast] delivery = "system"`, backed by `terminal-notifier`) instead of
+staying inside the terminal; `Prefix Alt+O` jumps to the pane that raised one.
 
 On macOS, the Herdr user service starts at login. Linux starts the server on
 demand when Zsh hands the terminal to Herdr. It restores workspace layout and
@@ -513,8 +521,9 @@ reviewing its manifest and installer.
 ### Tmux and Workmux
 
 Normal local interactive shells attach to the persistent Tmux `main` session.
-SSH, IDE, nested-Tmux, Herdr, non-TTY and `TERM=dumb` shells stay plain; set
-`ZSH_TMUX_AUTOSTART=0` in `~/.zshrc.local` for an explicit escape hatch.
+Set `ZSH_MULTIPLEXER=herdr` in `~/.zshrc.local` to enter Herdr instead, or
+`ZSH_MULTIPLEXER=none` for a plain shell. Invalid values fail safe to a plain
+shell. SSH, IDE, nested multiplexer, non-TTY and `TERM=dumb` shells stay plain.
 The inherited prefix remains `Ctrl+A`.
 
 Workmux is configured globally at `~/.config/workmux/config.yaml` with
@@ -530,7 +539,8 @@ worktree, `m` merges it, `c` closes it, and `?` opens Workmux documentation.
 Rebase, merge and close ask for confirmation and run in a popup rooted at the
 current pane. The optional Agents tab requires an explicit `workmux setup`
 (not run by provisioning because it changes Codex config).
-Herdr remains installed/configured for manual use.
+Tmux and Workmux are the default and start automatically. Herdr remains
+installed and is started automatically when `ZSH_MULTIPLEXER=herdr` selects it.
 
 ---
 
@@ -606,23 +616,31 @@ order. Shell startup never clones repositories or changes key bindings later:
 
 ## Features
 
-### Tmux terminal handoff
+### Terminal multiplexer handoff
 
-Normal local terminal windows enter the persistent Tmux `main` session
-automatically. Nested Tmux, Herdr-managed panes and other guarded contexts stay
-plain. To open a plain shell, add this to `~/.zshrc.local`:
+Normal local terminal windows enter Tmux automatically. Choose the backend in
+`~/.zshrc.local`:
 
 ```bash
-export ZSH_TMUX_AUTOSTART=0
+export ZSH_MULTIPLEXER=tmux # default
+# export ZSH_MULTIPLEXER=herdr
+# export ZSH_MULTIPLEXER=none
 ```
 
-Automatic handoff is skipped for:
+The selector is evaluated after the local override. Unsupported values are
+fail-safe and leave a plain shell without a warning. Automatic handoff is
+skipped for:
 
 - SSH sessions
 - Existing Tmux and Herdr panes
 - VSCode integrated terminal
 - JetBrains IDEs
 - Non-interactive shells
+
+For a one-shot choice in a new outer/plain shell, use
+`ZSH_MULTIPLEXER=herdr zsh` or `ZSH_MULTIPLEXER=none zsh`; nested multiplexer
+guards intentionally take precedence. Put the persistent value in the
+untracked `~/.zshrc.local`.
 
 ### Smart Directory Navigation
 
@@ -684,7 +702,11 @@ Create `~/.zshrc.local` for machine-specific settings:
 ```bash
 # Example ~/.zshrc.local
 export GITHUB_TOKEN="..."
-export ZSH_TMUX_AUTOSTART=0
+export ZSH_MULTIPLEXER=herdr
+# export ZSH_MULTIPLEXER=none
+# Legacy per-backend kill switches are optional secondary controls:
+# export ZSH_HERDR_AUTOSTART=0
+# export ZSH_TMUX_AUTOSTART=0
 alias myalias='...'
 ```
 
@@ -724,11 +746,11 @@ server and an active workspace.
 configuration path. Measure a real interactive shell through a pseudo-terminal:
 
 ```bash
-env ZSH_TMUX_AUTOSTART=0 \
+env ZSH_MULTIPLEXER=none \
   script -q /dev/null /bin/zsh -i -c exit
 
 hyperfine --warmup 3 --runs 10 \
-  'env ZSH_TMUX_AUTOSTART=0 script -q /dev/null /bin/zsh -i -c exit'
+  'env ZSH_MULTIPLEXER=none script -q /dev/null /bin/zsh -i -c exit'
 ```
 
 This is an init-only measurement: it exercises interactive ZLE setup but exits
@@ -736,12 +758,12 @@ before the first prompt. To include `precmd` hooks and one Starship prompt
 expansion, run it from a representative large dirty Git/monorepo:
 
 ```bash
-env ZSH_TMUX_AUTOSTART=0 \
+env ZSH_MULTIPLEXER=none \
   script -q /dev/null /bin/zsh -i -c \
   'for hook in $precmd_functions; do "$hook"; done; print -P -- "$PROMPT" >/dev/null'
 
 hyperfine --warmup 3 --runs 10 \
-  'env ZSH_TMUX_AUTOSTART=0 script -q /dev/null /bin/zsh -i -c '\''for hook in $precmd_functions; do "$hook"; done; print -P -- "$PROMPT" >/dev/null'\'''
+  'env ZSH_MULTIPLEXER=none script -q /dev/null /bin/zsh -i -c '\''for hook in $precmd_functions; do "$hook"; done; print -P -- "$PROMPT" >/dev/null'\'''
 ```
 
 Warm init should normally remain below 200ms; prompt latency depends on the
