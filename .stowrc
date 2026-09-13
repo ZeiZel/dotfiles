@@ -3,6 +3,7 @@
 --ignore=[.]git$
 --ignore=[.]gitignore$
 --ignore=[.]beads$
+--ignore=[.]claude$
 --ignore=[.]stowrc$
 --ignore=AGENTS[.]md$
 --ignore=group_vars$
