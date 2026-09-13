@@ -58,9 +58,31 @@
   },
   "auto_install_extensions": {
     "ansible": true,
+    "helm": true,
   },
   "file_types": {
     "Ansible": ["*.tpl.yaml", "*.tpl.yml", "*.yaml.j2", "*.yml.j2"],
+    // The Helm extension claims only `.helmignore` on its own, so chart sources
+    // open as plain YAML and `{{ ... }}` reads as a syntax error.
+    //
+    // A `file_types` entry is a path glob. It cannot ask whether `Chart.yaml`
+    // sits next to the directory, so "inside a `templates/` directory" is the
+    // closest expressible approximation of "inside a chart's templates".
+    // A `templates/` directory that holds plain YAML and is not a chart is
+    // therefore caught too; override it in that project's `.zed/settings.json`.
+    //
+    // `*values.yaml` deliberately matches the literal substring rather than
+    // `values*.yaml`, which keeps rentverse's `values.tpl.yaml` on the Ansible
+    // entry above: those are Jinja2 plus envsubst inputs, not Helm templates.
+    "Helm": [
+      "**/templates/**/*.yaml",
+      "**/templates/**/*.yml",
+      "**/templates/**/*.tpl",
+      "**/*values.yaml",
+      "**/*values.yml",
+      "values.yaml",
+      "values.yml",
+    ],
   },
   "languages": {
     "Ansible": {
