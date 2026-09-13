@@ -1,0 +1,139 @@
+; Processes, load, benchmarking, logs and macOS host state.
+;
+; Entries that call heavy, idle, hogs, prio, calm, demote, boost or dev are Zsh
+; functions from zsh/priority.zsh and zsh/functions.zsh. They resolve only when
+; navi puts the line into the interactive shell, which is what the Ctrl+G widget
+; does. Running `navi` standalone executes through the configured shell instead
+; and will not see them.
+% system
+
+# Full-screen resource monitor
+btop
+
+# Alternative resource monitor
+btm
+
+# Process table, modern ps
+procs
+
+# Processes sorted by CPU, descending
+procs --sortd cpu
+
+# Processes sorted by memory, descending
+procs --sortd mem
+
+# Process tree
+procs --tree
+
+# Find a process by name
+procs <process_name>
+
+# Which processes hold the CPU right now
+hogs
+
+# Scheduling band of a process
+prio <process_name>
+
+# Run a build or test under the utility clamp
+heavy <command>
+
+# Run work with no deadline, throttled disk IO too
+idle <command>
+
+# Demote every unprotected CPU hog and its subtree
+calm
+
+# Hold one process tree in the background band
+demote <process_name>
+
+# Restore every demoted interactive tool
+boost
+
+# DESTRUCTIVE kill every process matching a name
+pkill -f <process_name>
+
+# Show the scheduling band column of running processes
+ps -Ao pid,pri,%cpu,comm | sort -k3 -rn | head -n 20
+
+# Watch a command, highlighting what changed
+viddy -d -n 2 <command>
+
+# Watch a command every second
+viddy -n 1 <command>
+
+# Benchmark a command
+hyperfine --warmup 3 --runs 10 <command>
+
+# Benchmark and compare two commands
+hyperfine --warmup 3 --runs 10 <command> <command2>
+
+# Benchmark with a setup step before each run
+hyperfine --warmup 3 --prepare <command2> <command>
+
+# Open a log file in the lnav navigator
+lnav <log_file>
+
+# Follow several log files together in lnav
+lnav <log_dir>
+
+# Pipe a live stream into lnav
+<command> | lnav
+
+# Live system log on macOS, errors only
+log stream --level error --style compact
+
+# macOS log of the last hour for one process
+log show --last 1h --predicate 'process == "<process_name>"' --style compact
+
+# Open files held by a process
+lsof -p <pid>
+
+# What is keeping a volume busy
+lsof +D <directory>
+
+# CPU core count and memory size on macOS
+sysctl -n hw.perflevel0.logicalcpu hw.perflevel1.logicalcpu hw.memsize
+
+# Battery and power state on macOS
+pmset -g batt
+
+# What prevents this Mac from sleeping
+pmset -g assertions | head -n 30
+
+# List user LaunchAgents
+launchctl list | grep -v '^-' | head -n 40
+
+# Show one LaunchAgent's state
+launchctl print gui/$(id -u)/<launch_label>
+
+# Reload a LaunchAgent from its plist
+launchctl bootout gui/$(id -u)/<launch_label> ; launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<launch_label>.plist
+
+# Read a macOS defaults key
+defaults read <defaults_domain>
+
+# Show the value of one macOS defaults key
+defaults read <defaults_domain> <key>
+
+# Open the current directory in Finder
+open .
+
+# Copy the working directory path to the clipboard
+pwd | tr -d '\n' | pbcopy
+
+# Uptime, load average and logged-in users
+uptime && w
+
+# Environment of the current shell, sorted
+env | sort | less
+
+# Which binary a command resolves to, and its type
+type -a <command> ; command -v <command>
+
+$ process_name: ps -Ao comm= | sed 's|.*/||' | sort | uniq -c | sort -rn --- --column 2
+$ pid: procs --no-header 2>/dev/null --- --column 1
+$ log_file: fd --extension log --max-depth 4
+$ log_dir: fd --type d --max-depth 3
+$ directory: fd --type d --max-depth 3
+$ launch_label: launchctl list | awk 'NR>1 {print $3}' | grep -v '^com.apple' | sort -u
+$ defaults_domain: defaults domains | tr ',' '\n' | sed 's/^ *//' | sort -u

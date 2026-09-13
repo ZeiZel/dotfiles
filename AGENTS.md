@@ -55,6 +55,7 @@ contents. Local identity is cached outside the repository under
 | Terminal/UI | `tmux/`, `workmux/`, `herdr/`, `ghostty/`, `wezterm/`, `starship/`, `aerospace/` | Active terminal/workspace configuration |
 | Workspace UI | `herdr/` | Optional Herdr/reviewr configuration; Tmux/Workmux are the default |
 | CLI applications | `atuin/`, `lazygit/`, `posting/`, `yazi/` | Application-native configuration |
+| Command cheatsheets | `navi/config.yaml`, `navi/cheats/` | Navi cheat paths and per-tool snippets |
 | Windows/WSL | `wsl/` | WSL-only helpers; do not assume macOS behavior |
 
 `all.yml` executes roles in this order: platform (`macos` or `linux`),
@@ -218,6 +219,34 @@ Read `zsh/README.md` before editing.
 - Generated state, caches, logs, sessions and credential material must not be
   committed.
 
+### Navi
+
+Read `navi/README.md` before editing.
+
+- `navi/` is a Stow package deployed to `~/.config/navi`, which is also navi's
+  own default configuration location. Do not introduce `NAVI_CONFIG`, a
+  `--path` flag or a second cheat location to compensate.
+- `navi/config.yaml` owns the cheat paths, column widths, finder and shell.
+  `navi/cheats/*.cheat` own the snippets, one file per tool family.
+- A cheat description is the only text the finder searches, and the comment
+  column is truncated to its configured width, so descriptions stay short and
+  keyword-first. They must also stay unique across every file: duplicates
+  render as indistinguishable rows and make `--best-match` ambiguous.
+- Mark an entry that deletes something `DESTRUCTIVE` and an entry that mutates
+  this host `APPLIES`. Both prefixes are searchable classes, not decoration.
+- Prefer a `$` picker over free text whenever the tool can enumerate valid
+  values, and scope dependent pickers through an earlier variable rather than
+  listing a cluster-wide set.
+- Cheats are portable repository state. Hostnames, cluster names, proxy or VPN
+  wrappers, fixed `KUBECONFIG` paths, connection strings and credentials belong
+  in the untracked `~/.config/navi/cheats.local/` that `roles/dotfiles` creates,
+  never in a tracked file.
+- Snippets that call a Zsh function only resolve through the `Ctrl+G` widget,
+  because standalone navi executes in a non-interactive shell that loads no rc
+  file. Say so in the cheatsheet header when a file relies on one.
+- `zsh/init.zsh` owns the widget registration. Do not add a second navi
+  initialization path or bind `Ctrl+G` elsewhere.
+
 ### Herdr
 
 Read `herdr/README.md` before editing.
@@ -336,6 +365,22 @@ zsh -n zsh/.zshrc zsh/*.zsh
 For environment changes, source `zsh/env.zsh` in a child `zsh -c` process and
 verify the affected command. Do not source the full interactive shell in the
 agent process.
+
+### Validate Navi
+
+```bash
+# Every description must resolve. --prevent-interpolation keeps the check from
+# executing a picker, so nothing contacts Docker, a cluster or a cloud provider.
+navi --path navi/cheats --print --prevent-interpolation \
+  --query '<description>' --best-match
+
+# Descriptions must be unique across every cheatsheet.
+grep -h '^# ' navi/cheats/*.cheat | sort | uniq -d
+```
+
+Query only the leading part of a description. The finder matches the visible
+text of the comment column, so a keyword past its configured width is
+unreachable from a query even though the entry parses.
 
 ### Validate Herdr
 

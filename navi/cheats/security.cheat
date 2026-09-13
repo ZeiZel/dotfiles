@@ -1,0 +1,91 @@
+; Secret and vulnerability scanning with gitleaks and trivy, plus the local
+; certificate and checksum checks that belong next to them.
+;
+; Scan output can itself contain secret material. Write reports to a path Git
+; ignores and never paste findings into a tracked file or an issue tracker.
+% security
+
+# Scan the working tree for secrets
+gitleaks detect --source . --no-git --redact
+
+# Scan the whole Git history for secrets
+gitleaks detect --source . --redact
+
+# Scan only what is staged, before committing
+gitleaks protect --staged --source . --redact
+
+# Scan and write a JSON report outside the tree
+gitleaks detect --source . --redact --report-format json --report-path <report_path>
+
+# Scan with a baseline so known findings stay quiet
+gitleaks detect --source . --redact --baseline-path <report_path>
+
+# Scan a filesystem tree for vulnerabilities
+trivy fs --scanners vuln,secret,misconfig .
+
+# Scan only for high and critical findings
+trivy fs --severity HIGH,CRITICAL --scanners vuln .
+
+# Scan a container image
+trivy image <image>
+
+# Scan an image and ignore unfixed vulnerabilities
+trivy image --ignore-unfixed --severity HIGH,CRITICAL <image>
+
+# Scan infrastructure-as-code for misconfiguration
+trivy config .
+
+# Scan a Kubernetes manifest for misconfiguration
+trivy config <manifest>
+
+# Scan a Git repository by URL
+trivy repo <repo_url>
+
+# Write a trivy report as JSON and explore it
+trivy fs --format json --output <report_path> . && jless <report_path>
+
+# Generate an SBOM for the current tree
+trivy fs --format cyclonedx --output <report_path> .
+
+# Update the trivy vulnerability database
+trivy image --download-db-only
+
+# Show the TLS certificate chain of a host
+echo | openssl s_client -connect <host>:443 -servername <host> -showcerts 2>/dev/null
+
+# Show the expiry date of a host certificate
+echo | openssl s_client -connect <host>:443 -servername <host> 2>/dev/null | openssl x509 -noout -dates
+
+# Inspect a local certificate file
+openssl x509 -in <cert_file> -noout -text
+
+# Fingerprint of a local certificate
+openssl x509 -in <cert_file> -noout -fingerprint -sha256
+
+# Check a private key and certificate match
+openssl x509 -noout -modulus -in <cert_file> | openssl sha256 ; openssl rsa -noout -modulus -in <key_file> | openssl sha256
+
+# SHA-256 checksum of a file
+shasum -a 256 <file>
+
+# Verify a file against an expected checksum
+echo "<value>  <file>" | shasum -a 256 --check
+
+# List the SSH keys the agent currently holds
+ssh-add -l
+
+# Fingerprint of a public key file
+ssh-keygen -lf <pub_key_file>
+
+# Generate an ed25519 SSH key
+ssh-keygen -t ed25519 -C <name> -f ~/.ssh/<name>
+
+# Show the permissions of everything under ~/.ssh
+ls -la ~/.ssh
+
+$ file: fd --type f --max-depth 3
+$ cert_file: fd --extension pem --extension crt --extension cer --max-depth 4
+$ key_file: fd --extension key --max-depth 4
+$ pub_key_file: fd --extension pub . ~/.ssh --max-depth 1 2>/dev/null
+$ manifest: fd --extension yaml --extension yml --max-depth 4
+$ image: docker images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null

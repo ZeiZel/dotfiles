@@ -1,0 +1,96 @@
+; AWS CLI and the local Kubernetes sandbox (minikube). Profile and region
+; pickers read the local AWS configuration; no credential is stored here.
+% cloud, aws
+
+# Who the current credentials belong to
+aws sts get-caller-identity
+
+# Same, for one named profile
+aws --profile <aws_profile> sts get-caller-identity
+
+# List configured profiles
+aws configure list-profiles
+
+# Show the resolved configuration of a profile
+aws configure list --profile <aws_profile>
+
+# List regions as a table
+aws ec2 describe-regions --output table
+
+# List S3 buckets
+aws s3 ls
+
+# List the contents of a bucket path
+aws s3 ls s3://<s3_path> --human-readable --summarize
+
+# Copy a local file to S3
+aws s3 cp <file> s3://<s3_path>
+
+# Sync a local directory to S3, dry run first
+aws s3 sync <directory> s3://<s3_path> --dryrun
+
+# Total size of a bucket prefix
+aws s3 ls s3://<s3_path> --recursive --summarize | tail -n 2
+
+# Presign a temporary download URL
+aws s3 presign s3://<s3_path> --expires-in 3600
+
+# List running EC2 instances with names
+aws ec2 describe-instances --filters 'Name=instance-state-name,Values=running' --query 'Reservations[].Instances[].{Id:InstanceId,Type:InstanceType,Name:Tags[?Key==`Name`]|[0].Value,Ip:PrivateIpAddress}' --output table
+
+# List ECS clusters
+aws ecs list-clusters --output table
+
+# List EKS clusters
+aws eks list-clusters --output table
+
+# Write a kubeconfig entry for an EKS cluster
+aws eks update-kubeconfig --name <name> --region <aws_region>
+
+# Tail a CloudWatch log group
+aws logs tail <log_group> --follow --since 10m
+
+# Tail a CloudWatch log group filtered by a pattern
+aws logs tail <log_group> --follow --filter-pattern <pattern>
+
+# List Lambda functions
+aws lambda list-functions --query 'Functions[].{Name:FunctionName,Runtime:Runtime,Memory:MemorySize}' --output table
+
+# Invoke a Lambda and print its response
+aws lambda invoke --function-name <name> --payload '<json_body>' --cli-binary-format raw-in-base64-out /dev/stdout
+
+# Read a Secrets Manager secret
+aws secretsmanager get-secret-value --secret-id <name> --query SecretString --output text
+
+# Read an SSM parameter, decrypted
+aws ssm get-parameter --name <name> --with-decryption --query Parameter.Value --output text
+
+# Explore any AWS CLI JSON output in jless
+aws <command> --output json | jless
+
+# Start the local Kubernetes sandbox
+minikube start --cpus 4 --memory 8192
+
+# Status of the local sandbox
+minikube status
+
+# Point the shell's Docker client at minikube
+eval $(minikube docker-env)
+
+# Open a service in the browser
+minikube service <name> --url
+
+# Enable a minikube addon
+minikube addons enable <name>
+
+# Dashboard of the local sandbox
+minikube dashboard
+
+# DESTRUCTIVE delete the local sandbox
+minikube delete
+
+$ aws_profile: aws configure list-profiles 2>/dev/null
+$ aws_region: aws ec2 describe-regions --query 'Regions[].RegionName' --output text 2>/dev/null | tr '\t' '\n'
+$ log_group: aws logs describe-log-groups --query 'logGroups[].logGroupName' --output text 2>/dev/null | tr '\t' '\n'
+$ file: fd --type f --max-depth 3
+$ directory: fd --type d --max-depth 3

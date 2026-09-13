@@ -1,0 +1,99 @@
+; Ansible. Playbook, inventory and role pickers read the current project.
+; Entries that mutate a host are marked, because a check-mode run and a real
+; run differ by one flag.
+% ansible, iac
+
+# Syntax-check a playbook
+ansible-playbook -i <inventory> <playbook> --syntax-check
+
+# Lint changed YAML
+ansible-lint <playbook>
+
+# List the hosts a playbook would target
+ansible-playbook -i <inventory> <playbook> --list-hosts
+
+# List the tasks a playbook would run
+ansible-playbook -i <inventory> <playbook> --list-tasks
+
+# List the tags a playbook defines
+ansible-playbook -i <inventory> <playbook> --list-tags
+
+# Dry run with a diff of every change
+ansible-playbook -i <inventory> <playbook> --check --diff
+
+# APPLIES run a playbook for real
+ansible-playbook -i <inventory> <playbook>
+
+# APPLIES run only one role by tag
+ansible-playbook -i <inventory> <playbook> --tags <tag>
+
+# APPLIES run everything except one tag
+ansible-playbook -i <inventory> <playbook> --skip-tags <tag>
+
+# APPLIES limit a run to some hosts
+ansible-playbook -i <inventory> <playbook> --limit <host_pattern>
+
+# Start a playbook at a named task
+ansible-playbook -i <inventory> <playbook> --start-at-task <name>
+
+# Step through a playbook task by task
+ansible-playbook -i <inventory> <playbook> --step
+
+# Run with full task-level verbosity
+ansible-playbook -i <inventory> <playbook> -vvv
+
+# Show every fact of a host
+ansible -i <inventory> <host_pattern> -m setup | tail -n +2 | jless
+
+# Show one fact of a host
+ansible -i <inventory> <host_pattern> -m setup -a 'filter=<name>'
+
+# Ping every host in the inventory
+ansible -i <inventory> all -m ping
+
+# Run an ad-hoc command on hosts
+ansible -i <inventory> <host_pattern> -a <command>
+
+# Show the resolved inventory as a graph
+ansible-inventory -i <inventory> --graph
+
+# Show the resolved inventory as JSON
+ansible-inventory -i <inventory> --list | jless
+
+# Show the variables resolved for one host
+ansible-inventory -i <inventory> --host <host_pattern>
+
+# Install collection and role requirements
+ansible-galaxy install -r requirements.yml
+
+# Install requirements, forcing an update
+ansible-galaxy install -r requirements.yml --force
+
+# List installed collections
+ansible-galaxy collection list
+
+# Documentation for a module
+ansible-doc <name>
+
+# List modules matching a keyword
+ansible-doc --list | grep <pattern>
+
+# Encrypt a file with Ansible Vault
+ansible-vault encrypt <yaml_file>
+
+# Decrypt a vaulted file in place
+ansible-vault decrypt <yaml_file>
+
+# View a vaulted file without decrypting it on disk
+ansible-vault view <yaml_file>
+
+# Edit a vaulted file
+ansible-vault edit <yaml_file>
+
+# Rotate the vault key of a file
+ansible-vault rekey <yaml_file>
+
+$ playbook: fd --extension yml --extension yaml --max-depth 2 --- --preview 'bat --color=always --style=plain {}'
+$ inventory: fd --type f . inventory 2>/dev/null || fd --glob 'hosts*' --max-depth 3
+$ yaml_file: fd --extension yaml --extension yml --max-depth 4 --- --preview 'bat --color=always --style=plain {}'
+$ tag: rg --no-filename --no-line-number -o 'tags: *\[?[a-zA-Z0-9_, -]+' --glob '*.yml' 2>/dev/null | sed 's/tags: *//' | tr -d '[]' | tr ',' '\n' | tr -d ' ' | sort -u | grep .

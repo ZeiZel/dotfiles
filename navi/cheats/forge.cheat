@@ -1,0 +1,128 @@
+; GitHub (gh) and GitLab (glab). Both read the remote of the current
+; repository, so run these from inside a checkout.
+;
+; A self-hosted GitLab needs GITLAB_HOST and a proxy bypass on some networks.
+; That is host state: put it in an untracked local cheat file or the shell
+; environment, not in this repository.
+% forge, git
+
+# Open the current repository in a browser
+gh repo view --web
+
+# Status of your pull requests, reviews and assignments
+gh pr status
+
+# List open pull requests
+gh pr list --state open --limit 30
+
+# List pull requests waiting for your review
+gh pr list --search 'review-requested:@me state:open'
+
+# Check out a pull request locally
+gh pr checkout <gh_pr>
+
+# View a pull request with its comments
+gh pr view <gh_pr> --comments
+
+# Diff of a pull request
+gh pr diff <gh_pr>
+
+# CI checks of a pull request
+gh pr checks <gh_pr> --watch
+
+# Create a pull request, filling title and body from commits
+gh pr create --fill
+
+# Create a draft pull request
+gh pr create --draft --fill
+
+# Mark a pull request ready for review
+gh pr ready <gh_pr>
+
+# Approve a pull request
+gh pr review <gh_pr> --approve
+
+# Request changes on a pull request
+gh pr review <gh_pr> --request-changes --body <body>
+
+# Merge a pull request with a squash
+gh pr merge <gh_pr> --squash --delete-branch
+
+# List recent workflow runs
+gh run list --limit 20
+
+# Watch a workflow run until it finishes
+gh run watch <gh_run>
+
+# Print the failed logs of a workflow run
+gh run view <gh_run> --log-failed
+
+# Re-run only the failed jobs of a run
+gh run rerun <gh_run> --failed
+
+# List issues assigned to you
+gh issue list --assignee @me --state open
+
+# Create an issue
+gh issue create --title <title> --body <body>
+
+# List releases
+gh release list --limit 20
+
+# Call the GitHub API and explore the result
+gh api <gh_api_path> | jless
+
+# Open the current GitLab project in a browser
+glab repo view --web
+
+# List open merge requests
+glab mr list --per-page 30
+
+# List merge requests assigned to you
+glab mr list --assignee=@me
+
+# List merge requests you must review
+glab mr list --reviewer=@me
+
+# Check out a merge request locally
+glab mr checkout <glab_mr>
+
+# View a merge request with its notes
+glab mr view <glab_mr> --comments
+
+# Diff of a merge request
+glab mr diff <glab_mr>
+
+# Create a merge request, filling from commits
+glab mr create --fill --remove-source-branch
+
+# Create a draft merge request
+glab mr create --fill --draft
+
+# Approve a merge request
+glab mr approve <glab_mr>
+
+# Merge a merge request and delete its branch
+glab mr merge <glab_mr> --remove-source-branch --squash
+
+# Status of the pipeline for the current branch
+glab ci status
+
+# Follow the running pipeline in the terminal
+glab ci view
+
+# Print the trace of one CI job
+glab ci trace
+
+# Re-run the last pipeline
+glab ci retry
+
+# List CI variables of the project
+glab variable list
+
+# Call the GitLab API and explore the result
+glab api <glab_api_path> | jless
+
+$ gh_pr: gh pr list --state open --limit 50 --json number,title,headRefName --jq '.[] | "\(.number)\t\(.title)\t\(.headRefName)"' 2>/dev/null --- --column 1 --delimiter '\t'
+$ gh_run: gh run list --limit 30 --json databaseId,displayTitle,status,conclusion --jq '.[] | "\(.databaseId)\t\(.status)/\(.conclusion)\t\(.displayTitle)"' 2>/dev/null --- --column 1 --delimiter '\t'
+$ glab_mr: glab mr list --per-page 50 --output json --jq '.[] | "\(.iid)\t\(.title)\t\(.source_branch)"' 2>/dev/null --- --column 1 --delimiter '\t'

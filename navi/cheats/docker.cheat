@@ -1,0 +1,146 @@
+; Docker and Docker Compose.
+;
+; Container, image and service pickers read the live daemon, so an entry never
+; runs against a stale name typed from memory. Descriptions stay short because
+; navi's comment column is truncated to its configured width and the finder
+; only searches the visible text.
+% docker
+
+# Shell into a container (bash, else sh)
+docker exec -it <container> sh -lc 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'
+
+# Shell into a container, chosen shell
+docker exec -it <container> <shell>
+
+# Shell into a container as root
+docker exec -it -u 0 <container> sh -lc 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'
+
+# Run a one-off command in a container
+docker exec -it <container> <command>
+
+# Follow container logs
+docker logs -f --tail 200 <container>
+
+# Container logs with timestamps, last N lines
+docker logs --timestamps --tail <lines> <container_any>
+
+# Attach to container output without stealing stdin
+docker attach --no-stdin --sig-proxy=false <container>
+
+# Inspect a container in the jless JSON explorer
+docker inspect <container_any> | jless
+
+# Print the environment of a container
+docker exec <container> env | sort
+
+# Print container IP addresses
+docker inspect -f '{{range $net, $conf := .NetworkSettings.Networks}}{{$net}}: {{$conf.IPAddress}}{{println}}{{end}}' <container>
+
+# Print published port mapping
+docker port <container>
+
+# Live CPU and memory usage of containers
+docker stats
+
+# Process table inside a container
+docker top <container>
+
+# Copy a path out of a container
+docker cp <container_any>:<remote_path> .
+
+# Copy a local path into a container
+docker cp <local_path> <container_any>:<remote_path>
+
+# Filesystem changes since the container started
+docker diff <container_any>
+
+# Restart a container
+docker restart <container_any>
+
+# Stop all running containers
+docker stop $(docker ps -q)
+
+# Kill all running containers
+docker kill $(docker ps -q)
+
+# DESTRUCTIVE remove all containers, running or not
+docker stop $(docker ps -a -q) ; docker rm -f $(docker ps -a -q)
+
+# DESTRUCTIVE remove stopped containers
+docker container prune -f
+
+# DESTRUCTIVE full cleanup: containers, images, cache
+docker system prune -af
+
+# DESTRUCTIVE remove unused volumes
+docker volume prune -f
+
+# DESTRUCTIVE remove all local images
+docker rmi -f $(docker images -q)
+
+# Disk usage of the Docker host, itemised
+docker system df -v
+
+# Throwaway shell in an image, cwd mounted
+docker run --rm -it -v "$PWD":/work -w /work <image> sh -lc 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'
+
+# Throwaway container on the host network
+docker run --rm -it --network host <image> <shell>
+
+# Build an image from the current directory
+docker build -t <tag> .
+
+# Build an image with no layer cache
+docker build --no-cache --progress=plain -t <tag> .
+
+# Explore image layers and waste with dive
+dive <image>
+
+# Build history of an image
+docker history --no-trunc <image>
+
+# Save an image to a compressed archive
+docker save <image> | gzip > <tag>.tar.gz
+
+# Compose: follow logs of all services
+docker compose logs -f --tail 200
+
+# Compose: follow logs of one service
+docker compose logs -f --tail 200 <compose_service>
+
+# Compose: shell into a service
+docker compose exec <compose_service> sh -lc 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'
+
+# Compose: one-off command in a new container
+docker compose run --rm <compose_service> <command>
+
+# Compose: start in the background
+docker compose up -d
+
+# Compose: rebuild and restart
+docker compose up -d --build
+
+# Compose: restart one service
+docker compose restart <compose_service>
+
+# Compose: stop and remove containers
+docker compose down
+
+# DESTRUCTIVE Compose: down with volumes and orphans
+docker compose down -v --remove-orphans
+
+# Compose: show the resolved configuration
+docker compose config
+
+# Compose: status of all services
+docker compose ps -a
+
+# Browse Docker in the lazydocker TUI
+lazydocker
+
+$ container: docker ps --format '{{.Names}}\t{{.Image}}\t{{.Status}}' --- --column 1 --delimiter '\t'
+$ container_any: docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}' --- --column 1 --delimiter '\t'
+$ image: docker images --format '{{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.ID}}' --- --column 1 --delimiter '\t'
+$ compose_service: docker compose config --services 2>/dev/null
+$ shell: printf '%s\n' bash sh zsh ash --- --prevent-extra
+$ local_path: fd --max-depth 2 --hidden --exclude .git . --- --preview 'ls -la {}'

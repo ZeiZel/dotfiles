@@ -1,0 +1,110 @@
+; PostgreSQL, Redis and the Harlequin SQL TUI.
+;
+; Connection strings belong in the environment or an untracked local cheat
+; file. Nothing here stores a credential.
+% database, sql
+
+# Open the Harlequin SQL TUI against PostgreSQL
+harlequin -a postgres <pg_url>
+
+# Open Harlequin against a SQLite file
+harlequin <sqlite_file>
+
+# Open a psql session
+psql <pg_url>
+
+# Run one SQL statement and print the result
+psql <pg_url> -c <sql>
+
+# Run a SQL file
+psql <pg_url> -f <sql_file>
+
+# Run a statement and get expanded, row-per-line output
+psql <pg_url> -x -c <sql>
+
+# Run a statement and get CSV
+psql <pg_url> --csv -c <sql>
+
+# List databases
+psql <pg_url> -c '\l'
+
+# List tables of the current schema
+psql <pg_url> -c '\dt'
+
+# Describe a table
+psql <pg_url> -c '\d+ <table>'
+
+# List indexes of a table
+psql <pg_url> -c '\di+ <table>*'
+
+# Size of every table, largest first
+psql <pg_url> -c "select relname, pg_size_pretty(pg_total_relation_size(relid)) from pg_catalog.pg_statio_user_tables order by pg_total_relation_size(relid) desc limit 30"
+
+# Currently running queries
+psql <pg_url> -c "select pid, now()-query_start as age, state, left(query,80) from pg_stat_activity where state <> 'idle' order by age desc"
+
+# DESTRUCTIVE cancel a running query
+psql <pg_url> -c "select pg_cancel_backend(<pid>)"
+
+# DESTRUCTIVE terminate a backend connection
+psql <pg_url> -c "select pg_terminate_backend(<pid>)"
+
+# Locks that are blocking other queries
+psql <pg_url> -c "select blocked.pid as blocked_pid, blocking.pid as blocking_pid, left(blocked.query,60) from pg_stat_activity blocked join pg_stat_activity blocking on blocking.pid = any(pg_blocking_pids(blocked.pid)) where cardinality(pg_blocking_pids(blocked.pid)) > 0"
+
+# Explain a query with real timings
+psql <pg_url> -c "explain (analyze, buffers, format text) <sql>"
+
+# Connection count per database
+psql <pg_url> -c "select datname, count(*) from pg_stat_activity group by 1 order by 2 desc"
+
+# Dump one database to a compressed file
+pg_dump <pg_url> -Fc -f <name>.dump
+
+# Dump only the schema
+pg_dump <pg_url> --schema-only -f <name>.sql
+
+# Dump a single table with data
+pg_dump <pg_url> -t <table> -Fc -f <name>.dump
+
+# Restore a custom-format dump
+pg_restore -d <pg_url> --no-owner --clean --if-exists <name>.dump
+
+# Open a Redis CLI session
+redis-cli -u <redis_url>
+
+# Ping a Redis server
+redis-cli -u <redis_url> ping
+
+# Server info and memory usage
+redis-cli -u <redis_url> info memory
+
+# Scan keys by pattern without blocking the server
+redis-cli -u <redis_url> --scan --pattern <pattern>
+
+# Count keys matching a pattern
+redis-cli -u <redis_url> --scan --pattern <pattern> | wc -l
+
+# Type and TTL of one key
+redis-cli -u <redis_url> type <key> ; redis-cli -u <redis_url> ttl <key>
+
+# Read a key whatever its type
+redis-cli -u <redis_url> --no-raw get <key>
+
+# Watch commands hitting the server live
+redis-cli -u <redis_url> monitor
+
+# Find the biggest keys in the keyspace
+redis-cli -u <redis_url> --bigkeys
+
+# Latency of the server over time
+redis-cli -u <redis_url> --latency
+
+# DESTRUCTIVE delete keys matching a pattern
+redis-cli -u <redis_url> --scan --pattern <pattern> | xargs -r -n 100 redis-cli -u <redis_url> del
+
+# DESTRUCTIVE flush the current Redis database
+redis-cli -u <redis_url> flushdb
+
+$ sql_file: fd --extension sql --max-depth 4 --- --preview 'bat --color=always --style=plain {}'
+$ sqlite_file: fd --extension db --extension sqlite --extension sqlite3 --max-depth 4

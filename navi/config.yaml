@@ -1,0 +1,37 @@
+# Navi configuration.
+#
+# Stow deploys this directory to ~/.config/navi, which is also navi's default
+# config location, so `cheats/` sits next to this file and no environment
+# variable is needed. `cheats.local/` is deliberately untracked: machine-local
+# wrappers, hostnames, cluster shortcuts and connection strings belong there and
+# never in this repository.
+#
+# The finder only searches the text it can display, so the comment column is
+# given the largest share and cheat descriptions are kept short.
+
+cheats:
+  paths:
+    - ~/.config/navi/cheats
+    - ~/.config/navi/cheats.local
+
+style:
+  tag:
+    color: blue
+    width_percentage: 15
+    min_width: 12
+  comment:
+    color: cyan
+    width_percentage: 50
+    min_width: 45
+  snippet:
+    color: white
+
+finder:
+  command: fzf
+
+shell:
+  # Snippets selected through the Ctrl+G widget are handed to the interactive
+  # Zsh line editor and therefore see aliases and functions. A snippet executed
+  # by `navi` standalone runs in this non-interactive shell instead, which loads
+  # no rc file: prefer the widget for anything that calls a shell function.
+  command: zsh

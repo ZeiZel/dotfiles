@@ -1,0 +1,186 @@
+; Language toolchains this repository provisions: Node with npm/pnpm and the Nx
+; and Angular CLIs, Go, Rust with cargo-nextest, Python with uv and pyenv, and
+; .NET. Script pickers read the manifest in the current directory.
+% dev
+
+# Run a package.json script, picked from the manifest
+npm run <npm_script>
+
+# Run a pnpm script, picked from the manifest
+pnpm run <npm_script>
+
+# Install dependencies exactly as the lockfile says
+npm ci
+
+# Install pnpm dependencies with a frozen lockfile
+pnpm install --frozen-lockfile
+
+# Add a dependency with pnpm
+pnpm add <name>
+
+# Add a dev dependency with pnpm
+pnpm add -D <name>
+
+# Remove a dependency with pnpm
+pnpm remove <name>
+
+# Run a package binary without installing it
+pnpm dlx <name>
+
+# Show why a package is in the tree
+pnpm why <name>
+
+# List outdated dependencies
+pnpm outdated
+
+# Audit dependencies for known vulnerabilities
+pnpm audit --audit-level high
+
+# Clear the pnpm store of unreferenced packages
+pnpm store prune
+
+# DESTRUCTIVE remove node_modules everywhere and reinstall
+fd --type d --hidden --no-ignore --glob node_modules --exec-batch rm -rf ; pnpm install
+
+# Nx: run a target for one project
+nx run <nx_project>:<name>
+
+# Nx: build a project
+nx build <nx_project>
+
+# Nx: serve a project
+nx serve <nx_project>
+
+# Nx: test a project
+nx test <nx_project>
+
+# Nx: run a target only for affected projects
+nx affected -t <name>
+
+# Nx: show what changed against a base
+nx affected:graph --base=<branch>
+
+# Nx: print the project graph
+nx graph
+
+# Nx: reset the local computation cache
+nx reset
+
+# Angular: generate a schematic
+ng generate <name>
+
+# Angular: serve with a named configuration
+ng serve --configuration <name>
+
+# Go: run the package in the current directory
+go run .
+
+# Go: build a binary into ./bin
+go build -o bin/ ./...
+
+# Go: run tests with race detection
+go test -race ./...
+
+# Go: run one test by name
+go test -run <pattern> ./... -v
+
+# Go: test with coverage and open the report
+go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out
+
+# Go: benchmark a package
+go test -bench=. -benchmem ./...
+
+# Go: vet the module
+go vet ./...
+
+# Go: tidy the module file
+go mod tidy
+
+# Go: show why a module is required
+go mod why <name>
+
+# Go: list module dependencies as a graph
+go mod graph
+
+# Go: update every dependency to its latest minor
+go get -u ./... && go mod tidy
+
+# Rust: build in release mode
+cargo build --release
+
+# Rust: run with arguments
+cargo run -- <command>
+
+# Rust: run tests with nextest
+cargo nextest run
+
+# Rust: run one test with nextest
+cargo nextest run <pattern>
+
+# Rust: check without producing binaries
+cargo check --all-targets
+
+# Rust: lint with clippy, warnings as errors
+cargo clippy --all-targets -- -D warnings
+
+# Rust: format the workspace
+cargo fmt --all
+
+# Rust: check formatting without writing
+cargo fmt --all -- --check
+
+# Rust: show the dependency tree
+cargo tree
+
+# Rust: audit and update dependencies
+cargo update && cargo tree --duplicates
+
+# Rust: switch the default toolchain
+rustup default <name>
+
+# Python: create a virtualenv with uv
+uv venv
+
+# Python: install dependencies from a lockfile
+uv sync
+
+# Python: add a dependency
+uv add <name>
+
+# Python: run a command inside the project environment
+uv run <command>
+
+# Python: run a tool without installing it
+uvx <name>
+
+# Python: list installed pyenv versions
+pyenv versions
+
+# Python: install a Python version
+pyenv install <name>
+
+# Python: set the local Python version
+pyenv local <name>
+
+# .NET: restore, build and test the solution
+dotnet restore && dotnet build && dotnet test
+
+# .NET: run a project
+dotnet run --project <csproj>
+
+# .NET: watch and re-run on change
+dotnet watch --project <csproj> run
+
+# .NET: run tests with detailed output
+dotnet test --logger 'console;verbosity=detailed'
+
+# .NET: list outdated packages
+dotnet list package --outdated
+
+# .NET: add a package to a project
+dotnet add <csproj> package <name>
+
+$ npm_script: jq -r '.scripts | keys[]' package.json 2>/dev/null
+$ nx_project: nx show projects 2>/dev/null
+$ csproj: fd --extension csproj --max-depth 4
+$ branch: git branch --all --format='%(refname:short)' 2>/dev/null

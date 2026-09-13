@@ -1,0 +1,99 @@
+; Terraform. Workspace and state-address pickers read the initialised working
+; directory, so run these from the directory holding the root module.
+% terraform, iac
+
+# Initialise the working directory
+terraform init
+
+# Re-initialise after changing backend or module sources
+terraform init -upgrade -reconfigure
+
+# Format every file in the tree
+terraform fmt -recursive
+
+# Check formatting without writing
+terraform fmt -recursive -check -diff
+
+# Validate the configuration
+terraform validate
+
+# Plan and keep the plan file
+terraform plan -out tfplan
+
+# Plan for one target resource
+terraform plan -target=<tf_address>
+
+# Plan with a variable file
+terraform plan -var-file=<tfvars_file> -out tfplan
+
+# Show a saved plan in a readable form
+terraform show tfplan
+
+# Show a saved plan as JSON and explore it
+terraform show -json tfplan | jless
+
+# Apply a saved plan, no second prompt
+terraform apply tfplan
+
+# Apply directly with a variable file
+terraform apply -var-file=<tfvars_file>
+
+# DESTRUCTIVE destroy everything the module manages
+terraform destroy
+
+# DESTRUCTIVE destroy one target resource
+terraform destroy -target=<tf_address>
+
+# List everything in state
+terraform state list
+
+# Show one resource as recorded in state
+terraform state show <tf_address>
+
+# Move a resource to a new address in state
+terraform state mv <tf_address> <new_address>
+
+# Remove a resource from state without destroying it
+terraform state rm <tf_address>
+
+# Pull the remote state to stdout
+terraform state pull | jless
+
+# Refresh state against the real infrastructure
+terraform apply -refresh-only
+
+# Import an existing object into state
+terraform import <tf_address> <resource_id>
+
+# Replace a resource on the next apply
+terraform apply -replace=<tf_address>
+
+# Show all outputs
+terraform output
+
+# Show one output raw, for scripting
+terraform output -raw <tf_output>
+
+# List workspaces
+terraform workspace list
+
+# Switch workspace
+terraform workspace select <tf_workspace>
+
+# Create a workspace
+terraform workspace new <name>
+
+# Render the dependency graph to SVG
+terraform graph | dot -Tsvg > graph.svg
+
+# Show the provider versions actually locked
+terraform providers
+
+# DESTRUCTIVE force-unlock a stuck state lock
+terraform force-unlock <lock_id>
+
+$ tf_address: terraform state list 2>/dev/null
+$ new_address: terraform state list 2>/dev/null
+$ tf_workspace: terraform workspace list 2>/dev/null | sed 's/^[* ] *//' | grep .
+$ tf_output: terraform output -json 2>/dev/null | jq -r 'keys[]'
+$ tfvars_file: fd --extension tfvars --max-depth 3 --- --preview 'bat --color=always --style=plain {}'

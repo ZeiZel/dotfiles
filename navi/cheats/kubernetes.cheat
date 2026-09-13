@@ -1,0 +1,194 @@
+; Kubernetes. Every picker reads the cluster the current context points at, and
+; the namespace picker resolves first, so pod, container and workload lists are
+; always scoped to the namespace just chosen.
+;
+; Entries stay portable on purpose. A host that reaches its clusters through a
+; proxy bypass, a VPN wrapper or a fixed KUBECONFIG belongs in an untracked
+; local cheat file, never here.
+% kubernetes, k8s
+
+# Shell into a pod (bash, else sh)
+kubectl exec -it -n <ns> <pod> -- sh -lc 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'
+
+# Shell into one container of a pod
+kubectl exec -it -n <ns> <pod> -c <container> -- sh -lc 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'
+
+# Run a one-off command in a pod
+kubectl exec -it -n <ns> <pod> -- <command>
+
+# Follow pod logs
+kubectl logs -f --tail 200 -n <ns> <pod>
+
+# Follow logs of one container in a pod
+kubectl logs -f --tail 200 -n <ns> <pod> -c <container>
+
+# Logs of the previous, crashed container
+kubectl logs --previous --tail 500 -n <ns> <pod>
+
+# Logs of every pod of a deployment
+kubectl logs -f --tail 200 -n <ns> deployment/<deploy> --all-containers --max-log-requests 20
+
+# Tail logs across pods by regex with stern
+stern -n <ns> <pod_regex> --tail 200
+
+# Tail logs of all namespaces by regex with stern
+stern --all-namespaces <pod_regex> --tail 100
+
+# Pipe pod logs into the lnav log navigator
+kubectl logs --tail 5000 -n <ns> <pod> | lnav
+
+# List pods with node and IP
+kubectl get pods -n <ns> -o wide
+
+# Watch pods in a namespace
+kubectl get pods -n <ns> -w
+
+# List pods that are not Running or Succeeded
+kubectl get pods -n <ns> --field-selector 'status.phase!=Running,status.phase!=Succeeded'
+
+# List pods across all namespaces, sorted by restarts
+kubectl get pods --all-namespaces --sort-by='.status.containerStatuses[0].restartCount'
+
+# Describe a pod
+kubectl describe pod -n <ns> <pod>
+
+# Explore a pod manifest in jless
+kubectl get pod -n <ns> <pod> -o json | jless
+
+# Events in a namespace, newest last
+kubectl get events -n <ns> --sort-by=.lastTimestamp
+
+# Copy a file out of a pod
+kubectl cp -n <ns> <ns>/<pod>:<remote_path> ./<local_name>
+
+# Copy a file into a pod
+kubectl cp -n <ns> <local_name> <ns>/<pod>:<remote_path>
+
+# Port-forward a pod to localhost
+kubectl port-forward -n <ns> <pod> <local_port>:<remote_port>
+
+# Port-forward a service to localhost
+kubectl port-forward -n <ns> svc/<svc> <local_port>:<remote_port>
+
+# Debug a pod with an ephemeral container
+kubectl debug -it -n <ns> <pod> --image=busybox:1.36 --target=<container>
+
+# Throwaway debug pod in a namespace
+kubectl run debug-shell --rm -it --restart=Never -n <ns> --image=nicolaka/netshoot -- bash
+
+# CPU and memory of pods in a namespace
+kubectl top pods -n <ns>
+
+# CPU and memory of nodes
+kubectl top nodes
+
+# List deployments in a namespace
+kubectl get deployments -n <ns> -o wide
+
+# Restart a deployment
+kubectl rollout restart -n <ns> deployment/<deploy>
+
+# Watch a deployment rollout
+kubectl rollout status -n <ns> deployment/<deploy> --timeout=5m
+
+# Roll a deployment back one revision
+kubectl rollout undo -n <ns> deployment/<deploy>
+
+# Rollout history of a deployment
+kubectl rollout history -n <ns> deployment/<deploy>
+
+# Scale a deployment
+kubectl scale -n <ns> deployment/<deploy> --replicas=<replicas>
+
+# Edit a deployment in $EDITOR
+kubectl edit -n <ns> deployment/<deploy>
+
+# Decode every key of a secret
+kubectl get secret -n <ns> <secret> -o go-template='{{range $k,$v := .data}}{{$k}}={{$v|base64decode}}{{println}}{{end}}'
+
+# List configmaps in a namespace
+kubectl get configmaps -n <ns>
+
+# Print a configmap as YAML
+kubectl get configmap -n <ns> <configmap> -o yaml
+
+# List services in a namespace
+kubectl get svc -n <ns> -o wide
+
+# List ingresses in a namespace
+kubectl get ingress -n <ns> -o wide
+
+# Nodes with roles, version and pressure
+kubectl get nodes -o wide
+
+# Describe a node
+kubectl describe node <node>
+
+# Cordon a node
+kubectl cordon <node>
+
+# Drain a node for maintenance
+kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
+
+# Uncordon a node
+kubectl uncordon <node>
+
+# Switch context
+kubectx <ctx>
+
+# Switch default namespace
+kubens <ns>
+
+# Show the current context and namespace
+kubectl config get-contexts
+
+# Set the default namespace of the current context
+kubectl config set-context --current --namespace=<ns>
+
+# Browse the cluster in the k9s TUI
+k9s -n <ns>
+
+# Apply a manifest and watch the result
+kubectl apply -f <manifest> -n <ns> && kubectl get all -n <ns>
+
+# Server-side dry run of a manifest
+kubectl apply -f <manifest> -n <ns> --dry-run=server
+
+# Diff a manifest against the live cluster
+kubectl diff -f <manifest> -n <ns>
+
+# Validate manifests offline with kubeconform
+kubeconform -strict -summary -ignore-missing-schemas <manifest>
+
+# Render a kustomize overlay
+kustomize build <kustomize_dir>
+
+# Apply a kustomize overlay
+kubectl apply -k <kustomize_dir>
+
+# DESTRUCTIVE delete a pod so it is recreated
+kubectl delete pod -n <ns> <pod>
+
+# DESTRUCTIVE delete everything a manifest created
+kubectl delete -f <manifest> -n <ns>
+
+# Show what the current user may do in a namespace
+kubectl auth can-i --list -n <ns>
+
+# API resources supported by the cluster
+kubectl api-resources --verbs=list --namespaced -o name
+
+; Cluster pickers silence stderr on purpose: an unreachable or unauthorised
+; context then shows an empty list instead of filling the finder with client
+; errors.
+$ ns: kubectl get namespaces --no-headers -o custom-columns=:metadata.name 2>/dev/null
+$ pod: kubectl get pods -n <ns> --no-headers 2>/dev/null --- --column 1
+$ container: kubectl get pod <pod> -n <ns> -o jsonpath='{.spec.containers[*].name}' 2>/dev/null | tr ' ' '\n'
+$ deploy: kubectl get deployments -n <ns> --no-headers 2>/dev/null --- --column 1
+$ svc: kubectl get svc -n <ns> --no-headers 2>/dev/null --- --column 1
+$ secret: kubectl get secrets -n <ns> --no-headers 2>/dev/null --- --column 1
+$ configmap: kubectl get configmaps -n <ns> --no-headers 2>/dev/null --- --column 1
+$ node: kubectl get nodes --no-headers 2>/dev/null --- --column 1
+$ ctx: kubectl config get-contexts -o name 2>/dev/null
+$ manifest: fd --extension yaml --extension yml --max-depth 4 --- --preview 'bat --color=always --style=plain {}'
+$ kustomize_dir: fd --type d --max-depth 4 --- --preview 'ls -la {}'

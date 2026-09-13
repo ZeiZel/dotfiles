@@ -14,6 +14,17 @@
     state: directory
     mode: "0755"
 
+# navi/config.yaml lists this directory as a cheat path. It holds machine-local
+# cheats -- hostnames, cluster shortcuts, proxy wrappers -- and is deliberately
+# absent from the repository, so create it empty rather than deploying it.
+# Creating it before Stow is safe: --no-folding makes ~/.config/navi a real
+# directory and links only the files inside it.
+- name: Create the untracked local navi cheat directory
+  ansible.builtin.file:
+    path: "{{ config_dir }}/navi/cheats.local"
+    state: directory
+    mode: "0755"
+
 - name: Create cache directories for zsh tools
   ansible.builtin.file:
     path: "{{ item }}"

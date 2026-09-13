@@ -1,0 +1,90 @@
+; Helm. Release and namespace pickers query the cluster the current kubectl
+; context points at.
+% helm, k8s
+
+# List releases in a namespace
+helm list -n <ns>
+
+# List releases in every namespace
+helm list -A
+
+# List failed and pending releases
+helm list -A --failed --pending
+
+# Status of a release
+helm status <release> -n <ns>
+
+# Values a release was installed with
+helm get values <release> -n <ns>
+
+# All computed values of a release, defaults included
+helm get values <release> -n <ns> --all
+
+# Rendered manifest of a release
+helm get manifest <release> -n <ns>
+
+# Notes of a release
+helm get notes <release> -n <ns>
+
+# Revision history of a release
+helm history <release> -n <ns>
+
+# Render a chart locally without touching the cluster
+helm template <release_name> <chart_dir> --values <values_file>
+
+# Render a chart and validate against the live cluster
+helm template <release_name> <chart_dir> --values <values_file> --validate -n <ns>
+
+# Diff what an upgrade would change, via a dry run
+helm upgrade <release> <chart_dir> -n <ns> --values <values_file> --dry-run
+
+# Install or upgrade a release and wait for it
+helm upgrade --install <release_name> <chart_dir> -n <ns> --values <values_file> --wait --timeout 10m
+
+# Install or upgrade, creating the namespace
+helm upgrade --install <release_name> <chart_dir> -n <ns> --create-namespace --values <values_file>
+
+# Upgrade with a single overridden value
+helm upgrade --install <release_name> <chart_dir> -n <ns> --set <key>=<value>
+
+# Roll a release back to a revision
+helm rollback <release> <revision> -n <ns> --wait
+
+# DESTRUCTIVE uninstall a release
+helm uninstall <release> -n <ns>
+
+# Uninstall but keep the release history
+helm uninstall <release> -n <ns> --keep-history
+
+# Lint a chart
+helm lint <chart_dir> --values <values_file>
+
+# Resolve and download chart dependencies
+helm dependency update <chart_dir>
+
+# Show the dependency tree of a chart
+helm dependency list <chart_dir>
+
+# Search configured repositories
+helm search repo <term> --versions
+
+# Search Artifact Hub
+helm search hub <term>
+
+# Add a chart repository
+helm repo add <repo_name> <repo_url>
+
+# Update all chart repositories
+helm repo update
+
+# Show the default values of a packaged chart
+helm show values <repo_chart>
+
+# Package a chart into a tgz archive
+helm package <chart_dir> --destination ./dist
+
+$ ns: kubectl get namespaces --no-headers -o custom-columns=:metadata.name 2>/dev/null
+$ release: helm list -n <ns> --short 2>/dev/null
+$ chart_dir: fd --type d --max-depth 4 --- --preview 'ls -la {}'
+$ values_file: fd --extension yaml --extension yml --max-depth 4 --- --preview 'bat --color=always --style=plain {}'
+$ repo_chart: helm search repo --output table 2>/dev/null | tail -n +2 --- --column 1

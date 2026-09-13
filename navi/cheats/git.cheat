@@ -1,0 +1,186 @@
+; Git. Branch, commit, file and stash pickers read the repository in the
+; current directory. Conflict entries follow the repository's configured tools:
+; nvimdiff2 for `git mergetool`, nvimdiff for `git difftool`, zdiff3 markers.
+% git
+
+# Interactive status, stage and commit in lazygit
+lazygit
+
+# Log as a graph
+git log --graph --oneline --decorate --all -n 40
+
+# Log of one file, following renames
+git log --follow --patch -- <tracked_file>
+
+# Log limited to one author
+git log --author=<author> --oneline -n 40
+
+# Log between two dates
+git log --since=<since> --until=<until> --oneline
+
+# Search commit messages
+git log --grep=<pattern> --oneline -n 40
+
+# Search the content of every commit
+git log -S<pattern> --oneline --patch
+
+# Who last touched each line of a file
+git blame -w -C -C -M <tracked_file>
+
+# Show one commit with its diff
+git show <commit>
+
+# Show a file as it was at a commit
+git show <commit>:<tracked_file>
+
+# Structural, AST-aware diff of the working tree
+GIT_EXTERNAL_DIFF=difft git diff
+
+# Structural diff of one commit
+GIT_EXTERNAL_DIFF=difft git show --ext-diff <commit>
+
+# Diff the working tree against a branch
+git diff <branch>
+
+# Diff only the names of changed files
+git diff --name-status <branch>
+
+# Stage hunks interactively
+git add -p
+
+# Unstage a file, keeping the edit
+git restore --staged <changed_file>
+
+# Discard the working-tree changes of a file
+git restore <changed_file>
+
+# Amend the last commit without editing its message
+git commit --amend --no-edit
+
+# Reword the last commit message
+git commit --amend
+
+# Move the last commit back into the working tree
+git reset --soft HEAD~1
+
+# DESTRUCTIVE reset the branch to a commit, discarding work
+git reset --hard <commit>
+
+# Create and switch to a branch
+git switch -c <new_branch>
+
+# Switch to an existing branch
+git switch <branch>
+
+# Switch to the previous branch
+git switch -
+
+# Rename the current branch
+git branch -m <new_branch>
+
+# Delete a merged local branch
+git branch -d <branch>
+
+# Delete local branches whose remote is gone
+git fetch --prune && git branch -vv | awk '/: gone]/ {print $1}' | xargs -r git branch -D
+
+# Push the current branch and set upstream
+git push -u origin HEAD
+
+# Force-push safely, refusing to clobber new remote commits
+git push --force-with-lease
+
+# Fetch everything and prune deleted remote branches
+git fetch --all --prune
+
+# Rebase the current branch onto another
+git rebase <branch>
+
+# Interactive rebase of the last N commits
+git rebase -i HEAD~<count>
+
+# Continue an interrupted rebase
+git rebase --continue
+
+# Abort a rebase and return to the starting point
+git rebase --abort
+
+# Update a long-running branch, replaying local work
+git pull --rebase --autostash
+
+# Resolve conflicts in the three-pane Neovim mergetool
+git mergetool
+
+# List the files still in conflict
+git diff --name-only --diff-filter=U
+
+# Take our side of a conflicted file
+git checkout --ours <conflicted_file> && git add <conflicted_file>
+
+# Take their side of a conflicted file
+git checkout --theirs <conflicted_file> && git add <conflicted_file>
+
+# Abort a merge and return to the previous state
+git merge --abort
+
+# Cherry-pick a commit onto the current branch
+git cherry-pick <commit>
+
+# Revert a commit with a new commit
+git revert <commit>
+
+# Stash the working tree, untracked files included, with a label
+git stash push -u -m <label>
+
+# List stashes with their subjects
+git stash list --format='%gd %gs'
+
+# Show the contents of a stash
+git stash show -p <stash>
+
+# Apply a stash without removing it
+git stash apply <stash>
+
+# Drop a stash
+git stash drop <stash>
+
+# Find the commit that introduced a bug
+git bisect start <bad_commit> <good_commit>
+
+# Recover a lost commit or branch from the reflog
+git reflog --date=iso -n 40
+
+# List every worktree of the repository
+git worktree list
+
+# Add a worktree on a new branch
+git worktree add -b <new_branch> <new_worktree_path>
+
+# Remove a worktree
+git worktree remove <worktree_path>
+
+# Prune stale worktree registrations
+git worktree prune -v
+
+# Show what a remote actually points at
+git remote -v && git remote show origin
+
+# Repository size and object counts
+git count-objects -vH
+
+# Check the diff for whitespace errors
+git diff --check
+
+# Files Git ignores in this directory, with the rule that ignores them
+git status --ignored --short && git check-ignore -v *
+
+$ branch: git branch --all --format='%(refname:short)'
+$ commit: git log --oneline -n 200 --- --column 1
+$ bad_commit: git log --oneline -n 200 --- --column 1
+$ good_commit: git log --oneline -n 200 --- --column 1
+$ tracked_file: git ls-files --- --preview 'bat --color=always --style=plain {}'
+$ changed_file: git diff --name-only HEAD
+$ conflicted_file: git diff --name-only --diff-filter=U
+$ stash: git stash list --format='%gd %gs' --- --column 1
+$ author: git log --format='%an' -n 500 | sort -u
+$ worktree_path: git worktree list --porcelain | awk '/^worktree /{print $2}'

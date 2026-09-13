@@ -94,6 +94,9 @@ dotfiles/
 │   ├── tmux.plugins.conf
 │   └── tmux.theme.conf  # Catppuccin theme
 ├── nvim/                 # Neovim configuration
+├── navi/                 # Interactive cheatsheets
+│   ├── config.yaml      # Cheat paths, columns, finder
+│   └── cheats/          # One .cheat file per tool family
 ├── starship/             # Starship prompt
 ├── yazi/                 # Yazi file manager
 ├── lazygit/              # Lazygit config
@@ -199,6 +202,40 @@ asynchronous editor tasks:
 | `kubeconform` | Kubernetes and rendered Helm manifest validation |
 | `gitleaks` | Secret detection in Git history and the working tree |
 | `trivy` | Repository, dependency, IaC and container vulnerability scanning |
+
+## Navi cheatsheets
+
+`Ctrl+G` searches the cheatsheets in [`navi/cheats/`](navi/cheats) and puts the
+selected command into the Zsh line editor, prompting for the parts that change.
+Because the widget writes into the interactive shell, the command is editable
+before it runs and aliases and functions resolve normally. `nav` and
+`navq <query>` run navi standalone; `navi --tldr <command>` falls back to
+tldr-pages for anything not covered here.
+
+The finder searches the tag column too, so naming the tool narrows the list:
+
+| Goal | Query |
+| --- | --- |
+| Shell into a Docker container | `docker shell into a container` |
+| Shell into a Kubernetes pod | `kubernetes shell into a pod` |
+| Follow pod logs | `kubernetes follow pod logs` |
+| Wipe every local container | `docker DESTRUCTIVE remove all` |
+| Everything that deletes something | `DESTRUCTIVE` |
+| Everything that mutates this host | `APPLIES` |
+
+Cheatsheets cover Docker and Compose, Kubernetes, Helm, Git, `gh`/`glab`,
+Terraform, Ansible, AWS and minikube, PostgreSQL and Redis, HTTP and gRPC
+clients, file and text tooling, network diagnostics, security scanning,
+processes and benchmarking, the Tmux/Workmux/Herdr command lines, the language
+toolchains, and the maintenance of this repository itself. Container, pod,
+namespace, release, branch and profile pickers query live state rather than
+accepting a name typed from memory.
+
+Machine-specific cheats — proxy wrappers, per-stand `KUBECONFIG` paths, jump
+hosts, connection strings — belong in the untracked
+`~/.config/navi/cheats.local/`, which the `dotfiles` role creates and
+`navi/config.yaml` merges in. See [`navi/README.md`](navi/README.md) for the
+cheat syntax and the conventions used here.
 
 ## Git conflict workflow
 

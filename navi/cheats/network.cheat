@@ -1,0 +1,105 @@
+; Network diagnostics: doggo, gping, trippy, mtr, nmap, bandwhich, tcpdump and
+; the socket tools. Entries that need elevated privileges say so by using sudo.
+% network
+
+# Resolve a name with doggo
+doggo <host>
+
+# Resolve a specific record type
+doggo <dns_type> <host>
+
+# Resolve against a specific nameserver
+doggo <host> @<nameserver>
+
+# Resolve over DNS-over-HTTPS
+doggo <host> @https://cloudflare-dns.com/dns-query
+
+# Trace a name from the root servers
+doggo <host> --trace
+
+# Reverse-resolve an address
+doggo --reverse <host>
+
+# Show every record type of a name
+doggo ANY <host>
+
+# Ping with a live graph
+gping <host>
+
+# Compare the latency of several hosts
+gping <host> <host2>
+
+# Traceroute with a live TUI
+trip --unprivileged <host>
+
+# Classic traceroute report
+mtr --report --report-cycles 20 <host>
+
+# Which ports are listening locally
+lsof -nP -iTCP -sTCP:LISTEN
+
+# Which process holds a port
+lsof -nP -iTCP:<port> -sTCP:LISTEN
+
+# DESTRUCTIVE kill whatever holds a port
+kill -9 $(lsof -tnP -iTCP:<port> -sTCP:LISTEN)
+
+# Live bandwidth by process and connection
+sudo bandwhich
+
+# Bandwidth of one interface only
+sudo bandwhich --interface <interface>
+
+# Scan the common ports of one host
+nmap -Pn --top-ports 100 <host>
+
+# Scan a port range of one host
+nmap -Pn -p <port>-<port2> <host>
+
+# Identify the services behind open ports
+nmap -Pn -sV --top-ports 50 <host>
+
+# Discover live hosts on the local subnet
+nmap -sn <subnet>
+
+# Capture traffic to a host, human readable
+sudo tcpdump -n -i any host <host>
+
+# Capture traffic on one port
+sudo tcpdump -n -i any port <port>
+
+# Capture to a file for later analysis
+sudo tcpdump -n -i any -w <capture_file> host <host>
+
+# Read a previously captured file
+tcpdump -n -r <capture_file> | head -n 100
+
+# Public IP address of this machine
+curl -s ifconfig.me
+
+# Local IP address of the primary interface
+ipconfig getifaddr en0 2>/dev/null || ip route get 1 | awk '{print $7}'
+
+# List network interfaces with addresses
+ifconfig 2>/dev/null || ip -c addr
+
+# Show the routing table
+netstat -rn 2>/dev/null || ip route
+
+# Check whether a TCP port is reachable
+nc -vz -w 3 <host> <port>
+
+# Time every phase of an HTTP request
+curl -sS -o /dev/null -w 'dns=%{time_namelookup}s connect=%{time_connect}s tls=%{time_appconnect}s ttfb=%{time_starttransfer}s total=%{time_total}s\n' <url>
+
+# Show the TLS certificate a host presents
+echo | openssl s_client -connect <host>:443 -servername <host> 2>/dev/null | openssl x509 -noout -subject -issuer -dates
+
+# Show the full redirect chain of a URL
+curl -sSIL <url> | grep -iE '^(HTTP/|location:)'
+
+# Flush the macOS DNS cache
+sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder
+
+$ dns_type: printf '%s\n' A AAAA CNAME MX TXT NS SOA SRV PTR CAA --- --prevent-extra
+$ interface: ifconfig -l 2>/dev/null | tr ' ' '\n' | grep . || ip -o link | awk -F': ' '{print $2}'

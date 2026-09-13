@@ -674,13 +674,48 @@ bindkey -e
 | Распаковать archive | `extract FILE` |
 | Открыть dotfiles в Neovim | `dotfiles` |
 | Править Nvim / Herdr config | `nvimrc` / `herdrc` |
-| Интерактивная шпаргалка Navi | `nav` |
+| Интерактивная шпаргалка Navi | `Ctrl+G`, `nav` |
 
 Мультиплексор выбирается через `ZSH_MULTIPLEXER` в untracked
 `~/.zshrc.local`: `tmux` (по умолчанию), `herdr` или `none`.
 Для разового выбора в новом outer/plain shell используйте
 `ZSH_MULTIPLEXER=herdr zsh` или `ZSH_MULTIPLEXER=none zsh`; guards вложенных
 мультиплексоров имеют приоритет.
+
+### Navi: команды по описанию
+
+`Ctrl+G` открывает поиск по шпаргалкам из
+[`navi/cheats/`](../navi/cheats). Выбранный сниппет вставляется в командную
+строку: подстановки запрашиваются по очереди, и команду ещё можно прочитать и
+поправить перед Enter. `nav` запускает то же самое отдельным процессом, но
+тогда сниппет выполняется в неинтерактивном shell и не видит функций вроде
+`heavy` или `dev` — для них нужен именно виджет.
+
+Поиск идёт и по колонке тега, поэтому имя инструмента в запросе сразу сужает
+выдачу.
+
+| Сценарий | Как искать |
+| --- | --- |
+| Shell в контейнере Docker | `Ctrl+G`, `docker shell into a container` |
+| Shell в поде Kubernetes | `Ctrl+G`, `kubernetes shell into a pod` |
+| Логи контейнера, follow | `Ctrl+G`, `docker follow container logs` |
+| Логи пода, follow | `Ctrl+G`, `kubernetes follow pod logs` |
+| Логи всех подов деплоя | `Ctrl+G`, `logs of every pod` |
+| Снести все локальные контейнеры | `Ctrl+G`, `docker DESTRUCTIVE remove all` |
+| Всё, что удаляет или ломает | `Ctrl+G`, `DESTRUCTIVE` |
+| Всё, что меняет состояние хоста | `Ctrl+G`, `APPLIES` |
+| Поиск сразу по теме | `navq docker`, `navq kubernetes`, `navq git` |
+| Команда не из шпаргалок | `navi --tldr <команда>` |
+
+Списки контейнеров, подов, namespace, релизов, веток и профилей строятся из
+живого состояния: сначала выбирается namespace, затем поды уже отфильтрованы по
+нему. Описания короткие намеренно — finder ищет только по видимой части колонки
+комментария, и слово за обрезкой найти нельзя.
+
+Машинно-специфичное (обёртки прокси, `KUBECONFIG` стендов, jump-хосты, строки
+подключения) кладётся в `~/.config/navi/cheats.local/` и в репозиторий не
+попадает. Подробности и правила добавления — в
+[`navi/README.md`](../navi/README.md).
 
 ### Приоритет процессов
 

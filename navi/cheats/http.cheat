@@ -1,0 +1,94 @@
+; HTTP and RPC clients: xh, HTTPie, curl, grpcurl, plus the TUI and file-driven
+; clients this repository installs (posting, resterm, httpyac).
+% http, api
+
+# GET a URL, pretty-printed
+xh GET <url>
+
+# GET with a bearer token
+xh GET <url> "Authorization:Bearer <token>"
+
+# GET with query parameters
+xh GET <url> <key>==<value>
+
+# POST a JSON body from key=value pairs
+xh POST <url> <key>=<value>
+
+# POST a raw JSON file as the body
+xh POST <url> --json < <json_file>
+
+# PUT a JSON body
+xh PUT <url> <key>=<value>
+
+# DELETE a resource
+xh DELETE <url>
+
+# Show request and response headers only
+xh --headers --print=Hh <url>
+
+# Follow redirects and show every hop
+xh --follow --all <url>
+
+# Download a URL to a file, resuming
+xh --download --continue <url>
+
+# Send a form-encoded body
+xh --form POST <url> <key>=<value>
+
+# Upload a file as multipart form data
+xh --form POST <url> file@<file>
+
+# Ignore an invalid TLS certificate
+xh --verify=no <url>
+
+# Time an endpoint and show only the status
+xh --print=h --quiet <url> ; curl -sS -o /dev/null -w '%{http_code} %{time_total}s\n' <url>
+
+# Repeat a request until it stops failing
+until xh --check-status GET <url> >/dev/null 2>&1; do sleep 2; done; echo up
+
+# Curl equivalent with verbose TLS detail
+curl -vsS <url> -o /dev/null
+
+# POST JSON with curl
+curl -sS -X POST <url> -H 'Content-Type: application/json' -d @<json_file> | jq .
+
+# List the services a gRPC server exposes
+grpcurl -plaintext <grpc_host> list
+
+# List the methods of a gRPC service
+grpcurl -plaintext <grpc_host> list <grpc_service>
+
+# Describe a gRPC method and its message types
+grpcurl -plaintext <grpc_host> describe <grpc_service>
+
+# Call a gRPC method with a JSON payload
+grpcurl -plaintext -d '<json_body>' <grpc_host> <grpc_service>/<grpc_method>
+
+# Call a gRPC method over TLS
+grpcurl -d '<json_body>' <grpc_host> <grpc_service>/<grpc_method>
+
+# Open the Posting API TUI
+posting
+
+# Open the Resterm TUI
+resterm
+
+# Run a .http request file with httpyac
+httpyac send <http_file> --all
+
+# Run one named request from a .http file
+httpyac send <http_file> --name <name>
+
+# Run a .http file against a named environment
+httpyac send <http_file> --env <name> --all
+
+# Serve the current directory over HTTP
+python3 -m http.server <port>
+
+# Print what a server sends, headers included, to a file
+xh --print=HhBb <url> | tee <capture_file>
+
+$ json_file: fd --extension json --max-depth 4 --- --preview 'bat --color=always --style=plain {}'
+$ http_file: fd --extension http --extension rest --max-depth 4 --- --preview 'bat --color=always --style=plain {}'
+$ file: fd --type f --max-depth 3

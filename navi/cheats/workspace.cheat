@@ -1,0 +1,149 @@
+; Terminal workspaces: Tmux (default backend), Workmux worktrees and Herdr.
+; Key bindings live in tmux/tmux.binds.conf, herdr/config.toml and
+; docs/CHEATSHEET.md; this file holds the command-line side only.
+% workspace, tmux, herdr
+
+# List Tmux sessions with window counts
+tmux list-sessions
+
+# Attach to a Tmux session
+tmux attach -t <tmux_session>
+
+# Create a detached Tmux session
+tmux new-session -d -s <name>
+
+# Rename a Tmux session
+tmux rename-session -t <tmux_session> <name>
+
+# Kill one Tmux session
+tmux kill-session -t <tmux_session>
+
+# List every window of every session
+tmux list-windows -a
+
+# List every pane with its current command
+tmux list-panes -a -F '#{session_name}:#{window_index}.#{pane_index} #{pane_current_command} #{pane_current_path}'
+
+# Send a command into another pane
+tmux send-keys -t <tmux_pane> <command> Enter
+
+# Capture the scrollback of a pane to a file
+tmux capture-pane -p -S -3000 -t <tmux_pane> > <capture_file>
+
+# Reload the Tmux configuration
+tmux source-file ~/.config/tmux/tmux.conf
+
+# Show every Tmux key binding
+tmux list-keys -T prefix
+
+# Show the resolved value of a Tmux option
+tmux show-options -g <key>
+
+# Save the Tmux session state now
+~/.config/tmux/plugins/tmux-resurrect/scripts/save.sh
+
+# Restore the saved Tmux session state
+~/.config/tmux/plugins/tmux-resurrect/scripts/restore.sh
+
+# Install declared Tmux plugins
+~/.config/tmux/plugins/tpm/bin/install_plugins
+
+# Update Tmux plugins
+~/.config/tmux/plugins/tpm/bin/update_plugins all
+
+# List Workmux worktrees
+workmux list
+
+# Create a worktree and its window, then start the agent
+workmux add <name>
+
+# Open the window of an existing worktree
+workmux open <wm_worktree>
+
+# Print the filesystem path of a worktree
+workmux path <wm_worktree>
+
+# Agent status across worktrees
+workmux status
+
+# Full-screen Workmux dashboard
+workmux dashboard --tab worktrees
+
+# Workmux agent dashboard
+workmux dashboard --tab agents
+
+# Toggle the Workmux agent sidebar
+workmux sidebar
+
+# Jump to the next agent in sidebar order
+workmux sidebar next
+
+# Send a prompt to a running agent
+workmux send <wm_worktree> <prompt>
+
+# Capture the terminal output of an agent
+workmux capture <wm_worktree>
+
+# Wait until agents reach a state
+workmux wait --status waiting
+
+# Rebase a worktree branch onto its base
+workmux rebase
+
+# Merge a worktree branch and clean up
+workmux merge
+
+# Close a worktree window, keeping the branch
+workmux close
+
+# DESTRUCTIVE remove a worktree, window and branch
+workmux remove <wm_worktree>
+
+# Restore worktree windows after a crash
+workmux resurrect
+
+# Herdr client and server status
+herdr status
+
+# List Herdr sessions
+herdr session list
+
+# Attach to a named Herdr session
+herdr session attach <name>
+
+# Validate the Herdr configuration
+herdr config check
+
+# Reload the Herdr configuration in the running server
+herdr server reload-config
+
+# List agents Herdr is tracking
+herdr agent list
+
+# Focus a Herdr agent pane
+herdr agent focus <name>
+
+# Read the terminal output of a Herdr agent
+herdr agent read <name>
+
+# Submit a prompt to a Herdr agent
+herdr agent prompt <name> <prompt>
+
+# Wait until a Herdr agent reaches a state
+herdr agent wait <name> --state idle
+
+# List Herdr plugins as JSON
+herdr plugin list --json
+
+# Status of Herdr agent integrations
+herdr integration status
+
+# Open the reviewr plugin
+herdr plugin action invoke open --plugin persiyanov.reviewr
+
+# Send a test Herdr notification
+herdr notification show "Herdr" --body "test" --sound done
+
+$ tmux_session: tmux list-sessions -F '#{session_name}' 2>/dev/null
+$ tmux_pane: tmux list-panes -a -F '#{session_name}:#{window_index}.#{pane_index} #{pane_current_command}' 2>/dev/null --- --column 1
+$ wm_worktree: workmux list --json 2>/dev/null | jq -r '.[] | "\(.handle)\t\(.branch)\t\(.path)"' --- --column 1 --delimiter '\t'

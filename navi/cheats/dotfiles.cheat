@@ -1,0 +1,113 @@
+; Maintaining this dotfiles repository itself: the Ansible playbook, Homebrew
+; Bundle, Stow deployment and the validation matrix from AGENTS.md.
+;
+; Editing repository files is not the same as applying them. Entries that
+; mutate this host are marked APPLIES; everything else is read-only.
+% dotfiles, ansible, brew
+
+# Open the dotfiles repository in the editor
+cd -- "$DOTFILES_DIR" && ${EDITOR:-nvim} .
+
+# Syntax-check the whole playbook
+ANSIBLE_LOCAL_TEMP=/private/tmp/ansible-dotfiles-tmp ansible-playbook -i inventory/hosts.ini all.yml --syntax-check
+
+# Lint changed Ansible YAML
+ANSIBLE_LOCAL_TEMP=/private/tmp/ansible-dotfiles-tmp ansible-lint <yaml_file>
+
+# List the roles the playbook would run
+ansible-playbook -i inventory/hosts.ini all.yml --list-tasks
+
+# Dry run the playbook with a diff
+ansible-playbook -i inventory/hosts.ini all.yml --check --diff
+
+# Dry run one role only
+ansible-playbook -i inventory/hosts.ini all.yml --check --diff --tags <role_tag>
+
+# APPLIES run the whole playbook
+ansible-playbook -i inventory/hosts.ini all.yml
+
+# APPLIES run the playbook with a sudo prompt
+ansible-playbook -i inventory/hosts.ini all.yml -K
+
+# APPLIES run one role only
+ansible-playbook -i inventory/hosts.ini all.yml --tags <role_tag>
+
+# Preview what Stow would link
+stow --simulate --stow --no-folding --verbose=1 .
+
+# APPLIES relink every managed configuration directory
+stow --restow --no-folding .
+
+# Show what a deployed config symlink resolves to
+realpath ~/.config/<config_package>
+
+# List config entries that are not symlinks into this repository
+find ~/.config -maxdepth 1 -type d -not -lname '*dotfiles*' 2>/dev/null | head -n 30
+
+# Check the Brewfile against what is installed
+brew bundle check --file Brewfile --verbose
+
+# List Brewfile entries missing from this host
+brew bundle list --file Brewfile --all | sort > /tmp/declared && brew list --formula | sort > /tmp/installed && comm -23 /tmp/declared /tmp/installed
+
+# APPLIES install everything the Brewfile declares
+brew bundle install --file Brewfile
+
+# List installed packages that the Brewfile does not declare
+brew bundle cleanup --file Brewfile
+
+# DESTRUCTIVE remove packages the Brewfile does not declare
+brew bundle cleanup --file Brewfile --force
+
+# Why is this package installed
+brew uses --installed <brew_formula>
+
+# Disk used by Homebrew packages, biggest first
+brew list --formula | xargs -n1 -I{} sh -c 'printf "%s\t%s\n" "$(du -sh "$(brew --prefix)/Cellar/{}" 2>/dev/null | cut -f1)" "{}"' | sort -rh | head -n 25
+
+# Validate the Zsh configuration parses
+zsh -n zsh/.zshrc zsh/*.zsh
+
+# Time interactive shell startup
+hyperfine --warmup 3 --runs 10 'zsh -i -c exit'
+
+# Profile what is slow in shell startup
+zsh -i -c 'zmodload zsh/zprof; source ~/.zshrc; zprof' 2>/dev/null | head -n 30
+
+# Validate the Neovim JSON manifests
+jq empty nvim/lazyvim.json nvim/lazy-lock.json
+
+# Check Lua formatting
+stylua --check nvim/lua
+
+# Headless Neovim start, must be silent
+nvim --headless '+qa'
+
+# Time an empty Neovim start
+hyperfine --warmup 3 --runs 10 'nvim -i NONE --headless +qa'
+
+# Which plugins load on an empty Neovim start
+nvim --headless -c 'lua print(vim.inspect(vim.tbl_keys(package.loaded)))' -c qa 2>&1 | head -n 40
+
+# Validate Herdr after editing herdr/config.toml
+herdr config check
+
+# Validate Tmux: reload and list the resulting bindings
+tmux source-file ~/.config/tmux/tmux.conf && tmux list-keys -T prefix
+
+# Find Tmux and Herdr bindings that disagree
+diff <(grep -oE '^bind(-key)? [^ ]+' tmux/tmux.binds.conf | sort) <(grep -oE '"prefix\+[^"]+"' herdr/config.toml | sort)
+
+# Scan the repository for committed secrets
+gitleaks detect --source . --redact
+
+# Diff check before committing
+git diff --check && git status --short
+
+# Show what changed against the pushed branch
+git diff origin/main...HEAD --stat
+
+$ yaml_file: fd --extension yml --extension yaml --max-depth 3 --- --preview 'bat --color=always --style=plain {}'
+$ role_tag: ( fd --type d --max-depth 1 . roles --exec basename {} ; echo agent-sidebar ) | sort -u
+$ config_package: ls -1d ~/.config/*/ 2>/dev/null | xargs -n1 basename
+$ brew_formula: brew list --formula

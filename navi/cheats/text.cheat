@@ -1,0 +1,132 @@
+; Structured and unstructured text: jq, yq, jless, sd, choose, ast-grep,
+; difftastic, tokei, glow.
+% text, json, yaml
+
+# Pretty-print a JSON file
+jq . <json_file>
+
+# Explore a JSON file interactively in jless
+jless <json_file>
+
+# Explore JSON from a pipeline in jless
+<command> | jless
+
+# Extract one field from every array element
+jq -r '.[] | .<field>' <json_file>
+
+# Turn a JSON array into TSV rows
+jq -r '.[] | [.<field>, .<field2>] | @tsv' <json_file>
+
+# List the top-level keys of a JSON object
+jq -r 'keys[]' <json_file>
+
+# Show the shape of a JSON document, paths only
+jq -r '[paths(scalars)] | map(join(".")) | unique[]' <json_file>
+
+# Filter array elements by a field value
+jq '.[] | select(.<field> == "<value>")' <json_file>
+
+# Merge two JSON documents, right side wins
+jq -s '.[0] * .[1]' <json_file> <json_file2>
+
+# Convert JSON to YAML
+yq -P '.' <json_file>
+
+# Pretty-print a YAML file
+yq . <yaml_file>
+
+# Read one path out of a YAML file
+yq '.<field>' <yaml_file>
+
+# Set a value in a YAML file in place
+yq -i '.<field> = "<value>"' <yaml_file>
+
+# Convert YAML to JSON
+yq -o=json '.' <yaml_file>
+
+# Merge two YAML files, right side wins
+yq eval-all '. as $item ireduce ({}; . * $item)' <yaml_file> <yaml_file2>
+
+# Validate that a YAML file parses
+yq 'true' <yaml_file> >/dev/null && echo OK
+
+# Split a multi-document YAML stream into files
+yq -s '"doc_" + $index' <yaml_file>
+
+# Replace a literal string across a file, in place
+sd -s <pattern> <replacement> <file>
+
+# Replace with a regex across a file, in place
+sd <pattern> <replacement> <file>
+
+# Preview a replacement without writing it
+sd -p <pattern> <replacement> <file>
+
+# Replace across every match in the repository
+rg -l <pattern> | xargs sd <pattern> <replacement>
+
+# Pick columns from whitespace-separated output
+<command> | choose <count>
+
+# Pick a range of columns
+<command> | choose <count>:<count2>
+
+# Pick columns from a delimited stream
+<command> | choose -f '<delimiter>' <count>
+
+# Structural, AST-aware diff of two files
+difft <file> <file2>
+
+# Structural search for a code pattern
+ast-grep --pattern <pattern> --lang <sg_lang>
+
+# Structural search and rewrite
+ast-grep --pattern <pattern> --rewrite <replacement> --lang <sg_lang> --interactive
+
+# Run an ast-grep rule file over the repository
+ast-grep scan --rule <yaml_file>
+
+# Lines of code by language
+tokei
+
+# Lines of code, sorted by code volume
+tokei --sort code
+
+# Lines of code as JSON, for further processing
+tokei --output json | jless
+
+# Render a Markdown file in the terminal
+glow <markdown_file>
+
+# Browse Markdown files in the current tree
+glow
+
+# Sort lines and drop duplicates
+sort -u <file>
+
+# Count the unique values of a column
+<command> | choose <count> | sort | uniq -c | sort -rn
+
+# Show the difference between two sorted files
+comm -3 <(sort <file>) <(sort <file2>)
+
+# Show non-printing characters in a file
+cat -A <file> | head -n 50
+
+# Convert CRLF line endings to LF in place
+sd '\r\n' '\n' <file>
+
+# Strip ANSI colour codes from a stream
+<command> | sd '\x1b\[[0-9;]*m' ''
+
+# Base64 encode and decode a string
+printf '%s' <value> | base64 ; printf '%s' <value> | base64 --decode
+
+$ json_file: fd --extension json --max-depth 4 --- --preview 'bat --color=always --style=plain {}'
+$ json_file2: fd --extension json --max-depth 4
+$ yaml_file: fd --extension yaml --extension yml --max-depth 4 --- --preview 'bat --color=always --style=plain {}'
+$ yaml_file2: fd --extension yaml --extension yml --max-depth 4
+$ markdown_file: fd --extension md --max-depth 4 --- --preview 'bat --color=always --style=plain {}'
+$ file: fd --type f --max-depth 3 --- --preview 'bat --color=always --style=plain {}'
+$ file2: fd --type f --max-depth 3
+$ sg_lang: printf '%s\n' typescript tsx javascript jsx go rust python java c cpp csharp html css yaml json --- --prevent-extra

@@ -1,0 +1,144 @@
+; Finding, listing, measuring and moving files with the modern replacements
+; this repository installs: fd, ripgrep, eza, dust, duf, broot, yazi, atool.
+% files
+
+# Find files by name
+fd <pattern>
+
+# Find files by name, hidden and ignored included
+fd --hidden --no-ignore <pattern>
+
+# Find files by extension
+fd --extension <extension>
+
+# Find directories by name
+fd --type d <pattern>
+
+# Find files changed in the last N days
+fd --changed-within <days>d --type f
+
+# Find files larger than a size
+fd --type f --size +<size>
+
+# Find empty files and directories
+fd --type e
+
+# Run a command on every match
+fd --extension <extension> --exec <command> {}
+
+# Run one command with all matches as arguments
+fd --extension <extension> --exec-batch <command>
+
+# DESTRUCTIVE delete every match
+fd <pattern> --type f --exec rm -i {}
+
+# Search file contents
+rg <pattern>
+
+# Search contents, case-insensitive, with context
+rg -i -C 3 <pattern>
+
+# Search only files of one type
+rg --type <rg_type> <pattern>
+
+# Search hidden and ignored files too
+rg --hidden --no-ignore <pattern>
+
+# List only the files that contain a match
+rg -l <pattern>
+
+# Count matches per file
+rg -c <pattern>
+
+# Search for a literal string, not a regex
+rg -F <pattern>
+
+# Search and replace across the repository, preview first
+rg -l <pattern> | xargs sd <pattern> <replacement>
+
+# Interactive content search with preview
+rg --line-number --no-heading --color=always <pattern> | fzf --ansi --delimiter : --preview 'bat --color=always --highlight-line {2} {1}'
+
+# List files with size, git status and icons
+eza -la --icons --git --group-directories-first
+
+# List as a tree, two levels deep
+eza --tree --level=2 --long --icons --git
+
+# List sorted by modification time, newest last
+eza -la --sort=modified
+
+# List sorted by size, largest last
+eza -la --sort=size
+
+# Disk usage of the current directory, biggest first
+dust -d 2
+
+# Disk usage of a directory, by file count
+dust -f -d 2 <directory>
+
+# Free space per filesystem
+duf
+
+# Free space, local filesystems only
+duf --only local
+
+# Browse a tree interactively with sizes
+broot --sizes
+
+# Browse a tree with git status
+broot --git-status
+
+# Open the yazi file manager
+yazi
+
+# Preview a file with syntax highlighting
+bat <file>
+
+# Preview a file without decorations, for piping
+bat --plain <file>
+
+# Show a file with its byte offsets
+bat --show-all --number <file>
+
+# Extract any archive by its type
+atool --extract <archive>
+
+# List the contents of any archive
+atool --list <archive>
+
+# Create an archive from a directory
+atool --add <archive_name>.tar.gz <directory>
+
+# Create a 7z archive with maximum compression
+7zz a -mx=9 <archive_name>.7z <directory>
+
+# Extract a 7z archive into a directory
+7zz x <archive> -o<directory>
+
+# Mirror a directory, deleting extra files at the destination
+rsync -avh --delete --progress <directory>/ <destination>/
+
+# Copy a directory, resuming and skipping identical files
+rsync -avhP <directory>/ <destination>/
+
+# Dry run of an rsync mirror
+rsync -avhn --delete <directory>/ <destination>/
+
+# Watch a directory tree size change live
+viddy -n 2 dust -d 1 <directory>
+
+# Find the N largest files under a directory
+fd --type f . <directory> --exec-batch ls -S | head -n <count>
+
+# Fix permissions: directories 755, files 644
+fd --type d . <directory> --exec chmod 755 {} ; fd --type f . <directory> --exec chmod 644 {}
+
+# Show what a symlink really points at
+readlink -f <file>
+
+$ directory: fd --type d --max-depth 3 --- --preview 'eza -la --icons {}'
+$ file: fd --type f --max-depth 3 --- --preview 'bat --color=always --style=plain {}'
+$ archive: fd --extension zip --extension gz --extension tgz --extension bz2 --extension xz --extension 7z --extension rar --max-depth 3
+$ rg_type: rg --type-list --- --column 1 --delimiter ':'
+$ extension: fd --type f --max-depth 3 | sed -n 's/.*\.//p' | sort | uniq -c | sort -rn --- --column 2
