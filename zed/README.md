@@ -63,6 +63,38 @@ rather than assumed:
 `*values.yaml` matches the literal substring on purpose rather than
 `values*.yaml`, which keeps rentverse's `values.tpl.yaml` on the Ansible entry.
 
+## Language support
+
+Zed ships Rust, Go, TypeScript/TSX, Bash, JSON, YAML, TOML, CSS and Tailwind in
+the box. `auto_install_extensions` declares the rest of the stack that Zed
+cannot handle on its own, so a fresh host converges without clicking through the
+extensions panel.
+
+Two settings are easy to miss because Zed ships them off:
+
+- **`diagnostics.inline.enabled`.** Off by default, which leaves a message
+  reachable only through the gutter or hover.
+- **`inlay_hints.enabled`.** Also off, and turning it on is only half the
+  switch. rust-analyzer emits hints unprompted, but **gopls and vtsls send
+  nothing unless their own server settings ask for them** — that is why both
+  appear under `lsp` with explicit hint options. Holding `Ctrl` hides the hints
+  again on a crowded line.
+
+`lsp.gopls` also enables `staticcheck`, which adds the analyzer set `go vet`
+does not cover.
+
+## YAML schemas
+
+`yaml-language-server` resolves most schemas from SchemaStore by filename, which
+already covers `docker-compose.yml`, GitHub workflows and similar well-known
+names. Plain Kubernetes manifests are the gap: nothing inside `deployment.yaml`
+identifies its schema, so `lsp.yaml-language-server` maps the usual manifest
+directories (`k8s/`, `kubernetes/`, `manifests/`, `deploy/`, `.infra/`) to the
+strict Kubernetes schema by path.
+
+Chart templates are deliberately not in that mapping — `file_types` routes them
+to Helm and `helm_ls`, and a Go-templated manifest does not validate as YAML.
+
 ## Deliberate limits
 
 Zed cannot make `Ctrl+H/J/K/L` universal in every text-entry widget without

@@ -56,6 +56,7 @@ contents. Local identity is cached outside the repository under
 | Workspace UI | `herdr/` | Optional Herdr/reviewr configuration; Tmux/Workmux are the default |
 | CLI applications | `atuin/`, `lazygit/`, `posting/`, `yazi/` | Application-native configuration |
 | Command cheatsheets | `navi/config.yaml`, `navi/cheats/` | Navi cheat paths and per-tool snippets |
+| Zed | `zed/settings.json`, `zed/keymap.json` | Zed keymap, language servers, extensions and file-type mapping |
 | Windows/WSL | `wsl/` | WSL-only helpers; do not assume macOS behavior |
 
 `all.yml` executes roles in this order: platform (`macos` or `linux`),

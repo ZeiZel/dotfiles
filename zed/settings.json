@@ -56,9 +56,96 @@
     "light": "One Light",
     "dark": "Catppuccin Mocha (Blur) [Heavy]",
   },
+  // Inline diagnostics are off by default, which leaves the message reachable
+  // only through the gutter or hover. Show it on the offending line instead.
+  "diagnostics": {
+    "inline": {
+      "enabled": true,
+    },
+  },
+  // Inlay hints are off by default in Zed. Displaying them is only half the
+  // switch: rust-analyzer emits hints on its own, but gopls and vtsls send
+  // nothing unless asked, which is why both appear under `lsp` below.
+  // Holding `Ctrl` hides them again when a line gets crowded.
+  "inlay_hints": {
+    "enabled": true,
+    "show_background": false,
+    "toggle_on_modifiers_press": {
+      "control": true,
+    },
+  },
+  "lsp": {
+    "gopls": {
+      "initialization_options": {
+        "hints": {
+          "assignVariableTypes": true,
+          "compositeLiteralFields": true,
+          "constantValues": true,
+          "functionTypeParameters": true,
+          "parameterNames": true,
+          "rangeVariableTypes": true,
+        },
+        "staticcheck": true,
+      },
+    },
+    "vtsls": {
+      "settings": {
+        "typescript": {
+          "inlayHints": {
+            "parameterNames": { "enabled": "literals" },
+            "parameterTypes": { "enabled": true },
+            "variableTypes": { "enabled": false },
+            "propertyDeclarationTypes": { "enabled": true },
+            "functionLikeReturnTypes": { "enabled": true },
+            "enumMemberValues": { "enabled": true },
+          },
+        },
+        "javascript": {
+          "inlayHints": {
+            "parameterNames": { "enabled": "literals" },
+            "parameterTypes": { "enabled": true },
+            "functionLikeReturnTypes": { "enabled": true },
+          },
+        },
+      },
+    },
+    // yaml-language-server resolves most schemas from SchemaStore by filename,
+    // which covers compose files and CI workflows but never plain Kubernetes
+    // manifests: nothing in `deployment.yaml` identifies the schema. Map the
+    // usual manifest locations explicitly. Chart templates are excluded because
+    // `file_types` already routes them to Helm and helm_ls.
+    "yaml-language-server": {
+      "settings": {
+        "yaml": {
+          "keyOrdering": false,
+          "schemas": {
+            "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master-standalone-strict/all.json": [
+              "k8s/**/*.yaml",
+              "kube/**/*.yaml",
+              "kubernetes/**/*.yaml",
+              "manifests/**/*.yaml",
+              "deploy/**/*.yaml",
+              ".infra/**/*.yaml",
+            ],
+          },
+        },
+      },
+    },
+  },
   "auto_install_extensions": {
     "ansible": true,
     "helm": true,
+    // Languages in the declared stack that Zed cannot handle at all on its own.
+    // Rust, Go, TypeScript, TSX, Bash, JSON, YAML, TOML, CSS and Tailwind are
+    // built in; Vue, Svelte, SQL, GraphQL, Docker, Terraform and golangci-lint
+    // already came from the registry.
+    "angular": true,
+    "prisma": true,
+    // `.gitlab-ci.yml` is validated by yamlls against a generic schema only.
+    // gitlab-ci-ls understands `extends`, `!reference`, includes and job graphs.
+    "gitlab-ci-ls": true,
+    "github-actions": true,
+    "env": true,
   },
   "file_types": {
     "Ansible": ["*.tpl.yaml", "*.tpl.yml", "*.yaml.j2", "*.yml.j2"],
