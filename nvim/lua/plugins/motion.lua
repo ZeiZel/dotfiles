@@ -95,7 +95,9 @@ return {
 			respect_scrolloff = false,
 			cursor_scrolls_alone = true,
 			easing = "quadratic",
-			performance_mode = true,
+			-- Toggling Tree-sitter can fail during timer teardown and leave
+			-- scrolling/eventignore stuck (legacy TSBufEnable fallback).
+			performance_mode = false,
 			duration_multiplier = 0.55,
 		},
 	},

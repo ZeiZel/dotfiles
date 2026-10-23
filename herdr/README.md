@@ -105,11 +105,6 @@ actions either. They are `type = "shell"` bindings that call the Herdr CLI;
 because the spawned process has no `HERDR_PANE_ID`, the CLI resolves to the
 UI-focused pane, which is what a keybinding needs.
 
-`Prefix a` and `Prefix A` toggle the tmux-agent-sidebar in the current window
-and in every window. They have no Herdr counterpart and are not expected to
-gain one: the sidebar is a TPM plugin that discovers agent panes by walking a
-tmux server, so it has nothing to attach to under Herdr.
-
 ## Notifications
 
 `[ui.toast] delivery = "system"` sends background agent state changes (finished

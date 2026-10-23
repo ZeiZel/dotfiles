@@ -108,6 +108,6 @@ git diff --check && git status --short
 git diff origin/main...HEAD --stat
 
 $ yaml_file: fd --extension yml --extension yaml --max-depth 3 --- --preview 'bat --color=always --style=plain {}'
-$ role_tag: ( fd --type d --max-depth 1 . roles --exec basename {} ; echo agent-sidebar ) | sort -u
+$ role_tag: fd --type d --max-depth 1 . roles --exec basename {} | sort -u
 $ config_package: ls -1d ~/.config/*/ 2>/dev/null | xargs -n1 basename
 $ brew_formula: brew list --formula

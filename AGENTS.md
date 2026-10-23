@@ -268,13 +268,6 @@ Read `herdr/README.md` before editing.
   resurrect call `tmux` unqualified, and under launchd's minimal PATH the
   restore fails silently. It must stay free of `KeepAlive`, because
   `tmux start-server` daemonizes and returns.
-- `roles/dotfiles` also registers the sidebar with the agents that report to
-  it: `claude plugin marketplace add` plus `claude plugin install`, and
-  `files/configure-codex-sidebar.py` for Codex. Both are guarded by a `which`
-  probe so a host without that CLI is skipped. The Codex helper edits files the
-  user owns, so it must stay a merge that preserves unknown hooks, matches
-  entries by command, and writes a `.bak` first. `tmux-agent-sidebar setup
-  codex` only prints its hooks; it never writes them.
 - `tmux/tmux.binds.conf` owns the canonical key map, and Herdr mirrors it key
   for key. Both workspaces share `Ctrl+A`, so a binding change in one requires
   the matching change in the other, in the same commit, with the Tmux binding

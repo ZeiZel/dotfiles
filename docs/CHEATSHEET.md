@@ -990,40 +990,6 @@ layout, рабочие каталоги, содержимое scrollback каж�
 | Установить/обновить/почистить плагины | `Prefix I` / `Prefix U` / `Prefix M-u` |
 | Отправить сам `Ctrl+A` в приложение | `Prefix Ctrl+B` |
 
-### Agent sidebar
-
-Панель отслеживает панели Claude Code, Codex и OpenCode во всех сессиях и окнах
-сразу: статус, промпты, вызовы инструментов, состояние Git, активность и
-worktrees.
-
-| Сценарий | Сочетание |
-| --- | --- |
-| **Показать/скрыть в текущем окне** | `Prefix a` |
-| **Показать/скрыть во всех окнах** | `Prefix A` |
-
-Апстрим по умолчанию вешает это на `e`/`E`; здесь `e` уже занят extrakto, а `E` —
-стандартным `select-layout -E`, поэтому переключатели переехали на `a` — agent.
-Ширина и сторона настраиваются через `@sidebar_width` и `@sidebar_position` в
-[`tmux.plugins.conf`](../tmux/tmux.plugins.conf).
-
-Sidebar видит только тех агентов, которые сами о себе сообщают через hooks.
-Апстрим предлагает подключать это руками — в Claude Code через
-`/plugin marketplace add` и `/plugin install`, в Codex через жёлтый значок `ⓘ` и
-вставку сниппета в панель. Здесь и то и другое делает Ansible при установке
-конфига, чтобы после переустановки не остаться с пустой панелью без объяснений:
-
-- Claude Code — `claude plugin marketplace add` и `claude plugin install`,
-  обе задачи пропускаются, если плагин уже стоит;
-- Codex — `codex_hooks = true` в `~/.codex/config.toml` и слияние hooks в
-  `~/.codex/hooks.json`. `tmux-agent-sidebar setup codex` только печатает JSON,
-  поэтому слияние делает
-  [`configure-codex-sidebar.py`](../roles/dotfiles/files/configure-codex-sidebar.py):
-  существующие hooks сохраняются, записи сопоставляются по команде, перед
-  изменением пишется `.bak`.
-
-Прогнать вручную: `ansible-playbook -i inventory/hosts.ini all.yml --tags agent-sidebar`.
-Codex нужно перезапустить после первого изменения `config.toml`.
-
 ### Чего нет
 
 - Нет сочетания для переноса панели в другое окно (`join-pane`). Только через

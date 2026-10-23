@@ -68,6 +68,10 @@ only smooth-scroll owner; Snacks' scroll animation is disabled to avoid
 competing viewport updates. Neoscroll smooths
 the standard viewport mappings (`<C-u>`, `<C-d>`, `<C-b>`, `<C-f>`, `<C-y>`,
 `<C-e>`, `zt`, `zz`, `zb`) without replacing arrow or `j`/`k` navigation.
+Neoscroll's `performance_mode` stays disabled: toggling Tree-sitter during
+animation teardown can fail on a missing parser, leaving scrolling stuck and
+`CursorMoved`/`WinScrolled` events ignored. Syntax highlighting stays active
+while scrolling.
 Smear Cursor is disabled for Neovide, SSH, special buffers and files larger
 than 1 MiB; it is also suspended in Visual/Select mode to keep rapid `V` +
 `j`/`k` movement responsive, then re-enabled when returning to Normal/Insert
