@@ -122,12 +122,12 @@ return {
 						SnacksPickerInputTitle = { fg = c.lavender, bg = "NONE" },
 						-- Ignored and hidden paths in the picker/explorer fall back
 						-- to a `NonText` link, which the deliberately dim `NonText`
-						-- above paints nearly invisible against the base. They must
-						-- read as dimmed, not disappear: a plain overlay0 sits two
-						-- steps under the normal text grey, so dimmed entries stay
-						-- unmistakably secondary next to tracked files.
-						SnacksPickerPathIgnored = { fg = c.overlay0 },
-						SnacksPickerPathHidden = { fg = c.overlay0 },
+						-- above paints nearly invisible against the base. subtext1
+						-- matches the perceived brightness of the peach `.git` entry
+						-- while staying a neutral grey, so dimmed entries read at a
+						-- glance yet remain one step under the normal text grey.
+						SnacksPickerPathIgnored = { fg = c.subtext1 },
+						SnacksPickerPathHidden = { fg = c.subtext1 },
 					}
 				end,
 			}
