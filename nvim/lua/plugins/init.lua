@@ -126,8 +126,14 @@ return {
 						-- matches the perceived brightness of the peach `.git` entry
 						-- while staying a neutral grey, so dimmed entries read at a
 						-- glance yet remain one step under the normal text grey.
+						-- The dimming also reaches rows through their git status:
+						-- `formatters.file.git_status_hl` (on by default) repaints
+						-- the filename with the status group, and ignored/untracked
+						-- statuses link to `NonText` again, so they need the lift.
 						SnacksPickerPathIgnored = { fg = c.subtext1 },
 						SnacksPickerPathHidden = { fg = c.subtext1 },
+						SnacksPickerGitStatusIgnored = { fg = c.subtext1 },
+						SnacksPickerGitStatusUntracked = { fg = c.subtext1 },
 					}
 				end,
 			}
