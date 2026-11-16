@@ -120,11 +120,14 @@ return {
 						SnacksPickerInputBorder = { fg = c.surface1, bg = "NONE" },
 						SnacksPickerListTitle = { fg = c.lavender, bg = "NONE" },
 						SnacksPickerInputTitle = { fg = c.lavender, bg = "NONE" },
-						-- Git-ignored paths in the picker/explorer fall back to a
-						-- `NonText` link, and the deliberately dim `NonText` above
-						-- makes them almost invisible against the base. Paint them
-						-- with a plain overlay2 instead: muted, but clearly legible.
-						SnacksPickerPathIgnored = { fg = c.overlay2 },
+						-- Ignored and hidden paths in the picker/explorer fall back
+						-- to a `NonText` link, which the deliberately dim `NonText`
+						-- above paints nearly invisible against the base. They must
+						-- read as dimmed, not disappear: a plain overlay0 sits two
+						-- steps under the normal text grey, so dimmed entries stay
+						-- unmistakably secondary next to tracked files.
+						SnacksPickerPathIgnored = { fg = c.overlay0 },
+						SnacksPickerPathHidden = { fg = c.overlay0 },
 					}
 				end,
 			}
