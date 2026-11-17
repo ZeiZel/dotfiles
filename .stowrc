@@ -24,3 +24,4 @@
 --ignore=chezmoi$
 --ignore=nv$
 --ignore=wsl$
+--ignore=windows-terminal$
