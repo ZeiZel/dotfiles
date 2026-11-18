@@ -5,8 +5,10 @@
 // Zed's current injections cover expressions in YAML nodes, not standalone
 // `{% ... %}` mapping directives; rendered output remains the validation path.
 {
+  "markdown_preview": {
+    "font_size": 16.0
+  },
   "agent_ui_font_size": 16.0,
-  "markdown_preview_font_size": 16.0,
   "terminal": {
     "font_size": 14.0
   },
